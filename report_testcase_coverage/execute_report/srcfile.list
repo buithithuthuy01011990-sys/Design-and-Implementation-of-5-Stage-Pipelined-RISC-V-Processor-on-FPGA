@@ -1,0 +1,5 @@
+ali.v
+execute.v
+mux_pc.v
+pc_adder_ex.v
+tb_execute.v

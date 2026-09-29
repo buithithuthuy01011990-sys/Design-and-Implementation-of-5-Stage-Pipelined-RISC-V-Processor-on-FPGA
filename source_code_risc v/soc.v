@@ -1,0 +1,72 @@
+module riscv_uart_soc 
+#(
+    parameter DVSR     = 27,
+              DVSR_BIT = 5,
+              FIFO_W   = 4
+)
+(
+    input  wire clk,
+    input  wire reset,
+
+    output wire uart_tx,
+    input  wire uart_rx,
+
+    output wire [31:0] dbg_ALU_ResultM,
+    output wire [31:0] dbg_WriteDataM,
+    output wire dbg_MemWriteM
+);
+
+    
+    // APB3 bus 
+   
+    wire        PSEL;
+    wire        PENABLE;
+    wire        PWRITE;
+    wire [31:0] PADDR;
+    wire [31:0] PWDATA;
+    wire [31:0] PRDATA;
+    wire        PREADY;
+
+
+    // RISC-V Pipeline (APB master)
+ 
+    Pipeline_top cpu (
+        .clk (clk),
+        .reset (reset),
+
+        .PRDATA (PRDATA),
+        .PREADY (PREADY),
+        .PSEL (PSEL),
+        .PENABLE (PENABLE),
+        .PWRITE (PWRITE),
+        .PADDR (PADDR),
+        .PWDATA (PWDATA),
+
+        .ALU_ResultM (dbg_ALU_ResultM),
+        .WriteDataM  (dbg_WriteDataM),
+        .MemWriteM   (dbg_MemWriteM)
+    );
+
+   
+    // APB3 UART Bridge 
+    
+    apb_uart_bridge #(
+        .DVSR     (DVSR),
+        
+        .FIFO_W   (FIFO_W)
+    ) uart_bridge (
+        .PCLK    (clk),
+        .PRESETn (~reset),
+        .PSEL    (PSEL),
+        .PENABLE (PENABLE),
+        .PWRITE  (PWRITE),
+        .PADDR   (PADDR[3:0]),
+        .PWDATA  (PWDATA),
+        .PRDATA  (PRDATA),
+        .PREADY  (PREADY),
+        .PSLVERR (),
+        .RX      (uart_rx),
+        .TX      (uart_tx)
+    );
+
+endmodule

@@ -1,0 +1,45 @@
+
+ 
+   module ins_mem (
+    input  [31:0] read_add,
+    output [31:0] ins
+);
+    reg [31:0] mem [0:1023];
+ 
+    assign ins = mem[read_add[11:2]];
+ integer i;
+ initial begin
+ for(i=0; i<1024; i=i+1)
+        mem[i] = 32'h00000013; 
+    
+    mem[0]  = 32'h400002B7; // lui  x5, 0x40000    | PC=0x00
+    mem[1]  = 32'h00000013; // nop                  | PC=0x04
+    mem[2]  = 32'h00000013; // nop                  | PC=0x08
+    mem[3]  = 32'h00000013; // nop                  | PC=0x0C
+
+    mem[4]  = 32'h04800313; // addi x6, x0, 0x48   PC=0x10
+    mem[5]  = 32'h00000013; // nop                  PC=0x14
+    mem[6]  = 32'h00000013; // nop                  PC=0x18
+    mem[7]  = 32'h00000013; // nop   PC=0x1C
+    mem[8]  = 32'h0062A023; // sw x6, 0(x5)         PC=0x20 TX 'H'
+    
+    mem[9]  = 32'h06900313; // addi x6, x0, 0x69   PC=0x24
+    mem[10] = 32'h00000013; // nop                  PC=0x28
+    mem[11] = 32'h00000013; // nop                  PC=0x2C
+    mem[12] = 32'h00000013; // nop                  PC=0x30
+    mem[13] = 32'h0062A023; // sw x6, 0(x5)         PC=0x34 TX 'i'
+    
+    mem[14] = 32'h00A00313; // addi x6, x0, 0x0A   PC=0x38
+    mem[15] = 32'h00000013; // nop                  PC=0x3C
+    mem[16] = 32'h00000013; // nop                  PC=0x40
+    mem[17] = 32'h00000013; // nop                  PC=0x44
+    mem[18] = 32'h0062A023; // sw x6, 0(x5)         PC=0x48  TX '\n'
+    
+    // jal loop mem[9] = PC=0x24
+    // offset = 0x24 - 0x4C = -0x28 = -40
+    mem[19] = 32'hFD9FF06F ; // jal x0, -40          PC=0x4C  0x24 
+end
+
+ 
+endmodule
+ 

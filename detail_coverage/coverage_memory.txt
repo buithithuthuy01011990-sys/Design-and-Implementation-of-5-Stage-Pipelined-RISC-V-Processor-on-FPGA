@@ -1,0 +1,867 @@
+QuestaSim-64 vcover 10.7c Coverage Utility 2018.08 Aug 18 2018
+Start time: 13:53:11 on Jun 08,2026
+vcover report -details memory.ucdb 
+Coverage Report by file with details
+
+=================================================================================
+=== File: data_mem_cycle.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           22        22         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file data_mem_cycle.v --
+
+    1                                                
+    2                                                // MtoW_Reg  -  MEM/WB pipeline register
+    3                                                
+    4                                                module MtoW_Reg (
+    5                                                    input         clk,
+    6                                                    input         reset,
+    7                                                    input         RegWriteM,
+    8                                                    input  [1:0]  ResultSrcM,
+    9                                                    input  [4:0]  RdM,
+    10                                                   input  [31:0] PCPlus4M,
+    11                                                   input  [31:0] ALUResultM,
+    12                                                   input  [31:0] ReadDataM,      
+    13                                                   output reg        RegWriteW,
+    14                                                   output reg [1:0]  ResultSrcW,
+    15                                                   output reg [4:0]  RdW,
+    16                                                   output reg [31:0] PCPlus4W,
+    17                                                   output reg [31:0] ALUResultW,
+    18                                                   output reg [31:0] ReadDataW
+    19                                               );
+    20              1                         26         always @(posedge clk or posedge reset) begin
+    21                                                       if (reset) begin
+    22              1                          4                 RegWriteW  <= 1'b0;
+    23              1                          4                 ResultSrcW <= 2'b00;
+    24              1                          4                 RdW        <= 5'h0;
+    25              1                          4                 PCPlus4W   <= 32'h0;
+    26              1                          4                 ALUResultW <= 32'h0;
+    27              1                          4                 ReadDataW  <= 32'h0;
+    28                                                       end else begin
+    29              1                         22                 RegWriteW  <= RegWriteM;
+    30              1                         22                 ResultSrcW <= ResultSrcM;
+    31              1                         22                 RdW        <= RdM;
+    32              1                         22                 PCPlus4W   <= PCPlus4M;
+    33              1                         22                 ALUResultW <= ALUResultM;
+    34              1                         22                 ReadDataW  <= ReadDataM;
+    35                                                       end
+    36                                                   end
+    37                                               endmodule
+    38                                               
+    39                                               // memory_stage  -  MEM stage + ReadDataM mux (DMEM vs APB)
+    40                                               
+    41                                               module memory_stage (
+    42                                                   input         clk,
+    43                                                   input         reset,
+    44                                               
+    45                                                   input         RegWriteM,
+    46                                                   input         MemWriteM,
+    47                                                   input  [1:0]  ResultSrcM,
+    48                                                   input  [4:0]  RdM,
+    49                                                   input  [31:0] ALUResultM,
+    50                                                   input  [31:0] WriteDataM,
+    51                                                   input  [31:0] PCPlus4M,
+    52                                               
+    53                                                   
+    54                                                   input  [31:0] ReadDataAPB,   
+    55                                                   input         IsAPBAddr,     
+    56                                               
+    57                                                   output        RegWriteW,
+    58                                                   output [1:0]  ResultSrcW,
+    59                                                   output [4:0]  RdW,
+    60                                                   output [31:0] PCPlus4W,
+    61                                                   output [31:0] ALUResultW,
+    62                                                   output [31:0] ReadDataW,
+    63                                                   output [31:0] ResultW
+    64                                               );
+    65                                                   
+    66                                                   wire [31:0] ReadDataDMEM;
+    67                                               
+    68                                                   Data_Memory dmem (
+    69                                                       .clk   (clk),
+    70                                                       .reset (reset),
+    71                                                       .WE    (MemWriteM & ~IsAPBAddr),   
+    72                                                       .A     (ALUResultM),
+    73                                                       .WD    (WriteDataM),
+    74                                                       .RD    (ReadDataDMEM)
+    75                                                   );
+    76                                               
+    77                                                   
+    78              1                         22         wire [31:0] ReadDataM_final = IsAPBAddr ? ReadDataAPB : ReadDataDMEM;
+    79                                               
+    80                                                   MtoW_Reg mw_reg (
+    81                                                       .clk        (clk),
+    82                                                       .reset      (reset),
+    83                                                       .RegWriteM  (RegWriteM),
+    84                                                       .ResultSrcM (ResultSrcM),
+    85                                                       .RdM        (RdM),
+    86                                                       .PCPlus4M   (PCPlus4M),
+    87                                                       .ALUResultM (ALUResultM),
+    88                                                       .ReadDataM  (ReadDataM_final),    
+    89                                                       .RegWriteW  (RegWriteW),
+    90                                                       .ResultSrcW (ResultSrcW),
+    91                                                       .RdW        (RdW),
+    92                                                       .PCPlus4W   (PCPlus4W),
+    93                                                       .ALUResultW (ALUResultW),
+    94                                                       .ReadDataW  (ReadDataW)
+    95                                                   );
+    96                                               
+    97              1                         24         assign ResultW = (ResultSrcW == 2'b01) ? ReadDataW  :
+    98                                                                    (ResultSrcW == 2'b10) ? PCPlus4W   :
+    99                                                                                            ALUResultW;
+    100                                              endmodule
+    101                                              
+    102                                              
+    103                                              // Data_Memory  
+    104                                              
+    105                                              module Data_Memory (
+    106                                                  input         clk,
+    107                                                  input         reset,
+    108                                                  input         WE,
+    109                                                  input  [31:0] A,
+    110                                                  input  [31:0] WD,
+    111                                                  output [31:0] RD
+    112                                              );
+    113                                                  reg [31:0] mem [0:1023];
+    114                                              
+    115                                                  integer i;
+    116                                                  initial begin
+    117             1                          1             for (i = 0; i < 1024; i = i + 1)
+    117             2                       1024     
+    118             1                       1024                 mem[i] = 32'h0;
+    119                                                  end
+    120                                              
+    121             1                         17         wire [9:0] word_addr = A[11:2];
+    122                                              
+    123             1                         20         always @(posedge clk) begin
+    124                                                      if (WE && !reset)
+    125             1                          8                 mem[word_addr] <= WD;
+    126                                                  end
+    127                                              
+    128             1                         26         assign RD = reset ? 32'h0 : mem[word_addr];
+    129                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        12        11         1     91.66
+
+================================Branch Details================================
+
+Branch Coverage for file data_mem_cycle.v --
+
+------------------------------------IF Branch------------------------------------
+    21                                        26     Count coming in to IF
+    21              1                          4             if (reset) begin
+    28              1                         22             end else begin
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    78                                        21     Count coming in to IF
+    78              1                    ***0***         wire [31:0] ReadDataM_final = IsAPBAddr ? ReadDataAPB : ReadDataDMEM;
+    78              2                         21         wire [31:0] ReadDataM_final = IsAPBAddr ? ReadDataAPB : ReadDataDMEM;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    97                                        23     Count coming in to IF
+    97              1                         11         assign ResultW = (ResultSrcW == 2'b01) ? ReadDataW  :
+    98              1                         12                          (ResultSrcW == 2'b10) ? PCPlus4W   :
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    98                                        12     Count coming in to IF
+    98              2                          1                          (ResultSrcW == 2'b10) ? PCPlus4W   :
+    99              1                         11                                                  ALUResultW;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    124                                       20     Count coming in to IF
+    124             1                          8             if (WE && !reset)
+                                              12     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    128                                       25     Count coming in to IF
+    128             1                          3         assign RD = reset ? 32'h0 : mem[word_addr];
+    128             2                         22         assign RD = reset ? 32'h0 : mem[word_addr];
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              4         4         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file data_mem_cycle.v --
+
+----------------Focused Condition View-------------------
+Line       97 Item    1  (ResultSrcW == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       98 Item    1  (ResultSrcW == 2)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       124 Item    1  (WE && ~reset)
+Condition totals: 2 of 2 input terms covered = 100.00%
+
+
+Expression Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Expression Terms             2         1         1     50.00
+
+================================Expression Details================================
+
+Expression Coverage for file data_mem_cycle.v --
+
+----------------Focused Expression View-----------------
+Line       71 Item    1  (MemWriteM & ~IsAPBAddr)
+Expression totals: 1 of 2 input terms covered = 50.00%
+
+  Input Term   Covered  Reason for no coverage   Hint
+ -----------  --------  -----------------------  --------------
+   MemWriteM         Y
+   IsAPBAddr         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  MemWriteM_0           ~IsAPBAddr                    
+  Row   2:          1  MemWriteM_1           ~IsAPBAddr                    
+  Row   3:          1  IsAPBAddr_0           MemWriteM                     
+  Row   4:    ***0***  IsAPBAddr_1           MemWriteM                     
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    420       278       142     66.19
+
+================================Toggle Details================================
+
+Toggle Coverage for File data_mem_cycle.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+         15                                 RdW[4]           0           0        0.00 
+         16                            PCPlus4W[9]           0           0        0.00 
+         16                            PCPlus4W[8]           0           0        0.00 
+         16                            PCPlus4W[7]           0           0        0.00 
+         16                            PCPlus4W[6]           0           0        0.00 
+         16                            PCPlus4W[5]           0           0        0.00 
+         16                            PCPlus4W[4]           0           0        0.00 
+         16                           PCPlus4W[31]           0           0        0.00 
+         16                           PCPlus4W[30]           0           0        0.00 
+         16                           PCPlus4W[29]           0           0        0.00 
+         16                           PCPlus4W[28]           0           0        0.00 
+         16                           PCPlus4W[27]           0           0        0.00 
+         16                           PCPlus4W[26]           0           0        0.00 
+         16                           PCPlus4W[25]           0           0        0.00 
+         16                           PCPlus4W[24]           0           0        0.00 
+         16                           PCPlus4W[23]           0           0        0.00 
+         16                           PCPlus4W[22]           0           0        0.00 
+         16                           PCPlus4W[21]           0           0        0.00 
+         16                           PCPlus4W[20]           0           0        0.00 
+         16                            PCPlus4W[1]           0           0        0.00 
+         16                           PCPlus4W[19]           0           0        0.00 
+         16                           PCPlus4W[18]           0           0        0.00 
+         16                           PCPlus4W[17]           0           0        0.00 
+         16                           PCPlus4W[16]           0           0        0.00 
+         16                           PCPlus4W[15]           0           0        0.00 
+         16                           PCPlus4W[14]           0           0        0.00 
+         16                           PCPlus4W[11]           0           0        0.00 
+         16                           PCPlus4W[10]           0           0        0.00 
+         16                            PCPlus4W[0]           0           0        0.00 
+         17                          ALUResultW[6]           0           0        0.00 
+         17                         ALUResultW[29]           0           0        0.00 
+         17                         ALUResultW[28]           0           0        0.00 
+         17                         ALUResultW[26]           0           0        0.00 
+         17                         ALUResultW[24]           0           0        0.00 
+         17                         ALUResultW[16]           0           0        0.00 
+         17                         ALUResultW[14]           0           0        0.00 
+         17                         ALUResultW[10]           0           0        0.00 
+        115                                   i[9]           0           0        0.00 
+        115                                   i[8]           0           0        0.00 
+        115                                   i[7]           0           0        0.00 
+        115                                   i[6]           0           0        0.00 
+        115                                   i[5]           0           0        0.00 
+        115                                   i[4]           0           0        0.00 
+        115                                   i[3]           0           0        0.00 
+        115                                  i[31]           0           0        0.00 
+        115                                  i[30]           0           0        0.00 
+        115                                   i[2]           0           0        0.00 
+        115                                  i[29]           0           0        0.00 
+        115                                  i[28]           0           0        0.00 
+        115                                  i[27]           0           0        0.00 
+        115                                  i[26]           0           0        0.00 
+        115                                  i[25]           0           0        0.00 
+        115                                  i[24]           0           0        0.00 
+        115                                  i[23]           0           0        0.00 
+        115                                  i[22]           0           0        0.00 
+        115                                  i[21]           0           0        0.00 
+        115                                  i[20]           0           0        0.00 
+        115                                   i[1]           0           0        0.00 
+        115                                  i[19]           0           0        0.00 
+        115                                  i[18]           0           0        0.00 
+        115                                  i[17]           0           0        0.00 
+        115                                  i[16]           0           0        0.00 
+        115                                  i[15]           0           0        0.00 
+        115                                  i[14]           0           0        0.00 
+        115                                  i[13]           0           0        0.00 
+        115                                  i[12]           0           0        0.00 
+        115                                  i[11]           0           0        0.00 
+        115                                  i[10]           0           0        0.00 
+        115                                   i[0]           0           0        0.00 
+        121                           word_addr[8]           0           0        0.00 
+        121                           word_addr[4]           0           0        0.00 
+
+Total Node Count     =        210 
+Toggled Node Count   =        139 
+Untoggled Node Count =         71 
+
+Toggle Coverage      =      66.19% (278 of 420 bins)
+
+=================================================================================
+=== File: tb_memory.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                          164       161         3     98.17
+
+================================Statement Details================================
+
+Statement Coverage for file tb_memory.v --
+
+    1                                                `timescale 1ns/1ps
+    2                                                
+    3                                                module tb_memory_stage;
+    4                                                
+    5                                                    reg         clk, reset;
+    6                                                    reg         RegWriteM, MemWriteM;
+    7                                                    reg  [1:0]  ResultSrcM;
+    8                                                    reg  [4:0]  RdM;
+    9                                                    reg  [31:0] ALUResultM, WriteDataM, PCPlus4M;
+    10                                               
+    11                                                  
+    12                                                   reg  [31:0] ReadDataAPB;   // luôn = 0 trong TB này (không test APB)
+    13                                                   reg         IsAPBAddr;     
+    14                                               
+    15                                                   wire        RegWriteW;
+    16                                                   wire [1:0]  ResultSrcW;
+    17                                                   wire [4:0]  RdW;
+    18                                                   wire [31:0] PCPlus4W, ALUResultW, ReadDataW, ResultW;
+    19                                               
+    20                                                   memory_stage dut (
+    21                                                       .clk         (clk),
+    22                                                       .reset       (reset),
+    23                                                       .RegWriteM   (RegWriteM),
+    24                                                       .MemWriteM   (MemWriteM),
+    25                                                       .ResultSrcM  (ResultSrcM),
+    26                                                       .RdM         (RdM),
+    27                                                       .ALUResultM  (ALUResultM),
+    28                                                       .WriteDataM  (WriteDataM),
+    29                                                       .PCPlus4M    (PCPlus4M),
+    30                                                      
+    31                                                       .ReadDataAPB (ReadDataAPB),
+    32                                                       .IsAPBAddr   (IsAPBAddr),
+    33                                                      
+    34                                                       .RegWriteW   (RegWriteW),
+    35                                                       .ResultSrcW  (ResultSrcW),
+    36                                                       .RdW         (RdW),
+    37                                                       .PCPlus4W    (PCPlus4W),
+    38                                                       .ALUResultW  (ALUResultW),
+    39                                                       .ReadDataW   (ReadDataW),
+    40                                                       .ResultW     (ResultW)
+    41                                                   );
+    42                                               
+    43              1                          1         initial clk = 0;
+    44              1                       6000         always #5 clk = ~clk;
+    44              2                       5999     
+    45                                               
+    46                                                   integer pass_count, fail_count;
+    47                                               
+    48                                                   task check;
+    49                                                       input [200:0] name;
+    50                                                       input [31:0]  got;
+    51                                                       input [31:0]  expected;
+    52                                                       begin
+    53                                                           if (got === expected) begin
+    54              1                         25                     $display("  [PASS] %-24s | got=0x%08h", name, got);
+    55              1                         25                     pass_count = pass_count + 1;
+    56                                                           end else begin
+    57              1                    ***0***                     $display("  [FAIL] %-24s | expected=0x%08h | got=0x%08h",
+    58                                                                        name, expected, got);
+    59              1                    ***0***                     fail_count = fail_count + 1;
+    60                                                           end
+    61                                                       end
+    62                                                   endtask
+    63                                               
+    64                                                   task set_inputs;
+    65                                                       input        rw, mw;
+    66                                                       input [1:0]  rsrc;
+    67                                                       input [4:0]  rd;
+    68                                                       input [31:0] alu, wdata, pc4;
+    69                                                       begin
+    70              1                         23                 RegWriteM  = rw;   MemWriteM  = mw;
+    70              2                         23     
+    71              1                         23                 ResultSrcM = rsrc; RdM        = rd;
+    71              2                         23     
+    72              1                         23                 ALUResultM = alu;  WriteDataM = wdata;
+    72              2                         23     
+    73              1                         23                 PCPlus4M   = pc4;
+    74                                                           
+    75              1                         23                 ReadDataAPB = 32'h0;
+    76              1                         23                 IsAPBAddr   = 1'b0;
+    77                                                       end
+    78                                                   endtask
+    79                                               
+    80                                                   initial begin
+    81              1                          1             $dumpfile("tb_memory_stage.vcd");
+    82              1                          1             $dumpvars(0, tb_memory_stage);
+    83              1                          1             pass_count = 0; fail_count = 0;
+    83              2                          1     
+    84                                               
+    85                                                      
+    86              1                          1             reset = 1;
+    87              1                          1             ReadDataAPB = 0; IsAPBAddr = 0;
+    87              2                          1     
+    88              1                          1             set_inputs(0,0,0,0,0,0,0);
+    89              1                          1             @(negedge clk); @(posedge clk); #1;
+    89              2                          1     
+    89              3                          1     
+    90              1                          1             @(negedge clk); @(posedge clk); #1;
+    90              2                          1     
+    90              3                          1     
+    91                                               
+    92                                                       // TC1: Reset outputs
+    93              1                          1             $display("\nTC1: Reset outputs");
+    94              1                          1             check("RegWriteW",  {31'b0, RegWriteW},  32'h0);
+    95              1                          1             check("ResultSrcW", {30'b0, ResultSrcW}, 32'h0);
+    96              1                          1             check("RdW",        {27'b0, RdW},        32'h0);
+    97              1                          1             check("PCPlus4W",   PCPlus4W,            32'h0);
+    98              1                          1             check("ALUResultW", ALUResultW,          32'h0);
+    99              1                          1             check("ReadDataW",  ReadDataW,           32'h0);
+    100                                              
+    101             1                          1             @(negedge clk); reset = 0;
+    101             2                          1     
+    102                                              
+    103                                                      // TC2: SW then read back
+    104             1                          1             $display("\n TC2: SW Store Word ");
+    105                                                      // Ghi mem[0x10] = 0xDEAD_BEEF
+    106             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd5, 32'h10, 32'hDEAD_BEEF, 32'h1004);
+    106             2                          1     
+    107             1                          1             @(posedge clk); #1;
+    107             2                          1     
+    108                                                     
+    109             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd6, 32'h10, 32'h0, 32'h1008);
+    109             2                          1     
+    110             1                          1             @(posedge clk); #1;
+    110             2                          1     
+    111             1                          1             check("ReadDataW(SW)",   ReadDataW, 32'hDEAD_BEEF);
+    112             1                          1             check("ResultW(LW mux)", ResultW,   32'hDEAD_BEEF);
+    113                                              
+    114                                                      // TC3: LW
+    115             1                          1             $display("\n TC3: LW Load Word ");
+    116             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd7, 32'h10, 32'h0, 32'h100C);
+    116             2                          1     
+    117             1                          1             @(posedge clk); #1;
+    117             2                          1     
+    118             1                          1             check("ReadDataW(LW)", ReadDataW, 32'hDEAD_BEEF);
+    119             1                          1             check("ResultW(LW)",   ResultW,   32'hDEAD_BEEF);
+    120                                              
+    121                                                      // TC4: R-type ALU (ResultSrc=00)
+    122             1                          1             $display("\n TC4: R-type ResultSrc=00");
+    123             1                          1             @(negedge clk); set_inputs(1,0,2'b00,5'd10, 32'hCAFE_BABE, 32'h0, 32'h2000);
+    123             2                          1     
+    124             1                          1             @(posedge clk); #1;
+    124             2                          1     
+    125             1                          1             check("ALUResultW",   ALUResultW, 32'hCAFE_BABE);
+    126             1                          1             check("ResultW(ALU)", ResultW,    32'hCAFE_BABE);
+    127                                              
+    128                                                      // TC5: JAL (ResultSrc=10)
+    129             1                          1             $display("\nTC5: JAL ResultSrc=10 ");
+    130             1                          1             @(negedge clk); set_inputs(1,0,2'b10,5'd1, 32'h0, 32'h0, 32'h3008);
+    130             2                          1     
+    131             1                          1             @(posedge clk); #1;
+    131             2                          1     
+    132             1                          1             check("PCPlus4W",     PCPlus4W, 32'h3008);
+    133             1                          1             check("ResultW(JAL)", ResultW,  32'h3008);
+    134                                              
+    135                                                      // TC6: Control signal forwarding
+    136             1                          1             $display("\n--- TC6: Control signal forwarding ---");
+    137             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd15, 32'h0, 32'h0, 32'h0);
+    137             2                          1     
+    138             1                          1             @(posedge clk); #1;
+    138             2                          1     
+    139             1                          1             check("RegWriteW",  {31'b0, RegWriteW},  32'h1);
+    140             1                          1             check("ResultSrcW", {30'b0, ResultSrcW}, 32'h1);
+    141             1                          1             check("RdW",        {27'b0, RdW},        32'd15);
+    142                                              
+    143                                                      // TC7: Write blocked during reset
+    144             1                          1             $display("\n TC7: Write blocked during reset ");
+    145                                                      // Ghi mem[0x20] = 0xABCD_0000
+    146             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0, 32'h20, 32'hABCD_0000, 32'h0);
+    146             2                          1     
+    147             1                          1             @(posedge clk); #1;
+    147             2                          1     
+    148                                                      // Reset 
+    149             1                          1             @(negedge clk); reset = 1;
+    149             2                          1     
+    150             1                          1             set_inputs(1,1,2'b00,5'd0, 32'h20, 32'h9999_9999, 32'h0);
+    151             1                          1             @(posedge clk); #1;
+    151             2                          1     
+    152                                                      // Reset 
+    153             1                          1             @(negedge clk); reset = 0;
+    153             2                          1     
+    154             1                          1             set_inputs(1,0,2'b01,5'd3, 32'h20, 32'h0, 32'h0);
+    155             1                          1             @(posedge clk); #1;
+    155             2                          1     
+    156             1                          1             check("ReadDataW(no_ow)", ReadDataW, 32'hABCD_0000);
+    157                                              
+    158                                                      // TC8: Multiple SW then LW
+    159             1                          1             $display("\n TC8: Multiple SW then LW ");
+    160             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0,32'h100,32'h1111_1111,32'h0); @(posedge clk); #1;
+    160             2                          1     
+    160             3                          1     
+    160             4                          1     
+    161             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0,32'h104,32'h2222_2222,32'h0); @(posedge clk); #1;
+    161             2                          1     
+    161             3                          1     
+    161             4                          1     
+    162             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0,32'h108,32'h3333_3333,32'h0); @(posedge clk); #1;
+    162             2                          1     
+    162             3                          1     
+    162             4                          1     
+    163                                              
+    164             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd8, 32'h100,32'h0,32'h0); @(posedge clk); #1;
+    164             2                          1     
+    164             3                          1     
+    164             4                          1     
+    165             1                          1             check("LW mem[0x100]", ReadDataW, 32'h1111_1111);
+    166             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd9, 32'h104,32'h0,32'h0); @(posedge clk); #1;
+    166             2                          1     
+    166             3                          1     
+    166             4                          1     
+    167             1                          1             check("LW mem[0x104]", ReadDataW, 32'h2222_2222);
+    168             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd10,32'h108,32'h0,32'h0); @(posedge clk); #1;
+    168             2                          1     
+    168             3                          1     
+    168             4                          1     
+    169             1                          1             check("LW mem[0x108]", ReadDataW, 32'h3333_3333);
+    170                                              
+    171                                                      // TC9: SW overwrite
+    172             1                          1             $display("\n--- TC9: SW overwrite ---");
+    173             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0,32'h200,32'hFFFF_FFFF,32'h0); @(posedge clk); #1;
+    173             2                          1     
+    173             3                          1     
+    173             4                          1     
+    174             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0,32'h200,32'h0000_0001,32'h0); @(posedge clk); #1;
+    174             2                          1     
+    174             3                          1     
+    174             4                          1     
+    175             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd5, 32'h200,32'h0,32'h0);        @(posedge clk); #1;
+    175             2                          1     
+    175             3                          1     
+    175             4                          1     
+    176             1                          1             check("OW ReadDataW", ReadDataW, 32'h0000_0001);
+    177                                              
+    178                                                      // TC10: Byte address alignment
+    179                                                      // Data_Memory dùng word_addr = A[11:2] nên 0x300/0x301/0x302/0x303
+    180                                                      
+    181             1                          1             $display("\n TC10: Byte address alignment ");
+    182             1                          1             @(negedge clk); set_inputs(1,1,2'b00,5'd0,32'h300,32'hBEEF_CAFE,32'h0); @(posedge clk); #1;
+    182             2                          1     
+    182             3                          1     
+    182             4                          1     
+    183                                              
+    184             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd5,32'h301,32'h0,32'h0); @(posedge clk); #1;
+    184             2                          1     
+    184             3                          1     
+    184             4                          1     
+    185             1                          1             check("A[1:0]=01", ReadDataW, 32'hBEEF_CAFE);
+    186             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd5,32'h302,32'h0,32'h0); @(posedge clk); #1;
+    186             2                          1     
+    186             3                          1     
+    186             4                          1     
+    187             1                          1             check("A[1:0]=10", ReadDataW, 32'hBEEF_CAFE);
+    188             1                          1             @(negedge clk); set_inputs(1,0,2'b01,5'd5,32'h303,32'h0,32'h0); @(posedge clk); #1;
+    188             2                          1     
+    188             3                          1     
+    188             4                          1     
+    189             1                          1             check("A[1:0]=11", ReadDataW, 32'hBEEF_CAFE);
+    190                                              
+    191                                                      
+    192             1                          1             $display("  KET QUA: %0d PASS | %0d FAIL", pass_count, fail_count);
+    193                                                     
+    194                                                      if (fail_count == 0)
+    195             1                          1                 $display(">>> TAT CA TEST CASE DA PASSED\n");
+    196                                                      else
+    197             1                    ***0***                 $display(">>> CO %0d TEST CASE BI FAILED\n", fail_count);
+    198             1                          1             $finish;
+    199                                                  end
+    200                                              
+    201             1                          1         initial begin #30000; $display("[TIMEOUT]"); $finish; end
+    201             2                          1     
+    201             3                          1     
+    202                                              
+    203                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         4         2         2     50.00
+
+================================Branch Details================================
+
+Branch Coverage for file tb_memory.v --
+
+------------------------------------IF Branch------------------------------------
+    53                                        25     Count coming in to IF
+    53              1                         25                 if (got === expected) begin
+    56              1                    ***0***                 end else begin
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    194                                        1     Count coming in to IF
+    194             1                          1             if (fail_count == 0)
+    196             1                    ***0***             else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              2         0         2      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file tb_memory.v --
+
+----------------Focused Condition View-------------------
+Line       53 Item    1  (got === expected)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+          Input Term   Covered  Reason for no coverage   Hint
+         -----------  --------  -----------------------  --------------
+  (got === expected)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (got === expected)_0  -                             
+  Row   2:          1  (got === expected)_1  -                             
+
+----------------Focused Condition View-------------------
+Line       194 Item    1  (fail_count == 0)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+         Input Term   Covered  Reason for no coverage   Hint
+        -----------  --------  -----------------------  --------------
+  (fail_count == 0)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (fail_count == 0)_0   -                             
+  Row   2:          1  (fail_count == 0)_1   -                             
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    680       345       335     50.73
+
+================================Toggle Details================================
+
+Toggle Coverage for File tb_memory.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          6                              RegWriteM           0           1       50.00 
+          8                                 RdM[4]           0           0        0.00 
+          9                            PCPlus4M[9]           0           0        0.00 
+          9                            PCPlus4M[8]           0           0        0.00 
+          9                            PCPlus4M[7]           0           0        0.00 
+          9                            PCPlus4M[6]           0           0        0.00 
+          9                            PCPlus4M[5]           0           0        0.00 
+          9                            PCPlus4M[4]           0           0        0.00 
+          9                           PCPlus4M[31]           0           0        0.00 
+          9                           PCPlus4M[30]           0           0        0.00 
+          9                           PCPlus4M[29]           0           0        0.00 
+          9                           PCPlus4M[28]           0           0        0.00 
+          9                           PCPlus4M[27]           0           0        0.00 
+          9                           PCPlus4M[26]           0           0        0.00 
+          9                           PCPlus4M[25]           0           0        0.00 
+          9                           PCPlus4M[24]           0           0        0.00 
+          9                           PCPlus4M[23]           0           0        0.00 
+          9                           PCPlus4M[22]           0           0        0.00 
+          9                           PCPlus4M[21]           0           0        0.00 
+          9                           PCPlus4M[20]           0           0        0.00 
+          9                            PCPlus4M[1]           0           0        0.00 
+          9                           PCPlus4M[19]           0           0        0.00 
+          9                           PCPlus4M[18]           0           0        0.00 
+          9                           PCPlus4M[17]           0           0        0.00 
+          9                           PCPlus4M[16]           0           0        0.00 
+          9                           PCPlus4M[15]           0           0        0.00 
+          9                           PCPlus4M[14]           0           0        0.00 
+          9                           PCPlus4M[11]           0           0        0.00 
+          9                           PCPlus4M[10]           0           0        0.00 
+          9                            PCPlus4M[0]           0           0        0.00 
+          9                          ALUResultM[6]           0           0        0.00 
+          9                         ALUResultM[29]           0           0        0.00 
+          9                         ALUResultM[28]           0           0        0.00 
+          9                         ALUResultM[26]           0           0        0.00 
+          9                         ALUResultM[24]           0           0        0.00 
+          9                         ALUResultM[16]           0           0        0.00 
+          9                         ALUResultM[14]           0           0        0.00 
+          9                         ALUResultM[10]           0           0        0.00 
+         12                         ReadDataAPB[9]           0           0        0.00 
+         12                         ReadDataAPB[8]           0           0        0.00 
+         12                         ReadDataAPB[7]           0           0        0.00 
+         12                         ReadDataAPB[6]           0           0        0.00 
+         12                         ReadDataAPB[5]           0           0        0.00 
+         12                         ReadDataAPB[4]           0           0        0.00 
+         12                         ReadDataAPB[3]           0           0        0.00 
+         12                        ReadDataAPB[31]           0           0        0.00 
+         12                        ReadDataAPB[30]           0           0        0.00 
+         12                         ReadDataAPB[2]           0           0        0.00 
+         12                        ReadDataAPB[29]           0           0        0.00 
+         12                        ReadDataAPB[28]           0           0        0.00 
+         12                        ReadDataAPB[27]           0           0        0.00 
+         12                        ReadDataAPB[26]           0           0        0.00 
+         12                        ReadDataAPB[25]           0           0        0.00 
+         12                        ReadDataAPB[24]           0           0        0.00 
+         12                        ReadDataAPB[23]           0           0        0.00 
+         12                        ReadDataAPB[22]           0           0        0.00 
+         12                        ReadDataAPB[21]           0           0        0.00 
+         12                        ReadDataAPB[20]           0           0        0.00 
+         12                         ReadDataAPB[1]           0           0        0.00 
+         12                        ReadDataAPB[19]           0           0        0.00 
+         12                        ReadDataAPB[18]           0           0        0.00 
+         12                        ReadDataAPB[17]           0           0        0.00 
+         12                        ReadDataAPB[16]           0           0        0.00 
+         12                        ReadDataAPB[15]           0           0        0.00 
+         12                        ReadDataAPB[14]           0           0        0.00 
+         12                        ReadDataAPB[13]           0           0        0.00 
+         12                        ReadDataAPB[12]           0           0        0.00 
+         12                        ReadDataAPB[11]           0           0        0.00 
+         12                        ReadDataAPB[10]           0           0        0.00 
+         12                         ReadDataAPB[0]           0           0        0.00 
+         13                              IsAPBAddr           0           0        0.00 
+         17                                 RdW[4]           0           0        0.00 
+         18                            ResultW[14]           0           1       50.00 
+         18                            PCPlus4W[9]           0           0        0.00 
+         18                            PCPlus4W[8]           0           0        0.00 
+         18                            PCPlus4W[7]           0           0        0.00 
+         18                            PCPlus4W[6]           0           0        0.00 
+         18                            PCPlus4W[5]           0           0        0.00 
+         18                            PCPlus4W[4]           0           0        0.00 
+         18                           PCPlus4W[31]           0           0        0.00 
+         18                           PCPlus4W[30]           0           0        0.00 
+         18                           PCPlus4W[29]           0           0        0.00 
+         18                           PCPlus4W[28]           0           0        0.00 
+         18                           PCPlus4W[27]           0           0        0.00 
+         18                           PCPlus4W[26]           0           0        0.00 
+         18                           PCPlus4W[25]           0           0        0.00 
+         18                           PCPlus4W[24]           0           0        0.00 
+         18                           PCPlus4W[23]           0           0        0.00 
+         18                           PCPlus4W[22]           0           0        0.00 
+         18                           PCPlus4W[21]           0           0        0.00 
+         18                           PCPlus4W[20]           0           0        0.00 
+         18                            PCPlus4W[1]           0           0        0.00 
+         18                           PCPlus4W[19]           0           0        0.00 
+         18                           PCPlus4W[18]           0           0        0.00 
+         18                           PCPlus4W[17]           0           0        0.00 
+         18                           PCPlus4W[16]           0           0        0.00 
+         18                           PCPlus4W[15]           0           0        0.00 
+         18                           PCPlus4W[14]           0           0        0.00 
+         18                           PCPlus4W[11]           0           0        0.00 
+         18                           PCPlus4W[10]           0           0        0.00 
+         18                            PCPlus4W[0]           0           0        0.00 
+         18                          ALUResultW[6]           0           0        0.00 
+         18                         ALUResultW[29]           0           0        0.00 
+         18                         ALUResultW[28]           0           0        0.00 
+         18                         ALUResultW[26]           0           0        0.00 
+         18                         ALUResultW[24]           0           0        0.00 
+         18                         ALUResultW[16]           0           0        0.00 
+         18                         ALUResultW[14]           0           0        0.00 
+         18                         ALUResultW[10]           0           0        0.00 
+         46                          pass_count[9]           0           0        0.00 
+         46                          pass_count[8]           0           0        0.00 
+         46                          pass_count[7]           0           0        0.00 
+         46                          pass_count[6]           0           0        0.00 
+         46                          pass_count[5]           0           0        0.00 
+         46                          pass_count[4]           0           1       50.00 
+         46                         pass_count[31]           0           0        0.00 
+         46                         pass_count[30]           0           0        0.00 
+         46                         pass_count[29]           0           0        0.00 
+         46                         pass_count[28]           0           0        0.00 
+         46                         pass_count[27]           0           0        0.00 
+         46                         pass_count[26]           0           0        0.00 
+         46                         pass_count[25]           0           0        0.00 
+         46                         pass_count[24]           0           0        0.00 
+         46                         pass_count[23]           0           0        0.00 
+         46                         pass_count[22]           0           0        0.00 
+         46                         pass_count[21]           0           0        0.00 
+         46                         pass_count[20]           0           0        0.00 
+         46                         pass_count[19]           0           0        0.00 
+         46                         pass_count[18]           0           0        0.00 
+         46                         pass_count[17]           0           0        0.00 
+         46                         pass_count[16]           0           0        0.00 
+         46                         pass_count[15]           0           0        0.00 
+         46                         pass_count[14]           0           0        0.00 
+         46                         pass_count[13]           0           0        0.00 
+         46                         pass_count[12]           0           0        0.00 
+         46                         pass_count[11]           0           0        0.00 
+         46                         pass_count[10]           0           0        0.00 
+         46                          fail_count[9]           0           0        0.00 
+         46                          fail_count[8]           0           0        0.00 
+         46                          fail_count[7]           0           0        0.00 
+         46                          fail_count[6]           0           0        0.00 
+         46                          fail_count[5]           0           0        0.00 
+         46                          fail_count[4]           0           0        0.00 
+         46                          fail_count[3]           0           0        0.00 
+         46                         fail_count[31]           0           0        0.00 
+         46                         fail_count[30]           0           0        0.00 
+         46                          fail_count[2]           0           0        0.00 
+         46                         fail_count[29]           0           0        0.00 
+         46                         fail_count[28]           0           0        0.00 
+         46                         fail_count[27]           0           0        0.00 
+         46                         fail_count[26]           0           0        0.00 
+         46                         fail_count[25]           0           0        0.00 
+         46                         fail_count[24]           0           0        0.00 
+         46                         fail_count[23]           0           0        0.00 
+         46                         fail_count[22]           0           0        0.00 
+         46                         fail_count[21]           0           0        0.00 
+         46                         fail_count[20]           0           0        0.00 
+         46                          fail_count[1]           0           0        0.00 
+         46                         fail_count[19]           0           0        0.00 
+         46                         fail_count[18]           0           0        0.00 
+         46                         fail_count[17]           0           0        0.00 
+         46                         fail_count[16]           0           0        0.00 
+         46                         fail_count[15]           0           0        0.00 
+         46                         fail_count[14]           0           0        0.00 
+         46                         fail_count[13]           0           0        0.00 
+         46                         fail_count[12]           0           0        0.00 
+         46                         fail_count[11]           0           0        0.00 
+         46                         fail_count[10]           0           0        0.00 
+         46                          fail_count[0]           0           0        0.00 
+
+Total Node Count     =        340 
+Toggled Node Count   =        171 
+Untoggled Node Count =        169 
+
+Toggle Coverage      =      50.73% (345 of 680 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 70.58%
+
+End time: 13:53:11 on Jun 08,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

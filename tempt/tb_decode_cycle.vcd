@@ -1,0 +1,28 @@
+$date
+	Tue Jun 09 12:41:24 2026
+$end
+$version
+	QuestaSim Version 10.7c
+$end
+$timescale
+	1ps
+$end
+
+$scope module tb_decode_cycle $end
+
+$scope task chk1 $end
+$upscope $end
+
+$scope task chk2 $end
+$upscope $end
+
+$scope task chk4 $end
+$upscope $end
+
+$scope task chk32 $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+$end

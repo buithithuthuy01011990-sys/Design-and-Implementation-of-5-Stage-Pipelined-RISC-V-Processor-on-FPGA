@@ -1,0 +1,6 @@
+fetch.v
+instruction_mem.v
+mux_pc.v
+pc.v
+pc_adder.v
+tb_fetch.v

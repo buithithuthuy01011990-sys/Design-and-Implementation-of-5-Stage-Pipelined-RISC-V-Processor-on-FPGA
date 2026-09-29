@@ -1,0 +1,690 @@
+$date
+	Tue Jun 09 12:50:03 2026
+$end
+$version
+	QuestaSim Version 10.7c
+$end
+$timescale
+	1ps
+$end
+
+$scope module tb_pipeline_top $end
+
+$scope task clear_tx_flags $end
+$upscope $end
+
+$scope task check32 $end
+$upscope $end
+
+$scope task check1 $end
+$upscope $end
+
+$scope task wait_apb_char $end
+$upscope $end
+
+$scope begin check_stall $end
+$upscope $end
+
+$scope begin check_handshake $end
+$upscope $end
+
+$scope begin check_alucontrol_coverage $end
+$upscope $end
+
+$scope module dut $end
+$var wire 1 ! ALUSrcE $end
+$var wire 1 " apb_stall $end
+$var wire 1 # StallF_final $end
+$var wire 4 $ ALUControlE [3:0] $end
+
+$scope module Fetch $end
+$var wire 1 % PCD [31] $end
+$var wire 1 & PCD [30] $end
+$var wire 1 ' PCD [29] $end
+$var wire 1 ( PCD [28] $end
+$var wire 1 ) PCD [27] $end
+$var wire 1 * PCD [26] $end
+$var wire 1 + PCD [25] $end
+$var wire 1 , PCD [24] $end
+$var wire 1 - PCD [23] $end
+$var wire 1 . PCD [22] $end
+$var wire 1 / PCD [21] $end
+$var wire 1 0 PCD [20] $end
+$var wire 1 1 PCD [19] $end
+$var wire 1 2 PCD [18] $end
+$var wire 1 3 PCD [17] $end
+$var wire 1 4 PCD [16] $end
+$var wire 1 5 PCD [15] $end
+$var wire 1 6 PCD [14] $end
+$var wire 1 7 PCD [13] $end
+$var wire 1 8 PCD [12] $end
+$var wire 1 9 PCD [11] $end
+$var wire 1 : PCD [10] $end
+$var wire 1 ; PCD [9] $end
+$var wire 1 < PCD [8] $end
+$var wire 1 = PCD [7] $end
+$var wire 1 > PCD [6] $end
+$var wire 1 ? PCD [5] $end
+$var wire 1 @ PCD [4] $end
+$var wire 1 A PCD [3] $end
+$var wire 1 B PCD [2] $end
+$var wire 1 C PCD [1] $end
+$var wire 1 D PCD [0] $end
+
+$scope module IMEM $end
+$upscope $end
+$upscope $end
+
+$scope module Decode $end
+$var wire 1 E InstrD [31] $end
+$var wire 1 F InstrD [30] $end
+$var wire 1 G InstrD [29] $end
+$var wire 1 H InstrD [28] $end
+$var wire 1 I InstrD [27] $end
+$var wire 1 J InstrD [26] $end
+$var wire 1 K InstrD [25] $end
+$var wire 1 L InstrD [24] $end
+$var wire 1 M InstrD [23] $end
+$var wire 1 N InstrD [22] $end
+$var wire 1 O InstrD [21] $end
+$var wire 1 P InstrD [20] $end
+$var wire 1 Q InstrD [19] $end
+$var wire 1 R InstrD [18] $end
+$var wire 1 S InstrD [17] $end
+$var wire 1 T InstrD [16] $end
+$var wire 1 U InstrD [15] $end
+$var wire 1 V InstrD [14] $end
+$var wire 1 W InstrD [13] $end
+$var wire 1 X InstrD [12] $end
+$var wire 1 Y InstrD [11] $end
+$var wire 1 Z InstrD [10] $end
+$var wire 1 [ InstrD [9] $end
+$var wire 1 \ InstrD [8] $end
+$var wire 1 ] InstrD [7] $end
+$var wire 1 ^ InstrD [6] $end
+$var wire 1 _ InstrD [5] $end
+$var wire 1 ` InstrD [4] $end
+$var wire 1 a InstrD [3] $end
+$var wire 1 b InstrD [2] $end
+$var wire 1 c InstrD [1] $end
+$var wire 1 d InstrD [0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 $
+0!
+0"
+0#
+0D
+0C
+0B
+0A
+0@
+0?
+0>
+0=
+0<
+0;
+0:
+09
+08
+07
+06
+05
+04
+03
+02
+01
+00
+0/
+0.
+0-
+0,
+0+
+0*
+0)
+0(
+0'
+0&
+0%
+0d
+0c
+0b
+0a
+0`
+0_
+0^
+0]
+0\
+0[
+0Z
+0Y
+0X
+0W
+0V
+0U
+0T
+0S
+0R
+0Q
+0P
+0O
+0N
+0M
+0L
+0K
+0J
+0I
+0H
+0G
+0F
+0E
+$end
+#45000
+1d
+1c
+1b
+1`
+1_
+1]
+1[
+1F
+#55000
+1!
+1B
+0b
+0_
+0]
+0[
+0F
+#65000
+0B
+1A
+#75000
+1B
+#85000
+0B
+0A
+1@
+1\
+1[
+1M
+1J
+#95000
+1B
+0\
+0[
+0M
+0J
+#105000
+0B
+1A
+#115000
+1B
+#125000
+0B
+0A
+0@
+1?
+0`
+1_
+1W
+1U
+1S
+1O
+1N
+#135000
+1B
+1`
+0_
+1\
+1[
+0W
+0U
+0S
+1P
+0O
+0N
+1M
+1K
+1J
+#145000
+0B
+1A
+0\
+0[
+0P
+0M
+0K
+0J
+1"
+1#
+#165000
+0"
+0#
+#175000
+1B
+#185000
+0B
+0A
+1@
+#195000
+1B
+0`
+1_
+1W
+1U
+1S
+1O
+1N
+#205000
+0B
+1A
+1`
+0_
+1\
+1[
+0W
+0U
+0S
+0N
+1M
+#215000
+1B
+0\
+0[
+0O
+0M
+1"
+1#
+#235000
+0"
+0#
+#245000
+0B
+0A
+0@
+0?
+1>
+#255000
+1B
+#265000
+0B
+1A
+0`
+1_
+1W
+1U
+1S
+1O
+1N
+#275000
+1B
+1`
+0_
+0W
+0U
+0S
+0O
+0N
+#285000
+0B
+0A
+1@
+1"
+1#
+#305000
+0"
+0#
+#315000
+1B
+#325000
+0B
+1A
+#335000
+1B
+1]
+1O
+1M
+#345000
+0B
+0A
+0@
+1?
+0]
+1\
+1P
+0M
+#350000
+0?
+0>
+0d
+0c
+0`
+0\
+0P
+0O
+0!
+#385000
+1d
+1c
+1b
+1`
+1_
+1]
+1[
+1F
+#395000
+1!
+1B
+0b
+0_
+0]
+0[
+0F
+#405000
+0B
+1A
+#415000
+1B
+#425000
+0B
+0A
+1@
+1\
+1[
+1M
+1J
+#435000
+1B
+0\
+0[
+0M
+0J
+#445000
+0B
+1A
+#455000
+1B
+#465000
+0B
+0A
+0@
+1?
+0`
+1_
+1W
+1U
+1S
+1O
+1N
+#475000
+1B
+1`
+0_
+1\
+1[
+0W
+0U
+0S
+1P
+0O
+0N
+1M
+1K
+1J
+#485000
+0B
+1A
+0\
+0[
+0P
+0M
+0K
+0J
+1"
+1#
+#505000
+0"
+0#
+#515000
+1B
+#525000
+0B
+0A
+1@
+#535000
+1B
+0`
+1_
+1W
+1U
+1S
+1O
+1N
+#545000
+0B
+1A
+1`
+0_
+1\
+1[
+0W
+0U
+0S
+0N
+1M
+#555000
+1B
+0\
+0[
+0O
+0M
+1"
+1#
+#575000
+0"
+0#
+#585000
+0B
+0A
+0@
+0?
+1>
+#595000
+1B
+#605000
+0B
+1A
+0`
+1_
+1W
+1U
+1S
+1O
+1N
+#615000
+1B
+1`
+0_
+0W
+0U
+0S
+0O
+0N
+#625000
+0B
+0A
+1@
+1"
+1#
+#645000
+0"
+0#
+#655000
+1B
+#665000
+0B
+1A
+#675000
+1B
+1]
+1O
+1M
+#685000
+0B
+0A
+0@
+1?
+0]
+1\
+1P
+0M
+#695000
+1B
+0\
+0P
+0O
+#705000
+0B
+1A
+#715000
+1B
+1_
+1]
+1\
+1U
+1O
+#725000
+0!
+0B
+0A
+1@
+0]
+0\
+1[
+1F
+#735000
+1B
+1]
+1\
+1X
+1W
+1V
+0F
+b1 $
+#745000
+0B
+1A
+0]
+0\
+0[
+1Z
+0X
+b10 $
+#755000
+1B
+1]
+0W
+b11 $
+#765000
+0B
+0A
+0@
+0?
+0>
+1=
+0]
+1\
+1W
+0V
+b100 $
+#775000
+1B
+1]
+1X
+0W
+b101 $
+#785000
+0B
+1A
+0]
+0\
+1[
+1V
+b110 $
+#795000
+1B
+1]
+1F
+b111 $
+#805000
+0B
+0A
+1@
+0]
+1\
+0X
+0V
+1K
+0F
+b1000 $
+#815000
+1B
+1]
+1X
+b1001 $
+#825000
+0B
+1A
+0]
+0\
+0[
+0Z
+1Y
+1W
+b1010 $
+#835000
+1B
+1]
+0X
+0W
+1V
+b1100 $
+#845000
+0B
+0A
+0@
+1?
+0]
+1\
+1X
+b1101 $
+#855000
+1B
+1]
+0X
+1W
+b1110 $
+#865000
+0B
+1A
+0]
+0\
+1[
+1X
+b1111 $
+#875000
+1B
+0_
+1]
+0X
+0W
+0V
+0U
+0O
+0K
+b0 $

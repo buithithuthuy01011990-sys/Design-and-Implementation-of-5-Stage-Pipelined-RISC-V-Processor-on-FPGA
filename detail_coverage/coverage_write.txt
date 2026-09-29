@@ -1,0 +1,460 @@
+QuestaSim-64 vcover 10.7c Coverage Utility 2018.08 Aug 18 2018
+Start time: 23:33:08 on Jun 06,2026
+vcover report -details writeback.ucdb 
+Coverage Report by file with details
+
+=================================================================================
+=== File: mux_pc.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            1         1         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mux_pc.v --
+
+    1                                                module Mux (a,b,select,c);
+    2                                                
+    3                                                    input [31:0]a,b;
+    4                                                    input select;
+    5                                                    output [31:0]c;
+    6                                                    assign c = (select == 0) ? a : b;
+    7                                                    
+    8                                                endmodule
+    9                                                
+    10                                               module Mux_3_by_1 (a,b,c,select,d);
+    11                                                   input [31:0] a,b,c;
+    12                                                   input [1:0] select;
+    13                                                   output [31:0] d;
+    14                                               
+    15              1                         24         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    16                                                   
+    17                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         6         6         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file mux_pc.v --
+
+------------------------------------IF Branch------------------------------------
+    15                                        23     Count coming in to IF
+    15              1                          9         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    15              2                         14         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    15                                        14     Count coming in to IF
+    15              3                          7         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    15              4                          7         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    15                                         7     Count coming in to IF
+    15              5                          5         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    15              6                          2         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              3         3         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file mux_pc.v --
+
+----------------Focused Condition View-------------------
+Line       15 Item    1  (select == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       15 Item    2  (select == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       15 Item    3  (select == 2)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+
+
+=================================================================================
+=== File: tb_writeback.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                          129       124         5     96.12
+
+================================Statement Details================================
+
+Statement Coverage for file tb_writeback.v --
+
+    1                                                `timescale 1ns/1ps
+    2                                                
+    3                                                
+    4                                                
+    5                                                
+    6                                                // ============================================================
+    7                                                // Testbench
+    8                                                // ============================================================
+    9                                                module tb_writeback_cycle;
+    10                                               
+    11                                                   reg         clk, reset;
+    12                                                   reg  [1:0]  ResultSrcW;
+    13                                                   reg  [31:0] PCPlus4W, ALU_ResultW, ReadDataW;
+    14                                                   wire [31:0] ResultW;
+    15                                               
+    16                                                   writeback_cycle dut (
+    17                                                       .clk        (clk),
+    18                                                       .reset      (reset),
+    19                                                       .ResultSrcW (ResultSrcW),
+    20                                                       .PCPlus4W   (PCPlus4W),
+    21                                                       .ALU_ResultW(ALU_ResultW),
+    22                                                       .ReadDataW  (ReadDataW),
+    23                                                       .ResultW    (ResultW)
+    24                                                   );
+    25                                               
+    26              1                          1         initial clk = 0;
+    27              1                          7         always #5 clk = ~clk;
+    27              2                          6     
+    28                                               
+    29                                                   integer pass_count, fail_count;
+    30                                               
+    31                                                   task check;
+    32                                                       input [200:0] name;
+    33                                                       input [31:0]  got;
+    34                                                       input [31:0]  expected;
+    35                                                       begin
+    36                                                           if (got === expected) begin
+    37              1                         22                     $display("  [PASS] %-30s | got=0x%08h", name, got);
+    38              1                         22                     pass_count = pass_count + 1;
+    39                                                           end else begin
+    40              1                    ***0***                     $display("  [FAIL] %-30s | expected=0x%08h | got=0x%08h",
+    41                                                                        name, expected, got);
+    42              1                    ***0***                     fail_count = fail_count + 1;
+    43                                                           end
+    44                                                       end
+    45                                                   endtask
+    46                                               
+    47                                                   initial begin
+    48              1                          1             $dumpfile("tb_writeback_cycle.vcd");
+    49              1                          1             $dumpvars(0, tb_writeback_cycle);
+    50              1                          1             pass_count = 0; fail_count = 0;
+    50              2                          1     
+    51                                               
+    52              1                          1             reset = 1; ResultSrcW = 0;
+    52              2                          1     
+    53              1                          1             ALU_ResultW = 0; ReadDataW = 0; PCPlus4W = 0;
+    53              2                          1     
+    53              3                          1     
+    54              1                          1             #10; reset = 0;
+    54              2                          1     
+    55                                               
+    56                                                       // ==============================================================
+    57                                                       // TC1: select=00 ? ResultW = ALU_ResultW  (R-type / I-type)
+    58                                                       // ==============================================================
+    59              1                          1             $display("\n--- TC1: ResultSrc=00 (ALU Result) ---");
+    60              1                          1             ALU_ResultW = 32'hCAFE_BABE; ReadDataW = 32'hDEAD_BEEF; PCPlus4W = 32'h0000_3008;
+    60              2                          1     
+    60              3                          1     
+    61              1                          1             ResultSrcW = 2'b00; #1;
+    61              2                          1     
+    62              1                          1             check("ResultW == ALU_ResultW",   ResultW, 32'hCAFE_BABE);
+    63                                               
+    64              1                          1             ALU_ResultW = 32'hFFFF_FFFF; ResultSrcW = 2'b00; #1;
+    64              2                          1     
+    64              3                          1     
+    65              1                          1             check("ALU = 0xFFFFFFFF",         ResultW, 32'hFFFF_FFFF);
+    66                                               
+    67              1                          1             ALU_ResultW = 32'h0000_0000; ResultSrcW = 2'b00; #1;
+    67              2                          1     
+    67              3                          1     
+    68              1                          1             check("ALU = 0x00000000 (zero)",  ResultW, 32'h0000_0000);
+    69                                               
+    70              1                          1             ALU_ResultW = 32'h8000_0000; ResultSrcW = 2'b00; #1;
+    70              2                          1     
+    70              3                          1     
+    71              1                          1             check("ALU = 0x80000000 (MSB)",   ResultW, 32'h8000_0000);
+    72                                               
+    73                                                       // ==============================================================
+    74                                                       // TC2: select=01 ? ResultW = ReadDataW  (LW)
+    75                                                       // ==============================================================
+    76              1                          1             $display("\n--- TC2: ResultSrc=01 (Read Data / LW) ---");
+    77              1                          1             ALU_ResultW = 32'hCAFE_BABE; ReadDataW = 32'hDEAD_BEEF; PCPlus4W = 32'h0000_3008;
+    77              2                          1     
+    77              3                          1     
+    78              1                          1             ResultSrcW = 2'b01; #1;
+    78              2                          1     
+    79              1                          1             check("ResultW == ReadDataW",     ResultW, 32'hDEAD_BEEF);
+    80                                               
+    81              1                          1             ReadDataW = 32'h1234_5678; ResultSrcW = 2'b01; #1;
+    81              2                          1     
+    81              3                          1     
+    82              1                          1             check("ReadData = 0x12345678",    ResultW, 32'h1234_5678);
+    83                                               
+    84              1                          1             ReadDataW = 32'h0000_0000; ResultSrcW = 2'b01; #1;
+    84              2                          1     
+    84              3                          1     
+    85              1                          1             check("ReadData = 0x00000000",    ResultW, 32'h0000_0000);
+    86                                               
+    87              1                          1             ReadDataW = 32'hFFFF_FFFF; ResultSrcW = 2'b01; #1;
+    87              2                          1     
+    87              3                          1     
+    88              1                          1             check("ReadData = 0xFFFFFFFF",    ResultW, 32'hFFFF_FFFF);
+    89                                               
+    90                                                       // ==============================================================
+    91                                                       // TC3: select=10 ? ResultW = PCPlus4W  (JAL/JALR)
+    92                                                       // ==============================================================
+    93              1                          1             $display("\n--- TC3: ResultSrc=10 (PCPlus4 / JAL) ---");
+    94              1                          1             ALU_ResultW = 32'hCAFE_BABE; ReadDataW = 32'hDEAD_BEEF; PCPlus4W = 32'h0000_3008;
+    94              2                          1     
+    94              3                          1     
+    95              1                          1             ResultSrcW = 2'b10; #1;
+    95              2                          1     
+    96              1                          1             check("ResultW == PCPlus4W",      ResultW, 32'h0000_3008);
+    97                                               
+    98              1                          1             PCPlus4W = 32'h0000_0004; ResultSrcW = 2'b10; #1;
+    98              2                          1     
+    98              3                          1     
+    99              1                          1             check("PC+4 = 0x00000004",        ResultW, 32'h0000_0004);
+    100                                              
+    101             1                          1             PCPlus4W = 32'hFFFF_FFFC; ResultSrcW = 2'b10; #1;
+    101             2                          1     
+    101             3                          1     
+    102             1                          1             check("PC+4 = 0xFFFFFFFC",        ResultW, 32'hFFFF_FFFC);
+    103                                              
+    104                                                      // ==============================================================
+    105                                                      // TC4: select=11 ? ResultW = 0x00000000 (theo thi?t k? c?a b?n)
+    106                                                      // ==============================================================
+    107             1                          1             $display("\n--- TC4: ResultSrc=11 (undefined ? 0x00000000) ---");
+    108             1                          1             ALU_ResultW = 32'hAAAA_AAAA; ReadDataW = 32'h5555_5555; PCPlus4W = 32'h1234_5678;
+    108             2                          1     
+    108             3                          1     
+    109             1                          1             ResultSrcW = 2'b11; #1;
+    109             2                          1     
+    110             1                          1             check("ResultSrc=11 ? 0x0",       ResultW, 32'h0000_0000);
+    111                                              
+    112                                                      // ==============================================================
+    113                                                      // TC5: Chuy?n select liên t?c - combinational ph?n ?ng ngay
+    114                                                      // ==============================================================
+    115             1                          1             $display("\n--- TC5: Rapid switching ---");
+    116             1                          1             ALU_ResultW = 32'hAAAA_AAAA;
+    117             1                          1             ReadDataW   = 32'h5555_5555;
+    118             1                          1             PCPlus4W    = 32'h1234_5678;
+    119                                              
+    120             1                          1             ResultSrcW = 2'b00; #1; check("Switch ? 00 (ALU)",  ResultW, 32'hAAAA_AAAA);
+    120             2                          1     
+    120             3                          1     
+    121             1                          1             ResultSrcW = 2'b01; #1; check("Switch ? 01 (RD)",   ResultW, 32'h5555_5555);
+    121             2                          1     
+    121             3                          1     
+    122             1                          1             ResultSrcW = 2'b10; #1; check("Switch ? 10 (PC+4)", ResultW, 32'h1234_5678);
+    122             2                          1     
+    122             3                          1     
+    123             1                          1             ResultSrcW = 2'b11; #1; check("Switch ? 11 (zero)", ResultW, 32'h0000_0000);
+    123             2                          1     
+    123             3                          1     
+    124             1                          1             ResultSrcW = 2'b00; #1; check("Switch back ? 00",   ResultW, 32'hAAAA_AAAA);
+    124             2                          1     
+    124             3                          1     
+    125                                              
+    126                                                      // ==============================================================
+    127                                                      // TC6: T?t c? input gi?ng nhau - m?i select cho cùng k?t qu?
+    128                                                      // ==============================================================
+    129             1                          1             $display("\n--- TC6: All inputs same value ---");
+    130             1                          1             ALU_ResultW = 32'hBEEF_CAFE;
+    131             1                          1             ReadDataW   = 32'hBEEF_CAFE;
+    132             1                          1             PCPlus4W    = 32'hBEEF_CAFE;
+    133                                              
+    134             1                          1             ResultSrcW = 2'b00; #1; check("Same val select=00", ResultW, 32'hBEEF_CAFE);
+    134             2                          1     
+    134             3                          1     
+    135             1                          1             ResultSrcW = 2'b01; #1; check("Same val select=01", ResultW, 32'hBEEF_CAFE);
+    135             2                          1     
+    135             3                          1     
+    136             1                          1             ResultSrcW = 2'b10; #1; check("Same val select=10", ResultW, 32'hBEEF_CAFE);
+    136             2                          1     
+    136             3                          1     
+    137                                              
+    138                                                      // ==============================================================
+    139                                                      // TC7: Ki?m tra Mux 2-to-1 ??c l?p
+    140                                                      // ==============================================================
+    141             1                          1             $display("\n--- TC7: Mux 2-to-1 standalone ---");
+    142                                                      // Dùng writeback ?? gián ti?p verify Mux (select gi?a 2 nhánh)
+    143             1                          1             ALU_ResultW = 32'h1111_1111; ReadDataW = 32'h2222_2222; PCPlus4W = 32'h0;
+    143             2                          1     
+    143             3                          1     
+    144             1                          1             ResultSrcW = 2'b00; #1; check("Mux2: select=0 ? a", ResultW, 32'h1111_1111);
+    144             2                          1     
+    144             3                          1     
+    145             1                          1             ResultSrcW = 2'b01; #1; check("Mux2: select=1 ? b", ResultW, 32'h2222_2222);
+    145             2                          1     
+    145             3                          1     
+    146                                              
+    147                                                      // ==============================================================
+    148                                                      // T?ng k?t
+    149                                                      // ==============================================================
+    150             1                          1             $display("\n========================================");
+    151             1                          1             $display("  K?T QU?: %0d PASS | %0d FAIL", pass_count, fail_count);
+    152             1                          1             $display("========================================");
+    153             1                          1             if (fail_count == 0) $display(">>> T?T C? TEST CASE ?Ã PASSED ?\n");
+    154             1                    ***0***             else                  $display(">>> CÓ %0d TEST CASE B? FAILED ?\n", fail_count);
+    155             1                          1             $finish;
+    156                                                  end
+    157                                              
+    158             1                          1         initial begin #5000; $display("[TIMEOUT]"); $finish; end
+    158             2                    ***0***     
+    158             3                    ***0***     
+    159                                              
+    160                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         4         2         2     50.00
+
+================================Branch Details================================
+
+Branch Coverage for file tb_writeback.v --
+
+------------------------------------IF Branch------------------------------------
+    36                                        22     Count coming in to IF
+    36              1                         22                 if (got === expected) begin
+    39              1                    ***0***                 end else begin
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    153                                        1     Count coming in to IF
+    153             1                          1             if (fail_count == 0) $display(">>> T?T C? TEST CASE ?Ã PASSED ?\n");
+    154             1                    ***0***             else                  $display(">>> CÓ %0d TEST CASE B? FAILED ?\n", fail_count);
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              2         0         2      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file tb_writeback.v --
+
+----------------Focused Condition View-------------------
+Line       36 Item    1  (got === expected)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+          Input Term   Covered  Reason for no coverage   Hint
+         -----------  --------  -----------------------  --------------
+  (got === expected)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (got === expected)_0  -                             
+  Row   2:          1  (got === expected)_1  -                             
+
+----------------Focused Condition View-------------------
+Line       153 Item    1  (fail_count == 0)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+         Input Term   Covered  Reason for no coverage   Hint
+        -----------  --------  -----------------------  --------------
+  (fail_count == 0)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (fail_count == 0)_0   -                             
+  Row   2:          1  (fail_count == 0)_1   -                             
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    392       270       122     68.87
+
+================================Toggle Details================================
+
+Toggle Coverage for File tb_writeback.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+         11                                  reset           1           0       50.00 
+         13                            PCPlus4W[0]           0           0        0.00 
+         29                          pass_count[9]           0           0        0.00 
+         29                          pass_count[8]           0           0        0.00 
+         29                          pass_count[7]           0           0        0.00 
+         29                          pass_count[6]           0           0        0.00 
+         29                          pass_count[5]           0           0        0.00 
+         29                          pass_count[4]           0           1       50.00 
+         29                         pass_count[31]           0           0        0.00 
+         29                         pass_count[30]           0           0        0.00 
+         29                         pass_count[29]           0           0        0.00 
+         29                         pass_count[28]           0           0        0.00 
+         29                         pass_count[27]           0           0        0.00 
+         29                         pass_count[26]           0           0        0.00 
+         29                         pass_count[25]           0           0        0.00 
+         29                         pass_count[24]           0           0        0.00 
+         29                         pass_count[23]           0           0        0.00 
+         29                         pass_count[22]           0           0        0.00 
+         29                         pass_count[21]           0           0        0.00 
+         29                         pass_count[20]           0           0        0.00 
+         29                         pass_count[19]           0           0        0.00 
+         29                         pass_count[18]           0           0        0.00 
+         29                         pass_count[17]           0           0        0.00 
+         29                         pass_count[16]           0           0        0.00 
+         29                         pass_count[15]           0           0        0.00 
+         29                         pass_count[14]           0           0        0.00 
+         29                         pass_count[13]           0           0        0.00 
+         29                         pass_count[12]           0           0        0.00 
+         29                         pass_count[11]           0           0        0.00 
+         29                         pass_count[10]           0           0        0.00 
+         29                          fail_count[9]           0           0        0.00 
+         29                          fail_count[8]           0           0        0.00 
+         29                          fail_count[7]           0           0        0.00 
+         29                          fail_count[6]           0           0        0.00 
+         29                          fail_count[5]           0           0        0.00 
+         29                          fail_count[4]           0           0        0.00 
+         29                          fail_count[3]           0           0        0.00 
+         29                         fail_count[31]           0           0        0.00 
+         29                         fail_count[30]           0           0        0.00 
+         29                          fail_count[2]           0           0        0.00 
+         29                         fail_count[29]           0           0        0.00 
+         29                         fail_count[28]           0           0        0.00 
+         29                         fail_count[27]           0           0        0.00 
+         29                         fail_count[26]           0           0        0.00 
+         29                         fail_count[25]           0           0        0.00 
+         29                         fail_count[24]           0           0        0.00 
+         29                         fail_count[23]           0           0        0.00 
+         29                         fail_count[22]           0           0        0.00 
+         29                         fail_count[21]           0           0        0.00 
+         29                         fail_count[20]           0           0        0.00 
+         29                          fail_count[1]           0           0        0.00 
+         29                         fail_count[19]           0           0        0.00 
+         29                         fail_count[18]           0           0        0.00 
+         29                         fail_count[17]           0           0        0.00 
+         29                         fail_count[16]           0           0        0.00 
+         29                         fail_count[15]           0           0        0.00 
+         29                         fail_count[14]           0           0        0.00 
+         29                         fail_count[13]           0           0        0.00 
+         29                         fail_count[12]           0           0        0.00 
+         29                         fail_count[11]           0           0        0.00 
+         29                         fail_count[10]           0           0        0.00 
+         29                          fail_count[0]           0           0        0.00 
+
+Total Node Count     =        196 
+Toggled Node Count   =        134 
+Untoggled Node Count =         62 
+
+Toggle Coverage      =      68.87% (270 of 392 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 76.25%
+
+End time: 23:33:08 on Jun 06,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

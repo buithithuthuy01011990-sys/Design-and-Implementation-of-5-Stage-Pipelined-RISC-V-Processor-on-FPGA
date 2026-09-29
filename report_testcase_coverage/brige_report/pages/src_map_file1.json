@@ -1,0 +1,8 @@
+var g_data = {'dummy':null,
+'7':'FIFO.V',
+'6':'apb.v',
+'2':'baud_generator.v',
+'1':'tb_apb_uart.v',
+'3':'uart.v',
+'4':'uart_rx.v',
+'5':'uart_tx.v'};

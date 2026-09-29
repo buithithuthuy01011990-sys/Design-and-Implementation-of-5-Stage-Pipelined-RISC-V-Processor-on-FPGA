@@ -1,0 +1,8 @@
+var g_data = {'dummy':null,
+'4':'ALU_Decoder.v',
+'2':'Main_Decoder.v',
+'3':'control_unit.v',
+'5':'decode.v',
+'7':'extend.v',
+'6':'register_file.v',
+'1':'tb_decode.v'};

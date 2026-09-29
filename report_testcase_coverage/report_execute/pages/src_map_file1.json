@@ -1,0 +1,6 @@
+var g_data = {'dummy':null,
+'4':'ali.v',
+'2':'execute.v',
+'3':'mux_pc.v',
+'5':'pc_adder_ex.v',
+'1':'tb_execute.v'};

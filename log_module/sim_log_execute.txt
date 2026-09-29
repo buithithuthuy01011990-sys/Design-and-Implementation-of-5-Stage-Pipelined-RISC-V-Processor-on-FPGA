@@ -1,0 +1,84 @@
+Reading D:/cai_sytem/tcl/vsim/pref.tcl
+
+# 10.7c
+
+# vsim -do " run -all; quit" tb_execute_cycle 
+# Start time: 12:42:45 on Jun 09,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  Questa Sim-64
+# //  Version 10.7c win64 Aug 18 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading work.tb_execute_cycle(fast)
+#  run -all
+#   execute_cycle Testbench
+# 
+# --- Nhom 1: ALU RV32I ---
+#   PASS [ADD 10+5]  got=0x0000000f
+#   PASS [SUB 20-7]  got=0x0000000d
+#   PASS [AND FF&0F]  got=0x0000000f
+#   PASS [OR F0|0F]  got=0x000000ff
+#   PASS [XOR FF^0F]  got=0x000000f0
+#   PASS [SLT 3<5]  got=0x00000001
+#   PASS [SLT 5<3]  got=0x00000000
+#   PASS [SLT -1<1]  got=0x00000001
+# 
+#  Nhom 2: ALUSrc=1 (Immediate) 
+#   PASS [ADDI 100+55]  got=0x0000009b
+#   PASS [WriteDataM=RD2 not Imm]  got=0xdeadbeef
+# 
+#  Nhom 3: Forwarding 
+#   PASS [FwdA=01 ADD]  got=0x00000032
+#   PASS [FwdB=01 ADD]  got=0x00000032
+#   PASS [FwdB=01 WriteDataM]  got=0xbbbbbbbb
+#   PASS [NoFwd SUB]  got=0x00000004
+# 
+# Nhom 4: Combinatorial - PCSrcE, PCTargetE 
+#   PASS [BEQ taken]  got=1
+#   PASS [BEQ not taken]  got=0
+#   PASS [JumpE=1]  got=1
+#   PASS [No branch/jump]  got=0
+#   PASS [PCTargetE]  got=0x00001020
+#   PASS [PCTargetE neg]  got=0x00000ffc
+# 
+#  Nhom 5: Pipeline registers
+#   PASS [RegWriteM]  got=1
+#   PASS [MemWriteM]  got=0
+#   PASS [RD_M]  got=0x0000000f
+#   PASS [PCPlus4M]  got=0xaaaa0004
+#   PASS [ResultSrcM]  got=0x00000002
+#   PASS [MemWriteM=1]  got=1
+#   PASS [RegWriteM=0]  got=0
+# 
+#  Nhom 6: Reset
+#   PASS [Reset RegWriteM]  got=0
+#   PASS [Reset MemWriteM]  got=0
+#   PASS [Reset ALU_ResultM]  got=0x00000000
+#   PASS [Reset WriteDataM]  got=0x00000000
+#   PASS [Reset PCPlus4M]  got=0x00000000
+#   PASS [Reset RD_M]  got=0x00000000
+#   PASS [Reset ResultSrcM]  got=0x00000000
+# 
+#  Nhom 7: RV32M
+#   PASS [MUL 100*200]  got=0x00004e20
+#   PASS [DIVS /0]  got=0xffffffff
+#   PASS [REMS 10%3]  got=0x00000001
+#   PASS [DIVS overflow]  got=0x80000000
+#   PASS [REMS overflow]  got=0x00000000
+#   PASS [DIVU 10/3]  got=0x00000003
+#   PASS [REMU 10%3]  got=0x00000001
+#   TONG KET: 41 PASS  |  0 FAIL
+# ** Note: $finish    : tb_execute.v(389)
+#    Time: 486 ns  Iteration: 0  Instance: /tb_execute_cycle
+# End time: 12:42:46 on Jun 09,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

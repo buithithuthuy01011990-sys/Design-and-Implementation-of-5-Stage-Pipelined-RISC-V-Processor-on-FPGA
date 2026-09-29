@@ -1,0 +1,671 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dD:/code_doan
+T_opt
+!s110 1781928256
+Vl<9j111`La3M]k0g2mM9U1
+Z1 04 8 4 work fetch_tb fast 0
+=1-c4efbbc5fa3c-6a36113f-301-5944
+o-quiet -auto_acc_if_foreign -work work +acc
+Z2 tCvgOpt 0
+n@_opt
+Z3 OL;O;10.7c;67
+R0
+T_opt1
+!s110 1781237818
+V>kF5Q[Nz5JR`F93Lk[J8@3
+04 17 4 work tb_riscv_uart_soc fast 0
+=1-c4efbbc5fa3c-6a2b883a-7c-55d4
+Z4 !s102 +cover
+Z5 o-quiet -auto_acc_if_foreign -work work +cover
+R2
+n@_opt1
+R3
+R0
+T_opt2
+!s110 1781928312
+VRXJR72V1[BCO7cBD42M?z2
+R1
+=1-c4efbbc5fa3c-6a361178-26a-3444
+R4
+R5
+R2
+n@_opt2
+R3
+vALU
+Z6 !s110 1781237479
+!i10b 1
+!s100 zeJ^Mhz:[cbY=jZRcIMQ00
+IiH`0izm0h_M;2eWME2fk@3
+Z7 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1780978703
+8ali.v
+Fali.v
+L0 1
+Z8 OL;L;10.7c;67
+r1
+!s85 0
+31
+Z9 !s108 1781237479.000000
+Z10 !s107 write_back.v|uart_tx.v|uart_rx.v|uart.v|tb_writeback.v|tb_uart.v|tb_soc.v|tb_risc_v.v|tb_memory.v|tb_hazard.v|tb_fetch.v|tb_execute.v|tb_decode.v|tb_apb_uart.v|tb_apb.v|tb_alu.v|soc.v|risc_v.v|register_file.v|pc_adder_ex.v|pc_adder.v|pc.v|mux_pc.v|mux.v|instruction_mem.v|hazard.v|fetch.v|extend.v|execute.v|decode.v|data_mem_cycle.v|control_unit.v|baud_generator.v|apb_master.v|apb.v|ali.v|Main_Decoder.v|FIFO.V|ALU_Decoder.v|
+Z11 !s90 -reportprogress|300|ALU_Decoder.v|FIFO.V|Main_Decoder.v|ali.v|apb.v|apb_master.v|baud_generator.v|control_unit.v|data_mem_cycle.v|decode.v|execute.v|extend.v|fetch.v|hazard.v|instruction_mem.v|mux.v|mux_pc.v|pc.v|pc_adder.v|pc_adder_ex.v|register_file.v|risc_v.v|soc.v|tb_alu.v|tb_apb.v|tb_apb_uart.v|tb_decode.v|tb_execute.v|tb_fetch.v|tb_hazard.v|tb_memory.v|tb_risc_v.v|tb_soc.v|tb_uart.v|tb_writeback.v|uart.v|uart_rx.v|uart_tx.v|write_back.v|
+!i113 0
+R2
+n@a@l@u
+vALU_Decoder
+R6
+!i10b 1
+!s100 OGN]Pgh8zC<QA5<zXPcCl1
+IG[LjK?mnU7IHVj82PNBI^0
+R7
+R0
+w1780978760
+8ALU_Decoder.v
+FALU_Decoder.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@a@l@u_@decoder
+vALU_tb
+R6
+!i10b 1
+!s100 5SbIie9FKNEU@EY<4R`oQ2
+I1>63Mn4_fOo^JbK>md@zj1
+R7
+R0
+w1780979810
+8tb_alu.v
+Ftb_alu.v
+L0 3
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@a@l@u_tb
+vapb_uart_bridge
+R6
+!i10b 1
+!s100 :z[7?aoQj]]Gm`[:zW>VQ0
+Ij<EgnS^nBXaaE^OT`e5zN2
+R7
+R0
+w1781230068
+8apb.v
+Fapb.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vapb_uart_tb
+!s110 1780814790
+!i10b 1
+!s100 AEgG^DzX`4WljK=SVeH021
+IU@Q1[Ya9LZ4WbSGWh<nNc1
+R7
+R0
+w1777279367
+Z12 8tb_apb.v
+Z13 Ftb_apb.v
+L0 13
+R8
+r1
+!s85 0
+31
+!s108 1780814789.000000
+!s107 write_back.v|uart_tx.v|uart_slave.v|uart_rx.v|uart.v|tb_writeback.v|tb_uart.v|tb_soc.v|tb_risc_v.v|tb_mux.v|tb_memory.v|tb_hazard.v|tb_fetch.v|tb_execute.v|tb_decode.v|tb_apb_uart.v|tb_apb.v|tb_alu.v|soc.v|risc_v.v|register_file.v|pc_adder_ex.v|pc_adder.v|pc.v|mux_pc.v|mux.v|instruction_mem.v|hazard.v|fetch.v|extend.v|execute.v|decode.v|data_mem_cycle.v|control_unit.v|baud_generator_test.v|baud_generator.v|apb_master.v|apb.v|ali.v|Main_Decoder.v|FIFO.V|ALU_Decoder.v|
+!s90 -reportprogress|300|ALU_Decoder.v|FIFO.V|Main_Decoder.v|ali.v|apb.v|apb_master.v|baud_generator.v|baud_generator_test.v|control_unit.v|data_mem_cycle.v|decode.v|execute.v|extend.v|fetch.v|hazard.v|instruction_mem.v|mux.v|mux_pc.v|pc.v|pc_adder.v|pc_adder_ex.v|register_file.v|risc_v.v|soc.v|tb_alu.v|tb_apb.v|tb_apb_uart.v|tb_decode.v|tb_execute.v|tb_fetch.v|tb_hazard.v|tb_memory.v|tb_mux.v|tb_risc_v.v|tb_soc.v|tb_uart.v|tb_writeback.v|uart.v|uart_rx.v|uart_slave.v|uart_tx.v|write_back.v|
+!i113 0
+R2
+vbaud_generator
+R6
+!i10b 1
+!s100 LZc_zP05l87nJXQERNZ:c2
+IjeEP0XkI2c6oZIbj3@:4e1
+R7
+R0
+w1781231146
+8baud_generator.v
+Fbaud_generator.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vControl_Unit_Top
+R6
+!i10b 1
+!s100 3a82h>A1M:UN6IFIQz6ld3
+IBNSnzN9IAkdRmQP1=Y2j<3
+R7
+R0
+w1780979028
+8control_unit.v
+Fcontrol_unit.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@control_@unit_@top
+vData_Memory
+R6
+!i10b 1
+!s100 e81g]O<?PFY>YzK1Pg1;S3
+IA`@cB;cYne_SUzIoEK1bF0
+R7
+R0
+Z14 w1780979104
+Z15 8data_mem_cycle.v
+Z16 Fdata_mem_cycle.v
+L0 108
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@data_@memory
+vdecode_cycle
+R6
+!i10b 1
+!s100 5zM=fBZzf;ZFMCZlRb5a<0
+IgnMFz<S^5LT:=JioV3@]S2
+R7
+R0
+w1780979153
+8decode.v
+Fdecode.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vexecute_cycle
+R6
+!i10b 1
+!s100 k@R0J0ze4^@NfE4UIAVW@0
+I<m[Qak`z6P?NiRAa=b[EE0
+R7
+R0
+w1780979289
+8execute.v
+Fexecute.v
+L0 2
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vextend
+R6
+!i10b 1
+!s100 0g[:V61I?CG75T]bFcQRa3
+IzF;KDQNcZg:MG;ecfb;C01
+R7
+R0
+w1780983268
+8extend.v
+Fextend.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vfetch
+R6
+!i10b 1
+!s100 T@4LD3MeaS:RiheW;^BEO3
+IGliC?CH1`YO0OM?`UeJij0
+R7
+R0
+w1780979369
+8fetch.v
+Ffetch.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vfetch_tb
+R6
+!i10b 1
+!s100 4a?6S6[VL4U890_oKa:YR3
+I5]5RQ2zCn5Z[JIG1NGKkh0
+R7
+R0
+w1780983447
+8tb_fetch.v
+Ftb_fetch.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vfifo
+R6
+!i10b 1
+!s100 gzBQz0=VoZLZkCj0Z0L2Y2
+IO2miegM1jB<]5HRITc<f01
+R7
+R0
+w1780979444
+8FIFO.V
+FFIFO.V
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vhazard_unit
+R6
+!i10b 1
+!s100 aUUaHkP1hZh`@kJTKlo6z3
+I>k`B`A0X7Fmf31;S0W1Hz2
+R7
+R0
+w1781226840
+8hazard.v
+Fhazard.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vins_mem
+R6
+!i10b 1
+!s100 3<7@RzaA4Rj6idA1ZzNhS0
+IiAlTz^:17=il2Mj6KMbNR0
+R7
+R0
+w1781229772
+8instruction_mem.v
+Finstruction_mem.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vMain_Decoder
+R6
+!i10b 1
+!s100 ^nO5?OI`jnP<PUgNAabf13
+I?M65dMmX:j>z:UM;IDG;E1
+R7
+R0
+w1780979574
+8Main_Decoder.v
+FMain_Decoder.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@main_@decoder
+vmem_to_apb_master
+R6
+!i10b 1
+!s100 jiC0ZhWf^LM`0B@TU0D[30
+I2Q>_Rh8YeBU7P2JS6b3R:3
+R7
+R0
+w1780978937
+8apb_master.v
+Fapb_master.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vmemory_stage
+R6
+!i10b 1
+!s100 54O7JfKFHXSJLkn7mKdaH3
+IboQ_>zQWKh43F52eg5G5z2
+R7
+R0
+R14
+R15
+R16
+L0 44
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vMtoW_Reg
+R6
+!i10b 1
+!s100 00CdzmBmj=^5kZ6z7nmP92
+I;7m`UmF=gU7Z5enaDDKOj0
+R7
+R0
+R14
+R15
+R16
+L0 4
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@mto@w_@reg
+vmux
+R6
+!i10b 1
+!s100 0BUkPNB>?GCzQCf63_Rlo2
+I;_j@9J2DB2n7c=D0gm[O=0
+R7
+R0
+w1779730118
+8mux.v
+Fmux.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vMux
+R6
+!i10b 1
+!s100 l@YPne6g4faimRPQ39?ib3
+ITNbBaDOJ_nl]Q37:@iUDa3
+R7
+R0
+Z17 w1777809630
+Z18 8mux_pc.v
+Z19 Fmux_pc.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@mux
+vMux_3_by_1
+R6
+!i10b 1
+!s100 VDmHKa13h7`hWL12NcPWk2
+Ia3_CG[gjfBC8;T0@QM[c[2
+R7
+R0
+R17
+R18
+R19
+L0 10
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@mux_3_by_1
+vpc
+R6
+!i10b 1
+!s100 M^_mB6;NZR<TCU^T6LQ2X3
+I_RiD6UF2@:IR0A<N7Yg@B0
+R7
+R0
+w1777951655
+8pc.v
+Fpc.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vPC_Adder
+R6
+!i10b 1
+!s100 6S:oV?VE7=2TH?i;KG0:d1
+IMI=QSQ9JDCCa3PV0ozSAV0
+R7
+R0
+w1777134858
+8pc_adder_ex.v
+Fpc_adder_ex.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@p@c_@adder
+vpc_adder_1
+R6
+!i10b 1
+!s100 zLmlnM0:@Aof5MSHM>e7W2
+I]5cMoRbc[HDl@Kn[?bYGO0
+R7
+R0
+w1777137562
+8pc_adder.v
+Fpc_adder.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vPipeline_top
+R6
+!i10b 1
+!s100 nko<o^TanFYO_>Ck4bZ@I2
+IS5^HT0fHCXK4;i8OoQ4aW1
+R7
+R0
+w1781197938
+8risc_v.v
+Frisc_v.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@pipeline_top
+vRegister_File
+R6
+!i10b 1
+!s100 LZ^hcWDg<le<i1QXQEc<C0
+Ik4?z_jmRSinmO8j>HbeB72
+R7
+R0
+w1780979636
+8register_file.v
+Fregister_file.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+n@register_@file
+vriscv_uart_soc
+R6
+!i10b 1
+!s100 @49Mli4oL1I7SMW5cCL4f1
+IzBU=C4HY3AcSiRZ[jTzXj2
+R7
+R0
+w1780979754
+8soc.v
+Fsoc.v
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vtb_apb_uart_bridge
+R6
+!i10b 1
+!s100 EEhNnXa6PQ;LgbQn`_Wi;3
+I7n3Rk>g:g7<>8KehWA2nW2
+R7
+R0
+w1780984405
+8tb_apb_uart.v
+Ftb_apb_uart.v
+L0 4
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 0
+R2
+vtb_baud_generator
+!s110 1780983279
+!i10b 1
+!s100 ZM23CIza`dd83dJ6SHdm72
+IRX>:o@MFgLBDXM@4o]2>U2
+R7
+R0
+w1777098972
+8baud_generator_test.v
+Fbaud_generator_test.v
+L0 1
+R8
+r1
+!s85 0
+31
+!s108 1780983279.000000
+!s107 write_back.v|uart_tx.v|uart_slave.v|uart_rx.v|uart.v|tb_writeback.v|tb_uart.v|tb_soc.v|tb_risc_v.v|tb_memory.v|tb_hazard.v|tb_fetch.v|tb_execute.v|tb_decode.v|tb_apb_uart.v|tb_apb.v|tb_alu.v|soc.v|risc_v.v|register_file.v|pc_adder_ex.v|pc_adder.v|pc.v|mux_pc.v|mux.v|Main_Decoder.v|instruction_mem.v|hazard.v|FIFO.V|fetch.v|extend.v|execute.v|decode.v|data_mem_cycle.v|control_unit.v|baud_generator_test.v|baud_generator.v|apb_master.v|apb.v|ALU_Decoder.v|ali.v|
+!s90 ali.v|

@@ -1,0 +1,146 @@
+400002B7 // mem[000]: lui  x5,0x40000        # APB/UART base = 0x40000000
+00000013 // mem[001]: nop
+00000013 // mem[002]: nop
+00000013 // mem[003]: nop
+
+
+// TC1: TX "Hi\n"
+
+04800313 // mem[004]: addi x6,x0,0x48       # H
+00000013 // mem[005]: nop
+00000013 // mem[006]: nop
+00000013 // mem[007]: nop
+0062A023 // mem[008]: sw   x6,0(x5)         # TX H
+
+06900313 // mem[009]: addi x6,x0,0x69       # i
+00000013 // mem[010]: nop
+00000013 // mem[011]: nop
+00000013 // mem[012]: nop
+0062A023 // mem[013]: sw   x6,0(x5)         # TX i
+
+00A00313 // mem[014]: addi x6,x0,0x0A       # LF
+00000013 // mem[015]: nop
+00000013 // mem[016]: nop
+00000013 // mem[017]: nop
+0062A023 // mem[018]: sw   x6,0(x5)         # TX LF
+
+00000013 // mem[019]: nop
+00000013 // mem[020]: nop
+00000013 // mem[021]: nop
+00000013 // mem[022]: nop
+
+
+// TC3: ALU test
+
+00A00093 // mem[023]: addi x1,x0,10
+00300113 // mem[024]: addi x2,x0,3
+00000013 // mem[025]: nop
+00000013 // mem[026]: nop
+002081B3 // mem[027]: add  x3,x1,x2
+40208233 // mem[028]: sub  x4,x1,x2
+0020F3B3 // mem[029]: and  x7,x1,x2
+0020E433 // mem[030]: or   x8,x1,x2
+0020C4B3 // mem[031]: xor  x9,x1,x2
+0020A533 // mem[032]: slt  x10,x1,x2
+002095B3 // mem[033]: sll  x11,x1,x2
+0020D633 // mem[034]: srl  x12,x1,x2
+4020D6B3 // mem[035]: sra  x13,x1,x2
+02208733 // mem[036]: mul  x14,x1,x2
+022097B3 // mem[037]: mulh x15,x1,x2
+0220B833 // mem[038]: mulhu x16,x1,x2
+0220C8B3 // mem[039]: div  x17,x1,x2
+0220D933 // mem[040]: divu x18,x1,x2
+0220E9B3 // mem[041]: rem  x19,x1,x2
+0220FA33 // mem[042]: remu x20,x1,x2
+
+00000A93 // mem[043]: addi x21,x0,0         # divisor zero
+0350CB33 // mem[044]: div  x22,x1,x21       # DIV by zero
+0350DBB3 // mem[045]: divu x23,x1,x21       # DIVU by zero
+0350EC33 // mem[046]: rem  x24,x1,x21       # REM by zero
+
+80000CB7 // mem[047]: lui  x25,0x80000      # -2147483648
+FFF00D13 // mem[048]: addi x26,x0,-1
+03ACCDB3 // mem[049]: div  x27,x25,x26      # signed overflow case
+03ACEE33 // mem[050]: rem  x28,x25,x26      # signed overflow case
+
+0002AE83 // mem[051]: lw   x29,0(x5)        # APB read
+00000F17 // mem[052]: auipc x30,0
+00208463 // mem[053]: beq  x1,x2,+8         # not taken
+00000013 // mem[054]: nop
+00108463 // mem[055]: beq  x1,x1,+8         # taken
+05500F93 // mem[056]: addi x31,x0,0x55      # should be skipped
+00000013 // mem[057]: nop
+
+
+// POLLING: wait TX FIFO not full before TC4
+// Status register: 0x40000008, bit[1] = tx_full
+
+00000013 // mem[058]: nop
+00000013 // mem[059]: nop
+00000013 // mem[060]: nop
+00000013 // mem[061]: nop
+00000013 // mem[062]: nop
+00000013 // mem[063]: nop
+00000013 // mem[064]: nop
+00000013 // mem[065]: nop
+
+// TC4: 0x32 + 0x19 = 0x4B, TX ket qua 'K'
+
+03200093 // addi x1,x0,0x32
+01900113 // addi x2,x0,0x19
+00000013
+00000013
+00000013
+00000013
+002081B3 // add x3,x1,x2
+00000013
+00000013
+00000013
+00000013
+00000013
+0032A023 // sw x3,0(x5)
+
+
+
+// TC5: TX chuoi "doan1\n" = 64 6F 61 6E 31 0A
+
+06400313 // mem[075]: addi x6,x0,0x64       # 'd'
+00000013 // mem[076]: nop
+00000013 // mem[077]: nop
+00000013 // mem[078]: nop
+0062A023 // mem[079]: sw   x6,0(x5)         # TX 'd'
+
+06F00313 // mem[080]: addi x6,x0,0x6F       # 'o'
+00000013 // mem[081]: nop
+00000013 // mem[082]: nop
+00000013 // mem[083]: nop
+0062A023 // mem[084]: sw   x6,0(x5)         # TX 'o'
+
+06100313 // mem[085]: addi x6,x0,0x61       # 'a'
+00000013 // mem[086]: nop
+00000013 // mem[087]: nop
+00000013 // mem[088]: nop
+0062A023 // mem[089]: sw   x6,0(x5)         # TX 'a'
+
+06E00313 // mem[090]: addi x6,x0,0x6E       # 'n'
+00000013 // mem[091]: nop
+00000013 // mem[092]: nop
+00000013 // mem[093]: nop
+0062A023 // mem[094]: sw   x6,0(x5)         # TX 'n'
+
+03100313 // mem[095]: addi x6,x0,0x31       # '1'
+00000013 // mem[096]: nop
+00000013 // mem[097]: nop
+00000013 // mem[098]: nop
+0062A023 // mem[099]: sw   x6,0(x5)         # TX '1'
+
+00A00313 // mem[100]: addi x6,x0,0x0A       # '\n'
+00000013 // mem[101]: nop
+00000013 // mem[102]: nop
+00000013 // mem[103]: nop
+0062A023 // mem[104]: sw   x6,0(x5)         # TX '\n'
+
+// ========================================
+// END
+// ========================================
+0000006F // mem[105]: jal x0, 0

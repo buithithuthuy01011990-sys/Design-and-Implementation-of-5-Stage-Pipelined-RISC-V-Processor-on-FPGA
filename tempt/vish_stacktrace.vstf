@@ -1,0 +1,55 @@
+# transcript error: error writing "stdout": broken pipe
+    while executing
+"puts -nonewline stdout $s"
+# Current time Fri Jun 05 22:23:33 2026
+# Program = vish
+# Id = "10.7c"
+# Version = "2018.08"
+# Date = "Aug 18 2018"
+# Platform = win64
+
+Exception c0000005 has occurred at address 55f5ef4a. Traceback:
+# 0    0x55f5ef4a: 'TkSetFocusWin + 0x36a'
+# 1    0x55eff90c: 'Tk_SetGrid + 0x2a7c'
+# 2    0x55f044b4: 'Tk_SetGrid + 0x7624'
+# 3    0x560d6c03: 'TclNRRunCallbacks + 0x63'
+# 4    0xd2a50bfa: 'Itcl_EvalMemberCode + 0x3ba'
+# 5    0xd2a51dbb: 'Itcl_ExecMethod + 0x23b'
+# 6    0xd2a59879: 'Itcl_EvalArgs + 0x1c9'
+# 7    0xd2a54b51: 'Itcl_HandleInstance + 0x2c1'
+# 8    0x560d6c03: 'TclNRRunCallbacks + 0x63'
+# 9    0xd2a50bfa: 'Itcl_EvalMemberCode + 0x3ba'
+# 10   0xd2a51dbb: 'Itcl_ExecMethod + 0x23b'
+# 11   0xd2a59879: 'Itcl_EvalArgs + 0x1c9'
+# 12   0xd2a54b51: 'Itcl_HandleInstance + 0x2c1'
+# 13   0x560d6c03: 'TclNRRunCallbacks + 0x63'
+# 14   0x560d6c03: 'TclNRRunCallbacks + 0x63'
+# 15   0xd2a50bfa: 'Itcl_EvalMemberCode + 0x3ba'
+# 16   0xd2a51dbb: 'Itcl_ExecMethod + 0x23b'
+# 17   0xd2a59879: 'Itcl_EvalArgs + 0x1c9'
+# 18   0xd2a54b51: 'Itcl_HandleInstance + 0x2c1'
+# 19   0x560d6c03: 'TclNRRunCallbacks + 0x63'
+# 20   0x560d586c: 'TclCleanupCommand + 0x88c'
+# 21   0x560d8d4f: 'Tcl_EvalEx + 0x1f'
+# 22   0x55f1431a: 'Tk_BindEvent + 0x91a'
+# 23   0x55f4bd41: 'TkBindEventProc + 0x291'
+# 24   0x55f5c614: 'Tk_HandleEvent + 0x2f4'
+# 25   0x55f5b2da: 'TkDeleteThreadExitHandler + 0x31a'
+# 26   0x5617d41c: 'Tcl_ServiceEvent + 0x9c'
+# 27   0x5617d0b4: 'Tcl_DoOneEvent + 0x124'
+# 28   0x55f5aee5: 'Tk_MainLoop + 0x25'
+# 29   0x55f9d282: 'Tk_MainEx + 0x932'
+# 30   0x401e4590: 'Mtirpc_Init + 0x22a40'
+# 31   0x401e6c38: 'Mtirpc_Init + 0x250e8'
+# 32   0x40626dd7: 'Tclsqlite_Init + 0x5717'
+# 33   0xdec5e957: 'BaseThreadInitThunk + 0x17'
+# 34   0xdfb87c1c: 'RtlUserThreadStart + 0x2c'
+StackWalk failed 0
+# End of Stack Trace
+
+# transcript error: error writing "stdout": broken pipe
+    while executing
+"puts -nonewline stdout $s"
+# transcript error: error writing "stdout": broken pipe
+    while executing
+"puts -nonewline stdout $s"

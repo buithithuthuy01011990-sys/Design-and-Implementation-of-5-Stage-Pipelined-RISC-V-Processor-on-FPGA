@@ -1,0 +1,2215 @@
+QuestaSim-64 vcover 10.7c Coverage Utility 2018.08 Aug 18 2018
+Start time: 22:36:58 on Jun 06,2026
+vcover report -details decode.ucdb 
+Coverage Report by file with details
+
+=================================================================================
+=== File: ALU_Decoder.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            1         1         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file ALU_Decoder.v --
+
+    1                                                module ALU_Decoder (
+    2                                                    input  [1:0] ALUOp,
+    3                                                    input  [2:0] funct3,
+    4                                                    input  [6:0] funct7,
+    5                                                    input  [6:0] Op,
+    6                                                    output [3:0] ALUControl
+    7                                                );
+    8               1                         27         assign ALUControl =
+    9                                                        // ALUOp=00: lw / sw / jal ? ADD
+    10                                                       (ALUOp == 2'b00) ? 4'b0000 :
+    11                                                
+    12                                                       // ALUOp=01: B-type ? SUB
+    13                                                       (ALUOp == 2'b01) ? 4'b0001 :
+    14                                                
+    15                                                       // ALUOp=10: R-type và I-type ALU
+    16                                                       ((ALUOp==2'b10) && (funct3==3'b000) && ({Op[5],funct7[5]}!=2'b11)) ? 4'b0000 : // ADD
+    17                                                       ((ALUOp==2'b10) && (funct3==3'b000) && ({Op[5],funct7[5]}==2'b11)) ? 4'b0001 : // SUB
+    18                                                       ((ALUOp==2'b10) && (funct3==3'b111))                                ? 4'b0010 : // AND
+    19                                                       ((ALUOp==2'b10) && (funct3==3'b110))                                ? 4'b0011 : // OR
+    20                                                       ((ALUOp==2'b10) && (funct3==3'b100))                                ? 4'b0100 : // XOR
+    21                                                       ((ALUOp==2'b10) && (funct3==3'b010))                                ? 4'b0101 : // SLT
+    22                                                       ((ALUOp==2'b10) && (funct3==3'b001))                                ? 4'b0110 : // SLL
+    23                                                       ((ALUOp==2'b10) && (funct3==3'b101) && (funct7[5]==1'b0))          ? 4'b0111 : // SRL
+    24                                                       ((ALUOp==2'b10) && (funct3==3'b101) && (funct7[5]==1'b1))          ? 4'b1000 : // SRA
+    25                                                
+    26                                                       // ALUOp=11: RV32M
+    27                                                       ((ALUOp==2'b11) && (funct3==3'b000))                                ? 4'b1001 : // MUL
+    28                                                       ((ALUOp==2'b11) && (funct3==3'b001))                                ? 4'b1010 : // MULH
+    29                                                       ((ALUOp==2'b11) && (funct3==3'b011))                                ? 4'b1011 : // MULHU
+    30                                                       ((ALUOp==2'b11) && (funct3==3'b100))                                ? 4'b1101 : // DIV
+    31                                                       ((ALUOp==2'b11) && (funct3==3'b101))                                ? 4'b1110 : // DIVU
+    32                                                       ((ALUOp==2'b11) && (funct3==3'b110))                                ? 4'b1111 : // REM
+    33                                                       ((ALUOp==2'b11) && (funct3==3'b111))                                ? 4'b0000 : // REMU
+    34                                                
+    35                                                       4'b0000; // default ADD
+    36                                                
+    37                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        34        24        10     70.58
+
+================================Branch Details================================
+
+Branch Coverage for file ALU_Decoder.v --
+
+------------------------------------IF Branch------------------------------------
+    10                                        25     Count coming in to IF
+    10              1                          7             (ALUOp == 2'b00) ? 4'b0000 :
+    13              1                         18             (ALUOp == 2'b01) ? 4'b0001 :
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    13                                        18     Count coming in to IF
+    13              2                          3             (ALUOp == 2'b01) ? 4'b0001 :
+    16              1                         15             ((ALUOp==2'b10) && (funct3==3'b000) && ({Op[5],funct7[5]}!=2'b11)) ? 4'b0000 : // ADD
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    16                                        15     Count coming in to IF
+    16              2                          8             ((ALUOp==2'b10) && (funct3==3'b000) && ({Op[5],funct7[5]}!=2'b11)) ? 4'b0000 : // ADD
+    17              1                          7             ((ALUOp==2'b10) && (funct3==3'b000) && ({Op[5],funct7[5]}==2'b11)) ? 4'b0001 : // SUB
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    17                                         8     Count coming in to IF
+    17              2                          1             ((ALUOp==2'b10) && (funct3==3'b000) && ({Op[5],funct7[5]}==2'b11)) ? 4'b0001 : // SUB
+    18              1                          7             ((ALUOp==2'b10) && (funct3==3'b111))                                ? 4'b0010 : // AND
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    18                                         7     Count coming in to IF
+    18              2                          1             ((ALUOp==2'b10) && (funct3==3'b111))                                ? 4'b0010 : // AND
+    19              1                          6             ((ALUOp==2'b10) && (funct3==3'b110))                                ? 4'b0011 : // OR
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    19                                         6     Count coming in to IF
+    19              2                          2             ((ALUOp==2'b10) && (funct3==3'b110))                                ? 4'b0011 : // OR
+    20              1                          4             ((ALUOp==2'b10) && (funct3==3'b100))                                ? 4'b0100 : // XOR
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    20                                         4     Count coming in to IF
+    20              2                          2             ((ALUOp==2'b10) && (funct3==3'b100))                                ? 4'b0100 : // XOR
+    21              1                          2             ((ALUOp==2'b10) && (funct3==3'b010))                                ? 4'b0101 : // SLT
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    21                                         2     Count coming in to IF
+    21              2                          1             ((ALUOp==2'b10) && (funct3==3'b010))                                ? 4'b0101 : // SLT
+    22              1                          1             ((ALUOp==2'b10) && (funct3==3'b001))                                ? 4'b0110 : // SLL
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    22                                         1     Count coming in to IF
+    22              2                    ***0***             ((ALUOp==2'b10) && (funct3==3'b001))                                ? 4'b0110 : // SLL
+    23              1                          1             ((ALUOp==2'b10) && (funct3==3'b101) && (funct7[5]==1'b0))          ? 4'b0111 : // SRL
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    23                                         1     Count coming in to IF
+    23              2                    ***0***             ((ALUOp==2'b10) && (funct3==3'b101) && (funct7[5]==1'b0))          ? 4'b0111 : // SRL
+    24              1                          1             ((ALUOp==2'b10) && (funct3==3'b101) && (funct7[5]==1'b1))          ? 4'b1000 : // SRA
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    24                                         1     Count coming in to IF
+    24              2                    ***0***             ((ALUOp==2'b10) && (funct3==3'b101) && (funct7[5]==1'b1))          ? 4'b1000 : // SRA
+    27              1                          1             ((ALUOp==2'b11) && (funct3==3'b000))                                ? 4'b1001 : // MUL
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    27                                   ***0***     Count coming in to IF
+    27              2                    ***0***             ((ALUOp==2'b11) && (funct3==3'b000))                                ? 4'b1001 : // MUL
+    28              1                    ***0***             ((ALUOp==2'b11) && (funct3==3'b001))                                ? 4'b1010 : // MULH
+Branch totals: 0 hits of 2 branches = 0.00%
+
+------------------------------------IF Branch------------------------------------
+    28                                         1     Count coming in to IF
+    28              2                    ***0***             ((ALUOp==2'b11) && (funct3==3'b001))                                ? 4'b1010 : // MULH
+    29              1                          1             ((ALUOp==2'b11) && (funct3==3'b011))                                ? 4'b1011 : // MULHU
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    29                                         1     Count coming in to IF
+    29              2                    ***0***             ((ALUOp==2'b11) && (funct3==3'b011))                                ? 4'b1011 : // MULHU
+    30              1                          1             ((ALUOp==2'b11) && (funct3==3'b100))                                ? 4'b1101 : // DIV
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    30                                         1     Count coming in to IF
+    30              2                    ***0***             ((ALUOp==2'b11) && (funct3==3'b100))                                ? 4'b1101 : // DIV
+    31              1                          1             ((ALUOp==2'b11) && (funct3==3'b101))                                ? 4'b1110 : // DIVU
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    31                                         1     Count coming in to IF
+    31              2                    ***0***             ((ALUOp==2'b11) && (funct3==3'b101))                                ? 4'b1110 : // DIVU
+    32              1                          1             ((ALUOp==2'b11) && (funct3==3'b110))                                ? 4'b1111 : // REM
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    32                                         1     Count coming in to IF
+    32              2                    ***0***             ((ALUOp==2'b11) && (funct3==3'b110))                                ? 4'b1111 : // REM
+    33              1                          1             ((ALUOp==2'b11) && (funct3==3'b111))                                ? 4'b0000 : // REMU
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms             38         8        30     21.05
+
+================================Condition Details================================
+
+Condition Coverage for file ALU_Decoder.v --
+
+----------------Focused Condition View-------------------
+Line       10 Item    1  (ALUOp == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       13 Item    1  (ALUOp == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       16 Item    1  (((ALUOp == 2) && (funct3 == 0)) && (InstrD[30] ~& InstrD[5]))
+Condition totals: 2 of 4 input terms covered = 50.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  '_0' not hit             Hit '_0'
+  (funct3 == 0)         Y
+     InstrD[30]         Y
+      InstrD[5]         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:          1  (ALUOp == 2)_1        ((InstrD[30] ~& InstrD[5]) && (funct3 == 0))
+  Row   3:          1  (funct3 == 0)_0       (ALUOp == 2)                  
+  Row   4:          1  (funct3 == 0)_1       ((InstrD[30] ~& InstrD[5]) && (ALUOp == 2))
+  Row   5:          1  InstrD[30]_0          (((ALUOp == 2) && (funct3 == 0)) && InstrD[5])
+  Row   6:          1  InstrD[30]_1          (((ALUOp == 2) && (funct3 == 0)) && InstrD[5])
+  Row   7:    ***0***  InstrD[5]_0           (((ALUOp == 2) && (funct3 == 0)) && InstrD[30])
+  Row   8:          1  InstrD[5]_1           (((ALUOp == 2) && (funct3 == 0)) && InstrD[30])
+
+----------------Focused Condition View-------------------
+Line       17 Item    1  ((((ALUOp == 2) && (funct3 == 0)) && InstrD[30]) && InstrD[5])
+Condition totals: 1 of 4 input terms covered = 25.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  '_0' not hit             Hit '_0'
+  (funct3 == 0)         Y
+     InstrD[30]         N  '_0' not hit             Hit '_0'
+      InstrD[5]         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:          1  (ALUOp == 2)_1        (InstrD[5] && InstrD[30] && (funct3 == 0))
+  Row   3:          1  (funct3 == 0)_0       (ALUOp == 2)                  
+  Row   4:          1  (funct3 == 0)_1       (InstrD[5] && InstrD[30] && (ALUOp == 2))
+  Row   5:    ***0***  InstrD[30]_0          ((ALUOp == 2) && (funct3 == 0))
+  Row   6:          1  InstrD[30]_1          (InstrD[5] && ((ALUOp == 2) && (funct3 == 0)))
+  Row   7:    ***0***  InstrD[5]_0           (((ALUOp == 2) && (funct3 == 0)) && InstrD[30])
+  Row   8:          1  InstrD[5]_1           (((ALUOp == 2) && (funct3 == 0)) && InstrD[30])
+
+----------------Focused Condition View-------------------
+Line       18 Item    1  ((ALUOp == 2) && (funct3 == 7))
+Condition totals: 1 of 2 input terms covered = 50.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  '_0' not hit             Hit '_0'
+  (funct3 == 7)         Y
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:          1  (ALUOp == 2)_1        (funct3 == 7)                 
+  Row   3:          1  (funct3 == 7)_0       (ALUOp == 2)                  
+  Row   4:          1  (funct3 == 7)_1       (ALUOp == 2)                  
+
+----------------Focused Condition View-------------------
+Line       19 Item    1  ((ALUOp == 2) && (funct3 == 6))
+Condition totals: 1 of 2 input terms covered = 50.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  '_0' not hit             Hit '_0'
+  (funct3 == 6)         Y
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:          1  (ALUOp == 2)_1        (funct3 == 6)                 
+  Row   3:          1  (funct3 == 6)_0       (ALUOp == 2)                  
+  Row   4:          1  (funct3 == 6)_1       (ALUOp == 2)                  
+
+----------------Focused Condition View-------------------
+Line       20 Item    1  ((ALUOp == 2) && (funct3 == 4))
+Condition totals: 1 of 2 input terms covered = 50.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  '_0' not hit             Hit '_0'
+  (funct3 == 4)         Y
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:          1  (ALUOp == 2)_1        (funct3 == 4)                 
+  Row   3:          1  (funct3 == 4)_0       (ALUOp == 2)                  
+  Row   4:          1  (funct3 == 4)_1       (ALUOp == 2)                  
+
+----------------Focused Condition View-------------------
+Line       21 Item    1  ((ALUOp == 2) && (funct3 == 2))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  '_0' not hit             Hit '_0'
+  (funct3 == 2)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:          1  (ALUOp == 2)_1        (funct3 == 2)                 
+  Row   3:    ***0***  (funct3 == 2)_0       (ALUOp == 2)                  
+  Row   4:          1  (funct3 == 2)_1       (ALUOp == 2)                  
+
+----------------Focused Condition View-------------------
+Line       22 Item    1  ((ALUOp == 2) && (funct3 == 1))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 1)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:    ***0***  (ALUOp == 2)_1        (funct3 == 1)                 
+  Row   3:    ***0***  (funct3 == 1)_0       (ALUOp == 2)                  
+  Row   4:    ***0***  (funct3 == 1)_1       (ALUOp == 2)                  
+
+----------------Focused Condition View-------------------
+Line       23 Item    1  ((~InstrD[30] && (ALUOp == 2)) && (funct3 == 5))
+Condition totals: 0 of 3 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+     InstrD[30]         N  No hits                  Hit '_0' and '_1'
+   (ALUOp == 2)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 5)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  InstrD[30]_0          ((funct3 == 5) && (ALUOp == 2))
+  Row   2:    ***0***  InstrD[30]_1          -                             
+  Row   3:    ***0***  (ALUOp == 2)_0        ~InstrD[30]                   
+  Row   4:    ***0***  (ALUOp == 2)_1        ((funct3 == 5) && ~InstrD[30])
+  Row   5:    ***0***  (funct3 == 5)_0       (~InstrD[30] && (ALUOp == 2)) 
+  Row   6:    ***0***  (funct3 == 5)_1       (~InstrD[30] && (ALUOp == 2)) 
+
+----------------Focused Condition View-------------------
+Line       24 Item    1  (((ALUOp == 2) && (funct3 == 5)) && InstrD[30])
+Condition totals: 0 of 3 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 2)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 5)         N  No hits                  Hit '_0' and '_1'
+     InstrD[30]         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 2)_0        -                             
+  Row   2:    ***0***  (ALUOp == 2)_1        (InstrD[30] && (funct3 == 5)) 
+  Row   3:    ***0***  (funct3 == 5)_0       (ALUOp == 2)                  
+  Row   4:    ***0***  (funct3 == 5)_1       (InstrD[30] && (ALUOp == 2))  
+  Row   5:    ***0***  InstrD[30]_0          ((ALUOp == 2) && (funct3 == 5))
+  Row   6:    ***0***  InstrD[30]_1          ((ALUOp == 2) && (funct3 == 5))
+
+----------------Focused Condition View-------------------
+Line       27 Item    1  ((ALUOp == 3) && (funct3 == 0))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 3)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 0)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 3)_0        -                             
+  Row   2:    ***0***  (ALUOp == 3)_1        (funct3 == 0)                 
+  Row   3:    ***0***  (funct3 == 0)_0       (ALUOp == 3)                  
+  Row   4:    ***0***  (funct3 == 0)_1       (ALUOp == 3)                  
+
+----------------Focused Condition View-------------------
+Line       28 Item    1  ((ALUOp == 3) && (funct3 == 1))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 3)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 1)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 3)_0        -                             
+  Row   2:    ***0***  (ALUOp == 3)_1        (funct3 == 1)                 
+  Row   3:    ***0***  (funct3 == 1)_0       (ALUOp == 3)                  
+  Row   4:    ***0***  (funct3 == 1)_1       (ALUOp == 3)                  
+
+----------------Focused Condition View-------------------
+Line       29 Item    1  ((ALUOp == 3) && (funct3 == 3))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 3)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 3)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 3)_0        -                             
+  Row   2:    ***0***  (ALUOp == 3)_1        (funct3 == 3)                 
+  Row   3:    ***0***  (funct3 == 3)_0       (ALUOp == 3)                  
+  Row   4:    ***0***  (funct3 == 3)_1       (ALUOp == 3)                  
+
+----------------Focused Condition View-------------------
+Line       30 Item    1  ((ALUOp == 3) && (funct3 == 4))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 3)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 4)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 3)_0        -                             
+  Row   2:    ***0***  (ALUOp == 3)_1        (funct3 == 4)                 
+  Row   3:    ***0***  (funct3 == 4)_0       (ALUOp == 3)                  
+  Row   4:    ***0***  (funct3 == 4)_1       (ALUOp == 3)                  
+
+----------------Focused Condition View-------------------
+Line       31 Item    1  ((ALUOp == 3) && (funct3 == 5))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 3)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 5)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 3)_0        -                             
+  Row   2:    ***0***  (ALUOp == 3)_1        (funct3 == 5)                 
+  Row   3:    ***0***  (funct3 == 5)_0       (ALUOp == 3)                  
+  Row   4:    ***0***  (funct3 == 5)_1       (ALUOp == 3)                  
+
+----------------Focused Condition View-------------------
+Line       32 Item    1  ((ALUOp == 3) && (funct3 == 6))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+   (ALUOp == 3)         N  No hits                  Hit '_0' and '_1'
+  (funct3 == 6)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ALUOp == 3)_0        -                             
+  Row   2:    ***0***  (ALUOp == 3)_1        (funct3 == 6)                 
+  Row   3:    ***0***  (funct3 == 6)_0       (ALUOp == 3)                  
+  Row   4:    ***0***  (funct3 == 6)_1       (ALUOp == 3)                  
+
+
+
+=================================================================================
+=== File: Main_Decoder.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            8         8         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file Main_Decoder.v --
+
+    1                                                module Main_Decoder(
+    2                                                    input  [6:0] Op,
+    3                                                    output       RegWrite,
+    4                                                    output [2:0] ImmSrc,    // ? ??i t? [1:0] sang [2:0]
+    5                                                    output       ALUSrc,
+    6                                                    output       MemWrite,
+    7                                                    output [1:0] ResultSrc,
+    8                                                    output       Branch,
+    9                                                    output       Jump,
+    10                                                   output [1:0] ALUOp
+    11                                               );
+    12                                               
+    13              1                         22     assign RegWrite =
+    14                                                   (Op == 7'b0000011 |   // lw
+    15                                                    Op == 7'b0110011 |   // R-type
+    16                                                    Op == 7'b0010011 |   // I-type
+    17                                                    Op == 7'b1101111 |   // JAL
+    18                                                    Op == 7'b0110111 |   // LUI
+    19                                                    Op == 7'b0010111) ?  // AUIPC
+    20                                                    1'b1 : 1'b0;
+    21                                               
+    22              1                         22     assign ImmSrc =
+    23                                                   (Op == 7'b0100011) ? 3'b001 :  // S-type
+    24                                                   (Op == 7'b1100011) ? 3'b010 :  // B-type
+    25                                                   (Op == 7'b1101111) ? 3'b011 :  // J-type
+    26                                                   (Op == 7'b0110111) ? 3'b100 :  // LUI   ? THÊM
+    27                                                   (Op == 7'b0010111) ? 3'b100 :  // AUIPC ? THÊM
+    28                                                                        3'b000 ;  // I-type default
+    29                                               
+    30              1                         22     assign ALUSrc =
+    31                                                   (Op == 7'b0000011 |   // lw
+    32                                                    Op == 7'b0100011 |   // sw
+    33                                                    Op == 7'b0010011 |   // I-type
+    34                                                    Op == 7'b0110111 |   // LUI
+    35                                                    Op == 7'b0010111) ?  // AUIPC
+    36                                                    1'b1 : 1'b0;
+    37                                               
+    38              1                         22     assign MemWrite  = (Op == 7'b0100011) ? 1'b1 : 1'b0;
+    39                                               
+    40              1                         22     assign ResultSrc =
+    41                                                   (Op == 7'b0000011) ? 2'b01 :  // lw
+    42                                                   (Op == 7'b1101111) ? 2'b10 :  // JAL
+    43                                                                        2'b00 ;
+    44                                               
+    45              1                         22     assign Branch = (Op == 7'b1100011) ? 1'b1 : 1'b0;
+    46              1                         22     assign Jump   = (Op == 7'b1101111) ? 1'b1 : 1'b0;
+    47                                               
+    48              1                         22     assign ALUOp =
+    49                                                   (Op == 7'b0110011) ? 2'b10 :  // R-type
+    50                                                   (Op == 7'b0010011) ? 2'b10 :  // I-type ALU
+    51                                                   (Op == 7'b1100011) ? 2'b01 :  // B-type
+    52                                                                        2'b00 ;  // lw/sw/jal/LUI/AUIPC ? ADD
+    53                                               
+    54                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        20        18         2     90.00
+
+================================Branch Details================================
+
+Branch Coverage for file Main_Decoder.v --
+
+------------------------------------IF Branch------------------------------------
+    23                                        21     Count coming in to IF
+    23              1                          2         (Op == 7'b0100011) ? 3'b001 :  // S-type
+    24              1                         19         (Op == 7'b1100011) ? 3'b010 :  // B-type
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    24                                        19     Count coming in to IF
+    24              2                          2         (Op == 7'b1100011) ? 3'b010 :  // B-type
+    25              1                         17         (Op == 7'b1101111) ? 3'b011 :  // J-type
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    25                                        17     Count coming in to IF
+    25              2                          1         (Op == 7'b1101111) ? 3'b011 :  // J-type
+    26              1                         16         (Op == 7'b0110111) ? 3'b100 :  // LUI   ? THÊM
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    26                                        16     Count coming in to IF
+    26              2                    ***0***         (Op == 7'b0110111) ? 3'b100 :  // LUI   ? THÊM
+    27              1                         16         (Op == 7'b0010111) ? 3'b100 :  // AUIPC ? THÊM
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    27                                        16     Count coming in to IF
+    27              2                    ***0***         (Op == 7'b0010111) ? 3'b100 :  // AUIPC ? THÊM
+    28              1                         16                              3'b000 ;  // I-type default
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    41                                        21     Count coming in to IF
+    41              1                          2         (Op == 7'b0000011) ? 2'b01 :  // lw
+    42              1                         19         (Op == 7'b1101111) ? 2'b10 :  // JAL
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    42                                        19     Count coming in to IF
+    42              2                          1         (Op == 7'b1101111) ? 2'b10 :  // JAL
+    43              1                         18                              2'b00 ;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    49                                        21     Count coming in to IF
+    49              1                          7         (Op == 7'b0110011) ? 2'b10 :  // R-type
+    50              1                         14         (Op == 7'b0010011) ? 2'b10 :  // I-type ALU
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    50                                        14     Count coming in to IF
+    50              2                          7         (Op == 7'b0010011) ? 2'b10 :  // I-type ALU
+    51              1                          7         (Op == 7'b1100011) ? 2'b01 :  // B-type
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    51                                         7     Count coming in to IF
+    51              2                          2         (Op == 7'b1100011) ? 2'b01 :  // B-type
+    52              1                          5                              2'b00 ;  // lw/sw/jal/LUI/AUIPC ? ADD
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms             10         8         2     80.00
+
+================================Condition Details================================
+
+Condition Coverage for file Main_Decoder.v --
+
+----------------Focused Condition View-------------------
+Line       23 Item    1  (Op == 35)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       24 Item    1  (Op == 99)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       25 Item    1  (Op == 111)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       26 Item    1  (Op == 55)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+  Input Term   Covered  Reason for no coverage   Hint
+ -----------  --------  -----------------------  --------------
+  (Op == 55)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (Op == 55)_0          -                             
+  Row   2:    ***0***  (Op == 55)_1          -                             
+
+----------------Focused Condition View-------------------
+Line       27 Item    1  (Op == 23)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+  Input Term   Covered  Reason for no coverage   Hint
+ -----------  --------  -----------------------  --------------
+  (Op == 23)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (Op == 23)_0          -                             
+  Row   2:    ***0***  (Op == 23)_1          -                             
+
+----------------Focused Condition View-------------------
+Line       41 Item    1  (Op == 3)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       42 Item    1  (Op == 111)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       49 Item    1  (Op == 51)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       50 Item    1  (Op == 19)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       51 Item    1  (Op == 99)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+
+Expression Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Expression Terms            14        10         4     71.42
+
+================================Expression Details================================
+
+Expression Coverage for file Main_Decoder.v --
+
+----------------Focused Expression View-----------------
+Line       14 Item    1  ((((((Op == 3) | (Op == 51)) | (Op == 19)) | (Op == 111)) | (Op == 55)) | (Op == 23))
+Expression totals: 4 of 6 input terms covered = 66.66%
+
+   Input Term   Covered  Reason for no coverage   Hint
+  -----------  --------  -----------------------  --------------
+    (Op == 3)         Y
+   (Op == 51)         Y
+   (Op == 19)         Y
+  (Op == 111)         Y
+   (Op == 55)         N  '_1' not hit             Hit '_1'
+   (Op == 23)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (Op == 3)_0           (~(Op == 23) && ~(Op == 55) && ~(Op == 111) && ~(Op == 19) && ~(Op == 51))
+  Row   2:          1  (Op == 3)_1           (~(Op == 23) && ~(Op == 55) && ~(Op == 111) && ~(Op == 19) && ~(Op == 51))
+  Row   3:          1  (Op == 51)_0          (~(Op == 23) && ~(Op == 55) && ~(Op == 111) && ~(Op == 19) && ~(Op == 3))
+  Row   4:          1  (Op == 51)_1          (~(Op == 23) && ~(Op == 55) && ~(Op == 111) && ~(Op == 19) && ~(Op == 3))
+  Row   5:          1  (Op == 19)_0          (~(Op == 23) && ~(Op == 55) && ~(Op == 111) && ~((Op == 3) | (Op == 51)))
+  Row   6:          1  (Op == 19)_1          (~(Op == 23) && ~(Op == 55) && ~(Op == 111) && ~((Op == 3) | (Op == 51)))
+  Row   7:          1  (Op == 111)_0         (~(Op == 23) && ~(Op == 55) && ~(((Op == 3) | (Op == 51)) | (Op == 19)))
+  Row   8:          1  (Op == 111)_1         (~(Op == 23) && ~(Op == 55) && ~(((Op == 3) | (Op == 51)) | (Op == 19)))
+  Row   9:          1  (Op == 55)_0          (~(Op == 23) && ~((((Op == 3) | (Op == 51)) | (Op == 19)) | (Op == 111)))
+ Row   10:    ***0***  (Op == 55)_1          (~(Op == 23) && ~((((Op == 3) | (Op == 51)) | (Op == 19)) | (Op == 111)))
+ Row   11:          1  (Op == 23)_0          ~(((((Op == 3) | (Op == 51)) | (Op == 19)) | (Op == 111)) | (Op == 55))
+ Row   12:    ***0***  (Op == 23)_1          ~(((((Op == 3) | (Op == 51)) | (Op == 19)) | (Op == 111)) | (Op == 55))
+
+----------------Focused Expression View-----------------
+Line       31 Item    1  (((((Op == 3) | (Op == 35)) | (Op == 19)) | (Op == 55)) | (Op == 23))
+Expression totals: 3 of 5 input terms covered = 60.00%
+
+  Input Term   Covered  Reason for no coverage   Hint
+ -----------  --------  -----------------------  --------------
+   (Op == 3)         Y
+  (Op == 35)         Y
+  (Op == 19)         Y
+  (Op == 55)         N  '_1' not hit             Hit '_1'
+  (Op == 23)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (Op == 3)_0           (~(Op == 23) && ~(Op == 55) && ~(Op == 19) && ~(Op == 35))
+  Row   2:          1  (Op == 3)_1           (~(Op == 23) && ~(Op == 55) && ~(Op == 19) && ~(Op == 35))
+  Row   3:          1  (Op == 35)_0          (~(Op == 23) && ~(Op == 55) && ~(Op == 19) && ~(Op == 3))
+  Row   4:          1  (Op == 35)_1          (~(Op == 23) && ~(Op == 55) && ~(Op == 19) && ~(Op == 3))
+  Row   5:          1  (Op == 19)_0          (~(Op == 23) && ~(Op == 55) && ~((Op == 3) | (Op == 35)))
+  Row   6:          1  (Op == 19)_1          (~(Op == 23) && ~(Op == 55) && ~((Op == 3) | (Op == 35)))
+  Row   7:          1  (Op == 55)_0          (~(Op == 23) && ~(((Op == 3) | (Op == 35)) | (Op == 19)))
+  Row   8:    ***0***  (Op == 55)_1          (~(Op == 23) && ~(((Op == 3) | (Op == 35)) | (Op == 19)))
+  Row   9:          1  (Op == 23)_0          ~((((Op == 3) | (Op == 35)) | (Op == 19)) | (Op == 55))
+ Row   10:    ***0***  (Op == 23)_1          ~((((Op == 3) | (Op == 35)) | (Op == 19)) | (Op == 55))
+
+----------------Focused Expression View-----------------
+Line       38 Item    1  (Op == 35)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       45 Item    1  (Op == 99)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       46 Item    1  (Op == 111)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+
+
+=================================================================================
+=== File: control_unit.v
+=================================================================================
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                      4         4         0    100.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File control_unit.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+
+Total Node Count     =          2 
+Toggled Node Count   =          2 
+Untoggled Node Count =          0 
+
+Toggle Coverage      =     100.00% (4 of 4 bins)
+
+=================================================================================
+=== File: decode.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           33        33         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file decode.v --
+
+    1                                                module decode_cycle(clk, reset,
+    2                                                    FlushE,          
+    3                                                    InstrD, PCD, PCPlus4D, RegWriteW, RDW, ResultW, RegWriteE, ALUSrcE, MemWriteE, ResultSrcE,
+    4                                                    BranchE, JumpE, ALUControlE, RD1_E, RD2_E, Imm_Ext_E, RD_E, PCE, PCPlus4E, 
+    5                                                    RS1_E, RS2_E, Rs1_D_out, Rs2_D_out);
+    6                                                
+    7                                                    input clk, reset, RegWriteW;
+    8                                                    input FlushE;           
+    9                                                    input [4:0] RDW;
+    10                                                   input [31:0] InstrD, PCD, PCPlus4D, ResultW;
+    11                                               
+    12                                                   output RegWriteE, ALUSrcE, MemWriteE, BranchE, JumpE;
+    13                                                   output [1:0]  ResultSrcE;
+    14                                                   output [3:0] ALUControlE;
+    15                                                   output [31:0] RD1_E, RD2_E, Imm_Ext_E;
+    16                                                   output [4:0] RS1_E, RS2_E, RD_E;
+    17                                                   output [31:0] PCE, PCPlus4E;
+    18                                                   output [4:0] Rs1_D_out, Rs2_D_out; 
+    19                                                  
+    20                                                   wire RegWriteD, ALUSrcD, MemWriteD, BranchD, JumpD;
+    21                                                   wire [1:0]  ResultSrcD; 
+    22                                                   wire [2:0] ImmSrcD;
+    23                                                   wire [3:0] ALUControlD;
+    24                                                   wire [31:0] RD1_D, RD2_D, Imm_Ext_D;
+    25                                               
+    26                                                   reg RegWriteD_r, ALUSrcD_r, MemWriteD_r, BranchD_r;
+    27                                                   reg [1:0]  ResultSrcD_r;
+    28                                                   reg [3:0] ALUControlD_r;
+    29                                                   reg [31:0] RD1_D_r, RD2_D_r, Imm_Ext_D_r;
+    30                                                   reg [4:0] RD_D_r, RS1_D_r, RS2_D_r;
+    31                                                   reg [31:0] PCD_r, PCPlus4D_r;
+    32                                                   reg JumpD_r;
+    33                                               
+    34                                                   Control_Unit_Top control (
+    35                                                       .Op(InstrD[6:0]),
+    36                                                       .RegWrite(RegWriteD),
+    37                                                       .ImmSrc(ImmSrcD),
+    38                                                       .ALUSrc(ALUSrcD),
+    39                                                       .MemWrite(MemWriteD),
+    40                                                       .ResultSrc(ResultSrcD),
+    41                                                       .Branch(BranchD),
+    42                                                       .Jump(JumpD),
+    43                                                       .funct3(InstrD[14:12]),
+    44                                                       .funct7(InstrD[31:25]),
+    45                                                       .ALUControl(ALUControlD)
+    46                                                   );
+    47                                               
+    48                                                   Register_File rf (
+    49                                                       .clk(clk),
+    50                                                       .reset(reset),
+    51                                                       .WE3(RegWriteW),
+    52                                                       .WD3(ResultW),
+    53                                                       .A1(InstrD[19:15]),
+    54                                                       .A2(InstrD[24:20]),
+    55                                                       .A3(RDW),
+    56                                                       .RD1(RD1_D),
+    57                                                       .RD2(RD2_D)
+    58                                                   );
+    59                                               
+    60                                                   extend extension (
+    61                                                       .In(InstrD[31:0]),
+    62                                                       .Imm_Ext(Imm_Ext_D),
+    63                                                       .ImmSrc(ImmSrcD)
+    64                                                   );
+    65                                               
+    66                                                   // ?? ID/EX Pipeline Register ??????????????????????????????
+    67              1                         24         always @(posedge clk or posedge reset) begin
+    68                                                       if (reset || FlushE) begin   
+    69              1                          4                 RegWriteD_r  <= 1'b0;
+    70              1                          4                 ALUSrcD_r    <= 1'b0;
+    71              1                          4                 MemWriteD_r  <= 1'b0;
+    72              1                          4                 ResultSrcD_r <= 2'b00;
+    73              1                          4                 BranchD_r    <= 1'b0;
+    74              1                          4                 JumpD_r      <= 1'b0;
+    75              1                          4                 ALUControlD_r<= 4'b0000;  
+    76              1                          4                 RD1_D_r      <= 32'h0;
+    77              1                          4                 RD2_D_r      <= 32'h0;
+    78              1                          4                 Imm_Ext_D_r  <= 32'h0;
+    79              1                          4                 RD_D_r       <= 5'h0;
+    80              1                          4                 PCD_r        <= 32'h0;
+    81              1                          4                 PCPlus4D_r   <= 32'h0;
+    82              1                          4                 RS1_D_r      <= 5'h0;
+    83              1                          4                 RS2_D_r      <= 5'h0;
+    84                                                       end
+    85                                                       else begin                   
+    86              1                         20                 RegWriteD_r  <= RegWriteD;
+    87              1                         20                 ALUSrcD_r    <= ALUSrcD;
+    88              1                         20                 MemWriteD_r  <= MemWriteD;
+    89              1                         20                 ResultSrcD_r <= ResultSrcD;
+    90              1                         20                 BranchD_r    <= BranchD;
+    91              1                         20                 JumpD_r      <= JumpD;
+    92              1                         20                 ALUControlD_r<= ALUControlD;
+    93              1                         20                 RD1_D_r      <= RD1_D;
+    94              1                         20                 RD2_D_r      <= RD2_D;
+    95              1                         20                 Imm_Ext_D_r  <= Imm_Ext_D;
+    96              1                         20                 RD_D_r       <= InstrD[11:7];
+    97              1                         20                 PCD_r        <= PCD;
+    98              1                         20                 PCPlus4D_r   <= PCPlus4D;
+    99              1                         20                 RS1_D_r      <= InstrD[19:15];
+    100             1                         20                 RS2_D_r      <= InstrD[24:20];
+    101                                                      end
+    102                                                  end
+    103                                              
+    104                                                  assign RegWriteE  = RegWriteD_r;
+    105                                                  assign ALUSrcE    = ALUSrcD_r;
+    106                                                  assign MemWriteE  = MemWriteD_r;
+    107                                                  assign ResultSrcE = ResultSrcD_r;
+    108                                                  assign BranchE    = BranchD_r;
+    109                                                  assign JumpE      = JumpD_r;
+    110                                                  assign ALUControlE= ALUControlD_r;
+    111                                                  assign RD1_E      = RD1_D_r;
+    112                                                  assign RD2_E      = RD2_D_r;
+    113                                                  assign Imm_Ext_E  = Imm_Ext_D_r;
+    114                                                  assign RD_E       = RD_D_r;
+    115                                                  assign PCE        = PCD_r;
+    116                                                  assign PCPlus4E   = PCPlus4D_r;
+    117                                                  assign RS1_E      = RS1_D_r;
+    118                                                  assign RS2_E      = RS2_D_r;
+    119             1                         22         assign Rs1_D_out  = InstrD[19:15];
+    120             1                         22         assign Rs2_D_out  = InstrD[24:20];
+    121                                              
+    122                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         2         2         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file decode.v --
+
+------------------------------------IF Branch------------------------------------
+    68                                        24     Count coming in to IF
+    68              1                          4             if (reset || FlushE) begin   
+    85              1                         20             else begin                   
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              2         0         2      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file decode.v --
+
+----------------Focused Condition View-------------------
+Line       68 Item    1  (reset || FlushE)
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+  Input Term   Covered  Reason for no coverage   Hint
+ -----------  --------  -----------------------  --------------
+       reset         N  '_0' not hit             Hit '_0'
+      FlushE         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  reset_0               ~FlushE                       
+  Row   2:          1  reset_1               -                             
+  Row   3:    ***0***  FlushE_0              ~reset                        
+  Row   4:    ***0***  FlushE_1              ~reset                        
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    594       368       226     61.95
+
+================================Toggle Details================================
+
+Toggle Coverage for File decode.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          8                                 FlushE           0           0        0.00 
+         22                             ImmSrcD[2]           0           0        0.00 
+         23                         ALUControlD[3]           0           0        0.00 
+         24                               RD2_D[9]           0           0        0.00 
+         24                               RD2_D[8]           0           0        0.00 
+         24                               RD2_D[7]           0           0        0.00 
+         24                               RD2_D[6]           0           0        0.00 
+         24                               RD2_D[5]           0           0        0.00 
+         24                               RD2_D[3]           0           0        0.00 
+         24                              RD2_D[31]           0           0        0.00 
+         24                              RD2_D[30]           0           0        0.00 
+         24                               RD2_D[2]           0           0        0.00 
+         24                              RD2_D[29]           0           0        0.00 
+         24                              RD2_D[28]           0           0        0.00 
+         24                              RD2_D[27]           0           0        0.00 
+         24                              RD2_D[26]           0           0        0.00 
+         24                              RD2_D[25]           0           0        0.00 
+         24                              RD2_D[24]           0           0        0.00 
+         24                              RD2_D[23]           0           0        0.00 
+         24                              RD2_D[22]           0           0        0.00 
+         24                              RD2_D[21]           0           0        0.00 
+         24                              RD2_D[20]           0           0        0.00 
+         24                               RD2_D[1]           0           0        0.00 
+         24                              RD2_D[19]           0           0        0.00 
+         24                              RD2_D[18]           0           0        0.00 
+         24                              RD2_D[17]           0           0        0.00 
+         24                              RD2_D[16]           0           0        0.00 
+         24                              RD2_D[15]           0           0        0.00 
+         24                              RD2_D[14]           0           0        0.00 
+         24                              RD2_D[13]           0           0        0.00 
+         24                              RD2_D[12]           0           0        0.00 
+         24                              RD2_D[11]           0           0        0.00 
+         24                              RD2_D[10]           0           0        0.00 
+         24                               RD2_D[0]           0           0        0.00 
+         24                               RD1_D[8]           0           0        0.00 
+         24                               RD1_D[7]           0           0        0.00 
+         24                               RD1_D[6]           0           1       50.00 
+         24                               RD1_D[3]           0           1       50.00 
+         24                              RD1_D[30]           0           0        0.00 
+         24                              RD1_D[28]           0           1       50.00 
+         24                              RD1_D[26]           0           0        0.00 
+         24                              RD1_D[21]           0           1       50.00 
+         24                              RD1_D[20]           0           1       50.00 
+         24                               RD1_D[1]           0           0        0.00 
+         24                              RD1_D[17]           0           0        0.00 
+         24                              RD1_D[15]           0           0        0.00 
+         24                              RD1_D[14]           0           1       50.00 
+         24                              RD1_D[13]           0           0        0.00 
+         24                              RD1_D[11]           0           0        0.00 
+         24                              RD1_D[10]           0           1       50.00 
+         24                               RD1_D[0]           0           0        0.00 
+         28                       ALUControlD_r[3]           0           0        0.00 
+         29                             RD2_D_r[9]           0           0        0.00 
+         29                             RD2_D_r[8]           0           0        0.00 
+         29                             RD2_D_r[7]           0           0        0.00 
+         29                             RD2_D_r[6]           0           0        0.00 
+         29                             RD2_D_r[5]           0           0        0.00 
+         29                             RD2_D_r[3]           0           0        0.00 
+         29                            RD2_D_r[31]           0           0        0.00 
+         29                            RD2_D_r[30]           0           0        0.00 
+         29                             RD2_D_r[2]           0           0        0.00 
+         29                            RD2_D_r[29]           0           0        0.00 
+         29                            RD2_D_r[28]           0           0        0.00 
+         29                            RD2_D_r[27]           0           0        0.00 
+         29                            RD2_D_r[26]           0           0        0.00 
+         29                            RD2_D_r[25]           0           0        0.00 
+         29                            RD2_D_r[24]           0           0        0.00 
+         29                            RD2_D_r[23]           0           0        0.00 
+         29                            RD2_D_r[22]           0           0        0.00 
+         29                            RD2_D_r[21]           0           0        0.00 
+         29                            RD2_D_r[20]           0           0        0.00 
+         29                             RD2_D_r[1]           0           0        0.00 
+         29                            RD2_D_r[19]           0           0        0.00 
+         29                            RD2_D_r[18]           0           0        0.00 
+         29                            RD2_D_r[17]           0           0        0.00 
+         29                            RD2_D_r[16]           0           0        0.00 
+         29                            RD2_D_r[15]           0           0        0.00 
+         29                            RD2_D_r[14]           0           0        0.00 
+         29                            RD2_D_r[13]           0           0        0.00 
+         29                            RD2_D_r[12]           0           0        0.00 
+         29                            RD2_D_r[11]           0           0        0.00 
+         29                            RD2_D_r[10]           0           0        0.00 
+         29                             RD2_D_r[0]           0           0        0.00 
+         29                             RD1_D_r[8]           0           0        0.00 
+         29                             RD1_D_r[7]           0           0        0.00 
+         29                             RD1_D_r[6]           0           1       50.00 
+         29                             RD1_D_r[3]           0           1       50.00 
+         29                            RD1_D_r[30]           0           0        0.00 
+         29                            RD1_D_r[28]           0           1       50.00 
+         29                            RD1_D_r[26]           0           0        0.00 
+         29                            RD1_D_r[21]           0           1       50.00 
+         29                            RD1_D_r[20]           0           1       50.00 
+         29                             RD1_D_r[1]           0           0        0.00 
+         29                            RD1_D_r[17]           0           0        0.00 
+         29                            RD1_D_r[15]           0           0        0.00 
+         29                            RD1_D_r[14]           0           1       50.00 
+         29                            RD1_D_r[13]           0           0        0.00 
+         29                            RD1_D_r[11]           0           0        0.00 
+         29                            RD1_D_r[10]           0           1       50.00 
+         29                             RD1_D_r[0]           0           0        0.00 
+         30                             RS1_D_r[4]           0           0        0.00 
+         30                             RS1_D_r[3]           0           0        0.00 
+         30                             RS1_D_r[2]           0           0        0.00 
+         30                             RS1_D_r[1]           0           1       50.00 
+         31                          PCPlus4D_r[8]           0           0        0.00 
+         31                         PCPlus4D_r[29]           0           0        0.00 
+         31                         PCPlus4D_r[28]           0           0        0.00 
+         31                         PCPlus4D_r[26]           0           0        0.00 
+         31                         PCPlus4D_r[24]           0           0        0.00 
+         31                         PCPlus4D_r[16]           0           0        0.00 
+         31                         PCPlus4D_r[14]           0           0        0.00 
+         31                         PCPlus4D_r[10]           0           0        0.00 
+         31                          PCPlus4D_r[0]           0           0        0.00 
+         31                               PCD_r[8]           0           0        0.00 
+         31                               PCD_r[6]           0           1       50.00 
+         31                              PCD_r[29]           0           0        0.00 
+         31                              PCD_r[24]           0           0        0.00 
+         31                              PCD_r[22]           0           0        0.00 
+         31                              PCD_r[20]           0           0        0.00 
+         31                              PCD_r[17]           0           0        0.00 
+         31                              PCD_r[14]           0           0        0.00 
+
+Total Node Count     =        297 
+Toggled Node Count   =        176 
+Untoggled Node Count =        121 
+
+Toggle Coverage      =      61.95% (368 of 594 bins)
+
+=================================================================================
+=== File: extend.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            1         1         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file extend.v --
+
+    1                                                module extend(
+    2                                                    input  [31:0] In,
+    3                                                    input  [2:0]  ImmSrc,
+    4                                                    output [31:0] Imm_Ext
+    5                                                );
+    6                                                
+    7               1                         27     assign Imm_Ext =
+    8                                                
+    9                                                    // I-type
+    10                                                   (ImmSrc == 3'b000) ?
+    11                                                   {{20{In[31]}}, In[31:20]} :
+    12                                               
+    13                                                   // S-type
+    14                                                   (ImmSrc == 3'b001) ?
+    15                                                   {{20{In[31]}}, In[31:25], In[11:7]} :
+    16                                               
+    17                                                   // B-type
+    18                                                   (ImmSrc == 3'b010) ?
+    19                                                   {{19{In[31]}}, In[31], In[7],
+    20                                                     In[30:25], In[11:8], 1'b0} :
+    21                                               
+    22                                                   // J-type
+    23                                                   (ImmSrc == 3'b011) ?
+    24                                                   {{11{In[31]}}, In[31],
+    25                                                     In[19:12], In[20],
+    26                                                     In[30:21], 1'b0} :
+    27                                               
+    28                                                   // U-type
+    29                                                   (ImmSrc == 3'b100) ?
+    30                                                   {In[31:12], 12'b0} :
+    31                                               
+    32                                                   32'h00000000;
+    33                                               
+    34                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        10         7         3     70.00
+
+================================Branch Details================================
+
+Branch Coverage for file extend.v --
+
+------------------------------------IF Branch------------------------------------
+    11                                        25     Count coming in to IF
+    11              1                         17         {{20{In[31]}}, In[31:20]} :
+    14              1                          8         (ImmSrc == 3'b001) ?
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    15                                         8     Count coming in to IF
+    15              1                          3         {{20{In[31]}}, In[31:25], In[11:7]} :
+    18              1                          5         (ImmSrc == 3'b010) ?
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    20                                         5     Count coming in to IF
+    20              1                          3           In[30:25], In[11:8], 1'b0} :
+    23              1                          2         (ImmSrc == 3'b011) ?
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    26                                         2     Count coming in to IF
+    26              1                          2           In[30:21], 1'b0} :
+    29              1                    ***0***         (ImmSrc == 3'b100) ?
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    30                                   ***0***     Count coming in to IF
+    30              1                    ***0***         {In[31:12], 12'b0} :
+    32              1                    ***0***         32'h00000000;
+Branch totals: 0 hits of 2 branches = 0.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              5         3         2     60.00
+
+================================Condition Details================================
+
+Condition Coverage for file extend.v --
+
+----------------Focused Condition View-------------------
+Line       10 Item    1  (ImmSrc == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       14 Item    1  (ImmSrc == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       18 Item    1  (ImmSrc == 2)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       23 Item    1  (ImmSrc == 3)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (ImmSrc == 3)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ImmSrc == 3)_0       -                             
+  Row   2:          1  (ImmSrc == 3)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       29 Item    1  (ImmSrc == 4)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (ImmSrc == 4)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ImmSrc == 4)_0       -                             
+  Row   2:    ***0***  (ImmSrc == 4)_1       -                             
+
+
+
+=================================================================================
+=== File: register_file.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            7         7         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file register_file.v --
+
+    1                                                module Register_File(clk,reset,WE3,WD3,A1,A2,A3,RD1,RD2);
+    2                                                    input clk,reset,WE3;
+    3                                                    input [4:0]A1,A2,A3;
+    4                                                    input [31:0]WD3;
+    5                                                    output [31:0]RD1,RD2;
+    6                                                    reg [31:0] Register [31:0];
+    7                                                
+    8               1                          8         always @(posedge clk) begin
+    9                                                        if(WE3 & (A3 != 5'h00))
+    10              1                          3                 Register[A3] <= WD3;
+    11                                                   end
+    12                                               
+    13              1                         27         assign RD1 = (reset==1'b1) ? 32'd0 : Register[A1];
+    14              1                         27         assign RD2 = (reset==1'b1) ? 32'd0 : Register[A2];
+    15                                               
+    16                                                   
+    17                                                   integer i;
+    18                                                   initial begin
+    19              1                          1             for (i = 0; i < 32; i = i + 1)
+    19              2                         32     
+    20              1                         32                 Register[i] = 32'h00000000;
+    21                                                   end
+    22                                               
+    23                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         6         6         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file register_file.v --
+
+------------------------------------IF Branch------------------------------------
+    9                                          8     Count coming in to IF
+    9               1                          3             if(WE3 & (A3 != 5'h00))
+                                               5     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    13                                        26     Count coming in to IF
+    13              1                          2         assign RD1 = (reset==1'b1) ? 32'd0 : Register[A1];
+    13              2                         24         assign RD1 = (reset==1'b1) ? 32'd0 : Register[A1];
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    14                                        26     Count coming in to IF
+    14              1                          2         assign RD2 = (reset==1'b1) ? 32'd0 : Register[A2];
+    14              2                         24         assign RD2 = (reset==1'b1) ? 32'd0 : Register[A2];
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              2         2         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file register_file.v --
+
+----------------Focused Condition View-------------------
+Line       9 Item    1  (WE3 & (A3 != 0))
+Condition totals: 2 of 2 input terms covered = 100.00%
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                     64         0        64      0.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File register_file.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+         17                                   i[9]           0           0        0.00 
+         17                                   i[8]           0           0        0.00 
+         17                                   i[7]           0           0        0.00 
+         17                                   i[6]           0           0        0.00 
+         17                                   i[5]           0           0        0.00 
+         17                                   i[4]           0           0        0.00 
+         17                                   i[3]           0           0        0.00 
+         17                                  i[31]           0           0        0.00 
+         17                                  i[30]           0           0        0.00 
+         17                                   i[2]           0           0        0.00 
+         17                                  i[29]           0           0        0.00 
+         17                                  i[28]           0           0        0.00 
+         17                                  i[27]           0           0        0.00 
+         17                                  i[26]           0           0        0.00 
+         17                                  i[25]           0           0        0.00 
+         17                                  i[24]           0           0        0.00 
+         17                                  i[23]           0           0        0.00 
+         17                                  i[22]           0           0        0.00 
+         17                                  i[21]           0           0        0.00 
+         17                                  i[20]           0           0        0.00 
+         17                                   i[1]           0           0        0.00 
+         17                                  i[19]           0           0        0.00 
+         17                                  i[18]           0           0        0.00 
+         17                                  i[17]           0           0        0.00 
+         17                                  i[16]           0           0        0.00 
+         17                                  i[15]           0           0        0.00 
+         17                                  i[14]           0           0        0.00 
+         17                                  i[13]           0           0        0.00 
+         17                                  i[12]           0           0        0.00 
+         17                                  i[11]           0           0        0.00 
+         17                                  i[10]           0           0        0.00 
+         17                                   i[0]           0           0        0.00 
+
+Total Node Count     =         32 
+Toggled Node Count   =          0 
+Untoggled Node Count =         32 
+
+Toggle Coverage      =       0.00% (0 of 64 bins)
+
+=================================================================================
+=== File: tb_decode.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                          302       291        11     96.35
+
+================================Statement Details================================
+
+Statement Coverage for file tb_decode.v --
+
+    1                                                `timescale 1ns/1ps
+    2                                                
+    3                                                module tb_decode_cycle;
+    4                                                
+    5                                                
+    6                                                    reg         clk;
+    7                                                    reg         reset;
+    8                                                    reg  [31:0] InstrD;
+    9                                                    reg  [31:0] PCD;
+    10                                                   reg  [31:0] PCPlus4D;
+    11                                                   reg  [31:0] ResultW;
+    12                                                   reg         RegWriteW;
+    13                                                   reg  [4:0]  RDW;
+    14                                               
+    15                                                   wire        RegWriteE;
+    16                                                   wire        ALUSrcE;
+    17                                                   wire        MemWriteE;
+    18                                                   wire        BranchE;
+    19                                                   wire        JumpE;
+    20                                                   wire [1:0]  ResultSrcE;
+    21                                                   wire [3:0]  ALUControlE;
+    22                                                   wire [31:0] RD1_E;
+    23                                                   wire [31:0] RD2_E;
+    24                                                   wire [31:0] Imm_Ext_E;
+    25                                                   wire [4:0]  RD_E;
+    26                                                   wire [4:0]  RS1_E;
+    27                                                   wire [4:0]  RS2_E;
+    28                                                   wire [31:0] PCE;
+    29                                                   wire [31:0] PCPlus4E;
+    30                                                   wire [4:0]  Rs1_D_out;
+    31                                                   wire [4:0]  Rs2_D_out;
+    32                                               
+    33                                               
+    34                                                   decode_cycle dut (
+    35                                                       .clk        (clk),
+    36                                                       .reset      (reset),
+    37                                                       .InstrD     (InstrD),
+    38                                                       .PCD        (PCD),
+    39                                                       .PCPlus4D   (PCPlus4D),
+    40                                                       .RegWriteW  (RegWriteW),
+    41                                                       .RDW        (RDW),
+    42                                                       .ResultW    (ResultW),
+    43                                                       .RegWriteE  (RegWriteE),
+    44                                                       .ALUSrcE    (ALUSrcE),
+    45                                                       .MemWriteE  (MemWriteE),
+    46                                                       .ResultSrcE (ResultSrcE),
+    47                                                       .BranchE    (BranchE),
+    48                                                       .JumpE      (JumpE),
+    49                                                       .ALUControlE(ALUControlE),
+    50                                                       .RD1_E      (RD1_E),
+    51                                                       .RD2_E      (RD2_E),
+    52                                                       .Imm_Ext_E  (Imm_Ext_E),
+    53                                                       .RD_E       (RD_E),
+    54                                                       .PCE        (PCE),
+    55                                                       .PCPlus4E   (PCPlus4E),
+    56                                                       .RS1_E      (RS1_E),
+    57                                                       .RS2_E      (RS2_E),
+    58                                                       .Rs1_D_out  (Rs1_D_out),
+    59                                                       .Rs2_D_out  (Rs2_D_out)
+    60                                                   );
+    61                                               
+    62              1                          1         initial clk = 1'b0;
+    63              1                         56         always  #5 clk = ~clk;
+    63              2                         55     
+    64                                               
+    65                                               
+    66                                                   integer pass_cnt;
+    67                                                   integer fail_cnt;
+    68                                               
+    69                                                  
+    70                                                   task chk1;
+    71                                                       input [79:0] sig;
+    72                                                       input        got;
+    73                                                       input        exp;
+    74                                                       begin
+    75                                                           if (got !== exp) begin
+    76              1                    ***0***                     $display("  FAIL %0s : nhan=%b  mong=%b", sig, got, exp);
+    77              1                    ***0***                     fail_cnt = fail_cnt + 1;
+    78                                                           end else
+    79              1                         51                     pass_cnt = pass_cnt + 1;
+    80                                                       end
+    81                                                   endtask
+    82                                               
+    83                                                   task chk2;
+    84                                                       input [79:0] sig;
+    85                                                       input [1:0]  got;
+    86                                                       input [1:0]  exp;
+    87                                                       begin
+    88                                                           if (got !== exp) begin
+    89              1                    ***0***                     $display("  FAIL %0s : nhan=%02b  mong=%02b", sig, got, exp);
+    90              1                    ***0***                     fail_cnt = fail_cnt + 1;
+    91                                                           end else
+    92              1                          7                     pass_cnt = pass_cnt + 1;
+    93                                                       end
+    94                                                   endtask
+    95                                               
+    96                                                   task chk4;
+    97                                                       input [79:0] sig;
+    98                                                       input [3:0]  got;
+    99                                                       input [3:0]  exp;
+    100                                                      begin
+    101                                                          if (got !== exp) begin
+    102             1                    ***0***                     $display("  FAIL %0s : nhan=%04b  mong=%04b", sig, got, exp);
+    103             1                    ***0***                     fail_cnt = fail_cnt + 1;
+    104                                                          end else
+    105             1                         13                     pass_cnt = pass_cnt + 1;
+    106                                                      end
+    107                                                  endtask
+    108                                              
+    109                                                  task chk32;
+    110                                                      input [79:0]  sig;
+    111                                                      input [31:0]  got;
+    112                                                      input [31:0]  exp;
+    113                                                      begin
+    114                                                          if (got !== exp) begin
+    115             1                    ***0***                     $display("  FAIL %0s : nhan=%h  mong=%h", sig, got, exp);
+    116             1                    ***0***                     fail_cnt = fail_cnt + 1;
+    117                                                          end else
+    118             1                         31                     pass_cnt = pass_cnt + 1;
+    119                                                      end
+    120                                                  endtask
+    121                                              
+    122                                              
+    123                                                  initial begin
+    124             1                          1             $dumpfile("tb_decode_cycle.vcd");
+    125             1                          1             $dumpvars(0, tb_decode_cycle);
+    126                                              
+    127             1                          1             pass_cnt  = 0;
+    128             1                          1             fail_cnt  = 0;
+    129                                              
+    130                                                  
+    131                                                      // RESET
+    132                                                  
+    133             1                          1             reset     = 1'b1;
+    134             1                          1             InstrD    = 32'h0000_0013;   
+    135             1                          1             PCD       = 32'h0;
+    136             1                          1             PCPlus4D  = 32'h4;
+    137             1                          1             RegWriteW = 1'b0;
+    138             1                          1             RDW       = 5'h0;
+    139             1                          1             ResultW   = 32'h0;
+    140                                              
+    141             1                          3             repeat(3) @(posedge clk); #1;
+    141             2                          3     
+    141             3                          1     
+    142             1                          1             reset = 1'b0;
+    143                                              
+    144                                                   
+    145                                                      // Nan truoc Register File:  x1=0xABCD_1234  x2=0x0000_0010
+    146                                                    
+    147             1                          1             @(negedge clk);
+    148             1                          1             RegWriteW = 1'b1; RDW = 5'd1; ResultW = 32'hABCD_1234;
+    148             2                          1     
+    148             3                          1     
+    149             1                          1             InstrD = 32'h0000_0013;
+    150             1                          1             @(posedge clk); #1;
+    150             2                          1     
+    151                                              
+    152             1                          1             @(negedge clk);
+    153             1                          1             RDW = 5'd2; ResultW = 32'h0000_0010;
+    153             2                          1     
+    154             1                          1             @(posedge clk); #1;
+    154             2                          1     
+    155                                              
+    156             1                          1             @(negedge clk);
+    157             1                          1             RegWriteW = 1'b0; RDW = 5'h0; ResultW = 32'h0;
+    157             2                          1     
+    157             3                          1     
+    158                                              
+    159                                                      
+    160                                                      // TC1 : R-type ADD - add x3, x1, x2
+    161                                                   
+    162             1                          1             $display("\n TC1: ADD (add x3, x1, x2)");
+    163             1                          1             @(negedge clk);
+    164             1                          1             InstrD   = 32'b0000000_00010_00001_000_00011_0110011;
+    165             1                          1             PCD      = 32'h0000_0004;
+    166             1                          1             PCPlus4D = 32'h0000_0008;
+    167                                                      
+    168             1                          1             #1;
+    169             1                          1             chk32("Rs1_D_out", {27'b0, Rs1_D_out}, 32'h0000_0001);
+    170             1                          1             chk32("Rs2_D_out", {27'b0, Rs2_D_out}, 32'h0000_0002);
+    171                                                      // chot qua pipeline
+    172             1                          1             @(posedge clk); #1;
+    172             2                          1     
+    173             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    174             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    175             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b0);
+    176             1                          1             chk1 ("BranchE",    BranchE,    1'b0);
+    177             1                          1             chk1 ("JumpE",      JumpE,      1'b0);
+    178             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b00);
+    179             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0000);
+    180             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_0002);
+    181             1                          1             chk32("PCE",        PCE,         32'h0000_0004);
+    182             1                          1             chk32("PCPlus4E",   PCPlus4E,    32'h0000_0008);
+    183             1                          1             chk32("RS1_E",      {27'b0,RS1_E}, 32'h0000_0001);
+    184             1                          1             chk32("RS2_E",      {27'b0,RS2_E}, 32'h0000_0002);
+    185             1                          1             chk32("RD_E",       {27'b0,RD_E},  32'h0000_0003);
+    186                                              
+    187                                                    
+    188                                                      // TC2 : R-type SUB - sub x5, x1, x2
+    189                                                    
+    190             1                          1             $display("\n TC2: SUB (sub x5, x1, x2) ");
+    191             1                          1             @(negedge clk);
+    192             1                          1             InstrD   = 32'b0100000_00010_00001_000_00101_0110011;
+    193             1                          1             PCD      = 32'h0000_0008;
+    194             1                          1             PCPlus4D = 32'h0000_000C;
+    195             1                          1             @(posedge clk); #1;
+    195             2                          1     
+    196             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    197             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    198             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b0);
+    199             1                          1             chk1 ("BranchE",    BranchE,    1'b0);
+    200             1                          1             chk1 ("JumpE",      JumpE,      1'b0);
+    201             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b00);
+    202             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0001);
+    203             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_0402);
+    204             1                          1             chk32("PCE",        PCE,         32'h0000_0008);
+    205             1                          1             chk32("PCPlus4E",   PCPlus4E,    32'h0000_000C);
+    206                                              
+    207                                                     
+    208                                                      // TC3 : R-type AND - and x6, x1, x2
+    209                                                     
+    210                                                    
+    211             1                          1             $display("\n TC3: AND (and x6, x1, x2) ");
+    212             1                          1             @(negedge clk);
+    213             1                          1             InstrD   = 32'b0000000_00010_00001_111_00110_0110011;
+    214             1                          1             PCD      = 32'h0000_000C;
+    215             1                          1             PCPlus4D = 32'h0000_0010;
+    216             1                          1             @(posedge clk); #1;
+    216             2                          1     
+    217             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    218             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    219             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0010);
+    220                                              
+    221                                                     
+    222                                                      // TC4 : R-type OR - or x7, x1, x2
+    223                                                   
+    224             1                          1             $display("\n TC4: OR (or x7, x1, x2) ");
+    225             1                          1             @(negedge clk);
+    226             1                          1             InstrD   = 32'b0000000_00010_00001_110_00111_0110011;
+    227             1                          1             PCD      = 32'h0000_0010;
+    228             1                          1             PCPlus4D = 32'h0000_0014;
+    229             1                          1             @(posedge clk); #1;
+    229             2                          1     
+    230             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    231             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    232             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0011);
+    233                                              
+    234                                                
+    235                                                      // TC5 : R-type XOR - xor x8, x1, x2
+    236                                                    
+    237             1                          1             $display("\n TC5: XOR (xor x8, x1, x2) ");
+    238             1                          1             @(negedge clk);
+    239             1                          1             InstrD   = 32'b0000000_00010_00001_100_01000_0110011;
+    240             1                          1             PCD      = 32'h0000_0014;
+    241             1                          1             PCPlus4D = 32'h0000_0018;
+    242             1                          1             @(posedge clk); #1;
+    242             2                          1     
+    243             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    244             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    245             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0100);
+    246                                              
+    247                                                    
+    248                                                      // TC6 : I-type ADDI - addi x9, x1, 12
+    249                                                     
+    250             1                          1             $display("\n TC6: ADDI (addi x9, x1, 12) ");
+    251             1                          1             @(negedge clk);
+    252             1                          1             InstrD   = 32'b000000001100_00001_000_01001_0010011;
+    253             1                          1             PCD      = 32'h0000_0018;
+    254             1                          1             PCPlus4D = 32'h0000_001C;
+    255             1                          1             @(posedge clk); #1;
+    255             2                          1     
+    256             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    257             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    258             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b0);
+    259             1                          1             chk1 ("BranchE",    BranchE,    1'b0);
+    260             1                          1             chk1 ("JumpE",      JumpE,      1'b0);
+    261             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b00);
+    262             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0000);
+    263             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_000C);
+    264             1                          1             chk32("PCE",        PCE,         32'h0000_0018);
+    265             1                          1             chk32("PCPlus4E",   PCPlus4E,    32'h0000_001C);
+    266                                              
+    267                                                     
+    268                                                      // TC7 : I-type XORI - xori x10, x1, -1
+    269                                                     
+    270             1                          1             $display("\nTC7: XORI (xori x10, x1, -1) ");
+    271             1                          1             @(negedge clk);
+    272             1                          1             InstrD   = 32'b111111111111_00001_100_01010_0010011;
+    273             1                          1             PCD      = 32'h0000_001C;
+    274             1                          1             PCPlus4D = 32'h0000_0020;
+    275             1                          1             @(posedge clk); #1;
+    275             2                          1     
+    276             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    277             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    278             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0100);
+    279             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'hFFFF_FFFF);
+    280                                              
+    281                                                   
+    282                                                      // TC8 : I-type ORI - ori x11, x1, 255
+    283                                                 
+    284             1                          1             $display("\n TC8: ORI (ori x11, x1, 255) ");
+    285             1                          1             @(negedge clk);
+    286             1                          1             InstrD   = 32'b000011111111_00001_110_01011_0010011;
+    287             1                          1             PCD      = 32'h0000_0020;
+    288             1                          1             PCPlus4D = 32'h0000_0024;
+    289             1                          1             @(posedge clk); #1;
+    289             2                          1     
+    290             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    291             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    292             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0011);
+    293             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_00FF);
+    294                                              
+    295                                              
+    296                                                      // TC9 : Load Word - lw x12, 16(x1)
+    297                                                    
+    298             1                          1             $display("\n TC9: LW (lw x12, 16(x1)) ");
+    299             1                          1             @(negedge clk);
+    300             1                          1             InstrD   = 32'b000000010000_00001_010_01100_0000011;
+    301             1                          1             PCD      = 32'h0000_0024;
+    302             1                          1             PCPlus4D = 32'h0000_0028;
+    303             1                          1             @(posedge clk); #1;
+    303             2                          1     
+    304             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    305             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    306             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b0);
+    307             1                          1             chk1 ("BranchE",    BranchE,    1'b0);
+    308             1                          1             chk1 ("JumpE",      JumpE,      1'b0);
+    309             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b01);
+    310             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0000);
+    311             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_0010);
+    312                                              
+    313                                               
+    314                                                      // TC10 : LW voi immediate am - lw x13, -4(x1)
+    315                                                    
+    316             1                          1             $display("\n TC10: LW immediate am (lw x13, -4(x1)) ");
+    317             1                          1             @(negedge clk);
+    318             1                          1             InstrD   = 32'b111111111100_00001_010_01101_0000011;
+    319             1                          1             PCD      = 32'h0000_0028;
+    320             1                          1             PCPlus4D = 32'h0000_002C;
+    321             1                          1             @(posedge clk); #1;
+    321             2                          1     
+    322             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    323             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    324             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b01);
+    325             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'hFFFF_FFFC);
+    326                                              
+    327                                                      
+    328                                                      // TC11 : Store Word - sw x2, 20(x1)
+    329                                                  
+    330             1                          1             $display("\n TC11: SW (sw x2, 20(x1)) ");
+    331             1                          1             @(negedge clk);
+    332             1                          1             InstrD   = 32'b0000000_00010_00001_010_10100_0100011;
+    333             1                          1             PCD      = 32'h0000_002C;
+    334             1                          1             PCPlus4D = 32'h0000_0030;
+    335             1                          1             @(posedge clk); #1;
+    335             2                          1     
+    336             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b0);
+    337             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    338             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b1);
+    339             1                          1             chk1 ("BranchE",    BranchE,    1'b0);
+    340             1                          1             chk1 ("JumpE",      JumpE,      1'b0);
+    341             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0000);
+    342             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_0014);
+    343             1                          1             chk32("PCE",        PCE,         32'h0000_002C);
+    344             1                          1             chk32("PCPlus4E",   PCPlus4E,    32'h0000_0030);
+    345                                              
+    346                                                      
+    347                                                      // TC12 : SW immediate am - sw x2, -8(x1)
+    348                                                     
+    349             1                          1             $display("\n TC12: SW immediate am (sw x2, -8(x1)) ");
+    350             1                          1             @(negedge clk);
+    351             1                          1             InstrD   = 32'b1111111_00010_00001_010_11000_0100011;
+    352             1                          1             PCD      = 32'h0000_0030;
+    353             1                          1             PCPlus4D = 32'h0000_0034;
+    354             1                          1             @(posedge clk); #1;
+    354             2                          1     
+    355             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b0);
+    356             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b1);
+    357             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b1);
+    358             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'hFFFF_FFF8);
+    359                                              
+    360                                                
+    361                                                      // TC13 : B-type BEQ - beq x1, x2, +8
+    362                                                    
+    363             1                          1             $display("\n TC13: BEQ (beq x1, x2, +8) ");
+    364             1                          1             @(negedge clk);
+    365             1                          1             InstrD   = 32'b0_000000_00010_00001_000_0100_0_1100011;
+    366             1                          1             PCD      = 32'h0000_0034;
+    367             1                          1             PCPlus4D = 32'h0000_0038;
+    368             1                          1             @(posedge clk); #1;
+    368             2                          1     
+    369             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b0);
+    370             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    371             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b0);
+    372             1                          1             chk1 ("BranchE",    BranchE,    1'b1);
+    373             1                          1             chk1 ("JumpE",      JumpE,      1'b0);
+    374             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b00);
+    375             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0001);
+    376             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_0008);
+    377             1                          1             chk32("PCE",        PCE,         32'h0000_0034);
+    378             1                          1             chk32("PCPlus4E",   PCPlus4E,    32'h0000_0038);
+    379                                              
+    380                                                      // TC14 : BEQ offset am - beq x1, x2, -12
+    381                                                   
+    382             1                          1             $display("\n TC14: BEQ offset am (beq x1, x2, -12) ");
+    383             1                          1             @(negedge clk);
+    384             1                          1             InstrD   = 32'b1_111111_00010_00001_000_1010_1_1100011;
+    385             1                          1             PCD      = 32'h0000_0038;
+    386             1                          1             PCPlus4D = 32'h0000_003C;
+    387             1                          1             @(posedge clk); #1;
+    387             2                          1     
+    388             1                          1             chk1 ("BranchE",    BranchE,    1'b1);
+    389             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0001);
+    390             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'hFFFF_FFF4);
+    391                                              
+    392                                                   
+    393                                                      // TC15 : J-type JAL - jal x1, +16
+    394                                                
+    395             1                          1             $display("\n TC15: JAL (jal x1, +16) ");
+    396             1                          1             @(negedge clk);
+    397             1                          1             InstrD   = 32'b0_0000001000_0_00000000_00001_1101111;
+    398             1                          1             PCD      = 32'h0000_003C;
+    399             1                          1             PCPlus4D = 32'h0000_0040;
+    400             1                          1             @(posedge clk); #1;
+    400             2                          1     
+    401             1                          1             chk1 ("RegWriteE",  RegWriteE,  1'b1);
+    402             1                          1             chk1 ("ALUSrcE",    ALUSrcE,    1'b0);
+    403             1                          1             chk1 ("MemWriteE",  MemWriteE,  1'b0);
+    404             1                          1             chk1 ("BranchE",    BranchE,    1'b0);
+    405             1                          1             chk1 ("JumpE",      JumpE,      1'b1);
+    406             1                          1             chk2 ("ResultSrcE", ResultSrcE, 2'b10);
+    407             1                          1             chk4 ("ALUCtrlE",   ALUControlE,4'b0000);
+    408             1                          1             chk32("Imm_Ext_E",  Imm_Ext_E,  32'h0000_0010);
+    409             1                          1             chk32("PCE",        PCE,         32'h0000_003C);
+    410             1                          1             chk32("PCPlus4E",   PCPlus4E,    32'h0000_0040);
+    411                                              
+    412                                                      // TC16 : Reset bat dong bo - dat lenh ADD, bat reset,
+    413                                                    
+    414             1                          1             $display("\n TC16: Async Reset ");
+    415             1                          1             @(negedge clk);
+    416             1                          1             InstrD   = 32'b0000000_00010_00001_000_00011_0110011;
+    417             1                          1             PCD      = 32'hDEAD_BEEF;
+    418             1                          1             PCPlus4D = 32'hCAFE_BABE;
+    419             1                          1             reset    = 1'b1;
+    420             1                          1             @(posedge clk); #1;
+    420             2                          1     
+    421                                              
+    422                                                      if (RegWriteE   !== 1'b0    || ALUSrcE    !== 1'b0   ||
+    423                                                          MemWriteE   !== 1'b0    || BranchE    !== 1'b0   ||
+    424                                                          JumpE       !== 1'b0    || ResultSrcE !== 2'b00  ||
+    425                                                          ALUControlE !== 4'b0000 ||
+    426                                                          RD1_E       !== 32'h0   || RD2_E      !== 32'h0  ||
+    427                                                          Imm_Ext_E   !== 32'h0   || PCE        !== 32'h0  ||
+    428                                                          PCPlus4E    !== 32'h0) begin
+    429             1                    ***0***                 $display("  FAIL TC16 : Pipeline reg CHUA ve 0 sau reset!");
+    430             1                    ***0***                 fail_cnt = fail_cnt + 1;
+    431                                                      end else begin
+    432             1                          1                 $display("  PASS TC16 : Tat ca pipeline reg = 0 sau reset");
+    433             1                          1                 pass_cnt = pass_cnt + 1;
+    434                                                      end
+    435             1                          1             reset = 1'b0;
+    436                                              
+    437                                                     
+    438                                                      // TC17 : Ghi vao x0 phai bi bo qua (Register[0] luon = 0)
+    439                                                
+    440             1                          1             $display("\n TC17: Ghi x0 bi bo qua ");
+    441             1                          1             @(negedge clk);
+    442             1                          1             RegWriteW = 1'b1; RDW = 5'd0; ResultW = 32'hFFFF_FFFF;
+    442             2                          1     
+    442             3                          1     
+    443             1                          1             InstrD    = 32'h0000_0013;
+    444             1                          1             @(posedge clk); #1;
+    444             2                          1     
+    445                                              
+    446             1                          1             @(negedge clk);
+    447             1                          1             RegWriteW = 1'b0;
+    448                                              
+    449             1                          1             InstrD    = 32'b000000000000_00000_000_00101_0010011;
+    450             1                          1             PCD       = 32'h0000_0040;
+    451             1                          1             PCPlus4D  = 32'h0000_0044;
+    452             1                          1             @(posedge clk); #1;
+    452             2                          1     
+    453             1                          1             chk32("RD1_E(x0=0)", RD1_E, 32'h0000_0000);
+    454                                              
+    455                                              
+    456                                                      // TC18 : Ghi roi doc thanh ghi x3
+    457                                              
+    458             1                          1             $display("\n TC18: Ghi roi doc x3 ");
+    459             1                          1             @(negedge clk);
+    460             1                          1             RegWriteW = 1'b1; RDW = 5'd3; ResultW = 32'h1234_5678;
+    460             2                          1     
+    460             3                          1     
+    461             1                          1             InstrD    = 32'h0000_0013;
+    462             1                          1             @(posedge clk); #1;
+    462             2                          1     
+    463                                              
+    464             1                          1             @(negedge clk);
+    465             1                          1             RegWriteW = 1'b0;
+    466                                                      // add x5, x3, x0  : 0000000_00000_00011_000_00101_0110011
+    467             1                          1             InstrD    = 32'b0000000_00000_00011_000_00101_0110011;
+    468             1                          1             PCD       = 32'h0000_0044;
+    469             1                          1             PCPlus4D  = 32'h0000_0048;
+    470             1                          1             @(posedge clk); #1;
+    470             2                          1     
+    471             1                          1             chk32("RD1_E(x3)", RD1_E, 32'h1234_5678);
+    472                                              
+    473                                              
+    474                                              
+    475             1                          1             $display(" KET QUA : PASS = %0d   FAIL = %0d", pass_cnt, fail_cnt);
+    476                                                      if (fail_cnt == 0)
+    477             1                          1                 $display(" >> TAT CA TEST CASE DIEU PASS! <<");
+    478                                                      else
+    479             1                    ***0***                 $display(" >> CO %0d TEST CASE THAT BAI <<", fail_cnt);
+    480                                              
+    481                                              
+    482             1                          1             #20; $finish;
+    482             2                          1     
+    483                                                  end
+    484                                              
+    485                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        12         6         6     50.00
+
+================================Branch Details================================
+
+Branch Coverage for file tb_decode.v --
+
+------------------------------------IF Branch------------------------------------
+    75                                        51     Count coming in to IF
+    75              1                    ***0***                 if (got !== exp) begin
+    78              1                         51                 end else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    88                                         7     Count coming in to IF
+    88              1                    ***0***                 if (got !== exp) begin
+    91              1                          7                 end else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    101                                       13     Count coming in to IF
+    101             1                    ***0***                 if (got !== exp) begin
+    104             1                         13                 end else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    114                                       31     Count coming in to IF
+    114             1                    ***0***                 if (got !== exp) begin
+    117             1                         31                 end else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    422                                        1     Count coming in to IF
+    422             1                    ***0***             if (RegWriteE   !== 1'b0    || ALUSrcE    !== 1'b0   ||
+    431             1                          1             end else begin
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    476                                        1     Count coming in to IF
+    476             1                          1             if (fail_cnt == 0)
+    478             1                    ***0***             else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms             17         0        17      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file tb_decode.v --
+
+----------------Focused Condition View-------------------
+Line       75 Item    1  (got !== exp)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (got !== exp)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (got !== exp)_0       -                             
+  Row   2:    ***0***  (got !== exp)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       88 Item    1  (got !== exp)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (got !== exp)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (got !== exp)_0       -                             
+  Row   2:    ***0***  (got !== exp)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       101 Item    1  (got !== exp)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (got !== exp)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (got !== exp)_0       -                             
+  Row   2:    ***0***  (got !== exp)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       114 Item    1  (got !== exp)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (got !== exp)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (got !== exp)_0       -                             
+  Row   2:    ***0***  (got !== exp)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       422 Item    1  ((((((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0)) || (Imm_Ext_E !== 0)) || (PCE !== 0)) || (PCPlus4E !== 0))
+Condition totals: 0 of 12 input terms covered = 0.00%
+
+            Input Term   Covered  Reason for no coverage   Hint
+           -----------  --------  -----------------------  --------------
+  (RegWriteE !== 1'b0)         N  '_1' not hit             Hit '_1'
+    (ALUSrcE !== 1'b0)         N  '_1' not hit             Hit '_1'
+  (MemWriteE !== 1'b0)         N  '_1' not hit             Hit '_1'
+    (BranchE !== 1'b0)         N  '_1' not hit             Hit '_1'
+      (JumpE !== 1'b0)         N  '_1' not hit             Hit '_1'
+    (ResultSrcE !== 0)         N  '_1' not hit             Hit '_1'
+   (ALUControlE !== 0)         N  '_1' not hit             Hit '_1'
+         (RD1_E !== 0)         N  '_1' not hit             Hit '_1'
+         (RD2_E !== 0)         N  '_1' not hit             Hit '_1'
+     (Imm_Ext_E !== 0)         N  '_1' not hit             Hit '_1'
+           (PCE !== 0)         N  '_1' not hit             Hit '_1'
+      (PCPlus4E !== 0)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target              Non-masking condition(s)      
+ ---------  ---------  --------------------    -------------------------     
+  Row   1:          1  (RegWriteE !== 1'b0)_0  (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~(ALUControlE !== 0) && ~(ResultSrcE !== 0) && ~(JumpE !== 1'b0) && ~(BranchE !== 1'b0) && ~(MemWriteE !== 1'b0) && ~(ALUSrcE !== 1'b0))
+  Row   2:    ***0***  (RegWriteE !== 1'b0)_1  -                             
+  Row   3:          1  (ALUSrcE !== 1'b0)_0    (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~(ALUControlE !== 0) && ~(ResultSrcE !== 0) && ~(JumpE !== 1'b0) && ~(BranchE !== 1'b0) && ~(MemWriteE !== 1'b0) && ~(RegWriteE !== 1'b0))
+  Row   4:    ***0***  (ALUSrcE !== 1'b0)_1    ~(RegWriteE !== 1'b0)         
+  Row   5:          1  (MemWriteE !== 1'b0)_0  (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~(ALUControlE !== 0) && ~(ResultSrcE !== 0) && ~(JumpE !== 1'b0) && ~(BranchE !== 1'b0) && ~((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)))
+  Row   6:    ***0***  (MemWriteE !== 1'b0)_1  ~((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0))
+  Row   7:          1  (BranchE !== 1'b0)_0    (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~(ALUControlE !== 0) && ~(ResultSrcE !== 0) && ~(JumpE !== 1'b0) && ~(((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)))
+  Row   8:    ***0***  (BranchE !== 1'b0)_1    ~(((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0))
+  Row   9:          1  (JumpE !== 1'b0)_0      (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~(ALUControlE !== 0) && ~(ResultSrcE !== 0) && ~((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)))
+ Row   10:    ***0***  (JumpE !== 1'b0)_1      ~((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0))
+ Row   11:          1  (ResultSrcE !== 0)_0    (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~(ALUControlE !== 0) && ~(((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)))
+ Row   12:    ***0***  (ResultSrcE !== 0)_1    ~(((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0))
+ Row   13:          1  (ALUControlE !== 0)_0   (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(RD1_E !== 0) && ~((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)))
+ Row   14:    ***0***  (ALUControlE !== 0)_1   ~((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0))
+ Row   15:          1  (RD1_E !== 0)_0         (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~(RD2_E !== 0) && ~(((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)))
+ Row   16:    ***0***  (RD1_E !== 0)_1         ~(((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0))
+ Row   17:          1  (RD2_E !== 0)_0         (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(Imm_Ext_E !== 0) && ~((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)))
+ Row   18:    ***0***  (RD2_E !== 0)_1         ~((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0))
+ Row   19:          1  (Imm_Ext_E !== 0)_0     (~(PCPlus4E !== 0) && ~(PCE !== 0) && ~(((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0)))
+ Row   20:    ***0***  (Imm_Ext_E !== 0)_1     ~(((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0))
+ Row   21:          1  (PCE !== 0)_0           (~(PCPlus4E !== 0) && ~((((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0)) || (Imm_Ext_E !== 0)))
+ Row   22:    ***0***  (PCE !== 0)_1           ~((((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0)) || (Imm_Ext_E !== 0))
+ Row   23:          1  (PCPlus4E !== 0)_0      ~(((((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0)) || (Imm_Ext_E !== 0)) || (PCE !== 0))
+ Row   24:    ***0***  (PCPlus4E !== 0)_1      ~(((((((((((RegWriteE !== 1'b0) || (ALUSrcE !== 1'b0)) || (MemWriteE !== 1'b0)) || (BranchE !== 1'b0)) || (JumpE !== 1'b0)) || (ResultSrcE !== 0)) || (ALUControlE !== 0)) || (RD1_E !== 0)) || (RD2_E !== 0)) || (Imm_Ext_E !== 0)) || (PCE !== 0))
+
+----------------Focused Condition View-------------------
+Line       476 Item    1  (fail_cnt == 0)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+  (fail_cnt == 0)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (fail_cnt == 0)_0     -                             
+  Row   2:          1  (fail_cnt == 0)_1     -                             
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    792       482       310     60.85
+
+================================Toggle Details================================
+
+Toggle Coverage for File tb_decode.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          8                              InstrD[1]           0           0        0.00 
+          8                             InstrD[19]           0           0        0.00 
+          8                             InstrD[18]           0           0        0.00 
+          8                             InstrD[17]           0           0        0.00 
+          8                             InstrD[16]           0           1       50.00 
+          8                              InstrD[0]           0           0        0.00 
+          9                                 PCD[8]           0           0        0.00 
+          9                                 PCD[6]           0           1       50.00 
+          9                                PCD[29]           0           0        0.00 
+          9                                PCD[24]           0           0        0.00 
+          9                                PCD[22]           0           0        0.00 
+          9                                PCD[20]           0           0        0.00 
+          9                                PCD[17]           0           0        0.00 
+          9                                PCD[14]           0           0        0.00 
+         10                            PCPlus4D[8]           0           0        0.00 
+         10                           PCPlus4D[29]           0           0        0.00 
+         10                           PCPlus4D[28]           0           0        0.00 
+         10                           PCPlus4D[26]           0           0        0.00 
+         10                           PCPlus4D[24]           0           0        0.00 
+         10                           PCPlus4D[16]           0           0        0.00 
+         10                           PCPlus4D[14]           0           0        0.00 
+         10                           PCPlus4D[10]           0           0        0.00 
+         10                            PCPlus4D[0]           0           0        0.00 
+         11                             ResultW[6]           0           1       50.00 
+         11                             ResultW[3]           0           1       50.00 
+         11                            ResultW[28]           0           1       50.00 
+         11                            ResultW[21]           0           1       50.00 
+         11                            ResultW[20]           0           1       50.00 
+         11                            ResultW[14]           0           1       50.00 
+         11                            ResultW[10]           0           1       50.00 
+         13                                 RDW[4]           0           0        0.00 
+         13                                 RDW[3]           0           0        0.00 
+         13                                 RDW[2]           0           0        0.00 
+         21                         ALUControlE[3]           0           0        0.00 
+         22                               RD1_E[8]           0           0        0.00 
+         22                               RD1_E[7]           0           0        0.00 
+         22                               RD1_E[6]           0           1       50.00 
+         22                               RD1_E[3]           0           1       50.00 
+         22                              RD1_E[30]           0           0        0.00 
+         22                              RD1_E[28]           0           1       50.00 
+         22                              RD1_E[26]           0           0        0.00 
+         22                              RD1_E[21]           0           1       50.00 
+         22                              RD1_E[20]           0           1       50.00 
+         22                               RD1_E[1]           0           0        0.00 
+         22                              RD1_E[17]           0           0        0.00 
+         22                              RD1_E[15]           0           0        0.00 
+         22                              RD1_E[14]           0           1       50.00 
+         22                              RD1_E[13]           0           0        0.00 
+         22                              RD1_E[11]           0           0        0.00 
+         22                              RD1_E[10]           0           1       50.00 
+         22                               RD1_E[0]           0           0        0.00 
+         23                               RD2_E[9]           0           0        0.00 
+         23                               RD2_E[8]           0           0        0.00 
+         23                               RD2_E[7]           0           0        0.00 
+         23                               RD2_E[6]           0           0        0.00 
+         23                               RD2_E[5]           0           0        0.00 
+         23                               RD2_E[3]           0           0        0.00 
+         23                              RD2_E[31]           0           0        0.00 
+         23                              RD2_E[30]           0           0        0.00 
+         23                               RD2_E[2]           0           0        0.00 
+         23                              RD2_E[29]           0           0        0.00 
+         23                              RD2_E[28]           0           0        0.00 
+         23                              RD2_E[27]           0           0        0.00 
+         23                              RD2_E[26]           0           0        0.00 
+         23                              RD2_E[25]           0           0        0.00 
+         23                              RD2_E[24]           0           0        0.00 
+         23                              RD2_E[23]           0           0        0.00 
+         23                              RD2_E[22]           0           0        0.00 
+         23                              RD2_E[21]           0           0        0.00 
+         23                              RD2_E[20]           0           0        0.00 
+         23                               RD2_E[1]           0           0        0.00 
+         23                              RD2_E[19]           0           0        0.00 
+         23                              RD2_E[18]           0           0        0.00 
+         23                              RD2_E[17]           0           0        0.00 
+         23                              RD2_E[16]           0           0        0.00 
+         23                              RD2_E[15]           0           0        0.00 
+         23                              RD2_E[14]           0           0        0.00 
+         23                              RD2_E[13]           0           0        0.00 
+         23                              RD2_E[12]           0           0        0.00 
+         23                              RD2_E[11]           0           0        0.00 
+         23                              RD2_E[10]           0           0        0.00 
+         23                               RD2_E[0]           0           0        0.00 
+         26                               RS1_E[4]           0           0        0.00 
+         26                               RS1_E[3]           0           0        0.00 
+         26                               RS1_E[2]           0           0        0.00 
+         26                               RS1_E[1]           0           1       50.00 
+         28                                 PCE[8]           0           0        0.00 
+         28                                 PCE[6]           0           1       50.00 
+         28                                PCE[29]           0           0        0.00 
+         28                                PCE[24]           0           0        0.00 
+         28                                PCE[22]           0           0        0.00 
+         28                                PCE[20]           0           0        0.00 
+         28                                PCE[17]           0           0        0.00 
+         28                                PCE[14]           0           0        0.00 
+         29                            PCPlus4E[8]           0           0        0.00 
+         29                           PCPlus4E[29]           0           0        0.00 
+         29                           PCPlus4E[28]           0           0        0.00 
+         29                           PCPlus4E[26]           0           0        0.00 
+         29                           PCPlus4E[24]           0           0        0.00 
+         29                           PCPlus4E[16]           0           0        0.00 
+         29                           PCPlus4E[14]           0           0        0.00 
+         29                           PCPlus4E[10]           0           0        0.00 
+         29                            PCPlus4E[0]           0           0        0.00 
+         30                           Rs1_D_out[4]           0           0        0.00 
+         30                           Rs1_D_out[3]           0           0        0.00 
+         30                           Rs1_D_out[2]           0           0        0.00 
+         30                           Rs1_D_out[1]           0           1       50.00 
+         66                            pass_cnt[9]           0           0        0.00 
+         66                            pass_cnt[8]           0           0        0.00 
+         66                            pass_cnt[7]           0           0        0.00 
+         66                            pass_cnt[6]           0           1       50.00 
+         66                           pass_cnt[31]           0           0        0.00 
+         66                           pass_cnt[30]           0           0        0.00 
+         66                           pass_cnt[29]           0           0        0.00 
+         66                           pass_cnt[28]           0           0        0.00 
+         66                           pass_cnt[27]           0           0        0.00 
+         66                           pass_cnt[26]           0           0        0.00 
+         66                           pass_cnt[25]           0           0        0.00 
+         66                           pass_cnt[24]           0           0        0.00 
+         66                           pass_cnt[23]           0           0        0.00 
+         66                           pass_cnt[22]           0           0        0.00 
+         66                           pass_cnt[21]           0           0        0.00 
+         66                           pass_cnt[20]           0           0        0.00 
+         66                           pass_cnt[19]           0           0        0.00 
+         66                           pass_cnt[18]           0           0        0.00 
+         66                           pass_cnt[17]           0           0        0.00 
+         66                           pass_cnt[16]           0           0        0.00 
+         66                           pass_cnt[15]           0           0        0.00 
+         66                           pass_cnt[14]           0           0        0.00 
+         66                           pass_cnt[13]           0           0        0.00 
+         66                           pass_cnt[12]           0           0        0.00 
+         66                           pass_cnt[11]           0           0        0.00 
+         66                           pass_cnt[10]           0           0        0.00 
+         67                            fail_cnt[9]           0           0        0.00 
+         67                            fail_cnt[8]           0           0        0.00 
+         67                            fail_cnt[7]           0           0        0.00 
+         67                            fail_cnt[6]           0           0        0.00 
+         67                            fail_cnt[5]           0           0        0.00 
+         67                            fail_cnt[4]           0           0        0.00 
+         67                            fail_cnt[3]           0           0        0.00 
+         67                           fail_cnt[31]           0           0        0.00 
+         67                           fail_cnt[30]           0           0        0.00 
+         67                            fail_cnt[2]           0           0        0.00 
+         67                           fail_cnt[29]           0           0        0.00 
+         67                           fail_cnt[28]           0           0        0.00 
+         67                           fail_cnt[27]           0           0        0.00 
+         67                           fail_cnt[26]           0           0        0.00 
+         67                           fail_cnt[25]           0           0        0.00 
+         67                           fail_cnt[24]           0           0        0.00 
+         67                           fail_cnt[23]           0           0        0.00 
+         67                           fail_cnt[22]           0           0        0.00 
+         67                           fail_cnt[21]           0           0        0.00 
+         67                           fail_cnt[20]           0           0        0.00 
+         67                            fail_cnt[1]           0           0        0.00 
+         67                           fail_cnt[19]           0           0        0.00 
+         67                           fail_cnt[18]           0           0        0.00 
+         67                           fail_cnt[17]           0           0        0.00 
+         67                           fail_cnt[16]           0           0        0.00 
+         67                           fail_cnt[15]           0           0        0.00 
+         67                           fail_cnt[14]           0           0        0.00 
+         67                           fail_cnt[13]           0           0        0.00 
+         67                           fail_cnt[12]           0           0        0.00 
+         67                           fail_cnt[11]           0           0        0.00 
+         67                           fail_cnt[10]           0           0        0.00 
+         67                            fail_cnt[0]           0           0        0.00 
+
+Total Node Count     =        396 
+Toggled Node Count   =        231 
+Untoggled Node Count =        165 
+
+Toggle Coverage      =      60.85% (482 of 792 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 66.08%
+
+End time: 22:36:58 on Jun 06,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

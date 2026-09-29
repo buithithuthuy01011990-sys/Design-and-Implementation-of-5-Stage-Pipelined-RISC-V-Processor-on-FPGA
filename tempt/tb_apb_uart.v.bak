@@ -1,0 +1,395 @@
+`timescale 1ns/1ps
+// =============================================================================
+// tb_apb_uart_bridge_v2.v  ?  testbench cho apb_uart_bridge
+//
+// Các fix so v?i b?n g?c:
+//   FIX-1  PRESETn = 0 lúc khai báo, g?i do_reset ?? pulse ?úng active-low
+//   FIX-2  apb_read task: thêm 1 extra clock sau posedge ?? PRDATA k?p update
+//            (DUT dùng registered PRDATA, PREADY=1 ? data ch? có sau rising edge)
+//   FIX-3  TC8: dùng apb_read(ADDR_STATUS) thay vì ??c PRDATA tr?c ti?p
+//            (PRDATA là reg, check ngay sau posedge s? ??c giá tr? c?)
+//   FIX-4  TC10: dùng do_reset thay vì inline ?? nh?t quán hold time
+// =============================================================================
+
+module tb_apb_uart_bridge;
+
+    localparam DVSR      = 3;
+    localparam FIFO_W    = 2;              // depth = 4
+    localparam SB_TICK   = 16;
+    localparam BAUD_CLKS = SB_TICK * DVSR; // 48 clk/bit
+
+    localparam CLK_PERIOD = 10;
+    localparam FIFO_DEPTH = 1 << FIFO_W;  // 4
+
+    localparam ADDR_TX     = 4'h0;
+    localparam ADDR_RX     = 4'h4;
+    localparam ADDR_STATUS = 4'h8;
+
+    reg         PCLK    = 0;
+    reg         PRESETn = 0;   // FIX-1: b?t ??u ? tr?ng thái reset
+    reg         PSEL    = 0;
+    reg         PENABLE = 0;
+    reg         PWRITE  = 0;
+    reg  [3:0]  PADDR   = 0;
+    reg  [31:0] PWDATA  = 0;
+    wire [31:0] PRDATA;
+    wire        PREADY;
+    wire        PSLVERR;
+    wire        TX;
+    reg         RX = 1;
+
+    apb_uart_bridge #(
+        .DVSR  (DVSR),
+        .FIFO_W(FIFO_W)
+    ) dut (
+        .PCLK   (PCLK),
+        .PRESETn(PRESETn),
+        .PSEL   (PSEL),
+        .PENABLE(PENABLE),
+        .PWRITE (PWRITE),
+        .PADDR  (PADDR),
+        .PWDATA (PWDATA),
+        .PRDATA (PRDATA),
+        .PREADY (PREADY),
+        .PSLVERR(PSLVERR),
+        .RX     (RX),
+        .TX     (TX)
+    );
+
+    always #(CLK_PERIOD/2) PCLK = ~PCLK;
+
+    integer pass_cnt = 0;
+    integer fail_cnt = 0;
+
+    // ----------------------------------------------------------------
+    // Checkers
+    // ----------------------------------------------------------------
+    task check32;
+        input [8*48-1:0] name;
+        input [31:0] got, exp;
+        begin
+            if (got === exp) begin
+                $display("  PASS [%0s]  got=0x%08h", name, got);
+                pass_cnt = pass_cnt + 1;
+            end else begin
+                $display("  FAIL [%0s]  got=0x%08h  exp=0x%08h", name, got, exp);
+                fail_cnt = fail_cnt + 1;
+            end
+        end
+    endtask
+
+    task check1;
+        input [8*48-1:0] name;
+        input got, exp;
+        begin
+            if (got === exp) begin
+                $display("  PASS [%0s]  got=%0b", name, got);
+                pass_cnt = pass_cnt + 1;
+            end else begin
+                $display("  FAIL [%0s]  got=%0b  exp=%0b", name, got, exp);
+                fail_cnt = fail_cnt + 1;
+            end
+        end
+    endtask
+
+    // ----------------------------------------------------------------
+    // do_reset: pulse PRESETn 0?1, dùng ? m?i n?i c?n reset
+    // ----------------------------------------------------------------
+    task do_reset;
+        begin
+            @(negedge PCLK); PRESETn = 0;   // assert (active-low)
+            repeat(5) @(posedge PCLK);
+            @(negedge PCLK); PRESETn = 1;   // deassert
+            repeat(2) @(posedge PCLK);
+        end
+    endtask
+
+    // ----------------------------------------------------------------
+    // APB write  (2-phase: setup ? enable)
+    // ----------------------------------------------------------------
+    task apb_write;
+        input [3:0]  addr;
+        input [31:0] data;
+        begin
+            @(negedge PCLK);
+            PSEL = 1; PWRITE = 1;
+            PADDR = addr; PWDATA = data;
+            PENABLE = 0;
+            @(negedge PCLK);
+            PENABLE = 1;
+            @(posedge PCLK); #1;
+            @(negedge PCLK);
+            PSEL = 0; PENABLE = 0; PWRITE = 0;
+        end
+    endtask
+
+    // ----------------------------------------------------------------
+    // APB read
+    // FIX-2: PRDATA là registered ? DUT latch vào posedge ?óng access.
+    // Ph?i ch? thêm 1 negedge (= half-cycle sau posedge) ?? l?y ?úng data.
+    // ----------------------------------------------------------------
+    reg [31:0] apb_rdata;
+
+    task apb_read;
+        input [3:0] addr;
+        begin
+            @(negedge PCLK);
+            PSEL = 1; PWRITE = 0;
+            PADDR = addr;
+            PENABLE = 0;
+            @(negedge PCLK);
+            PENABLE = 1;
+            @(posedge PCLK);        // posedge: DUT registers PRDATA
+            @(negedge PCLK);        // FIX-2: ch? qua negedge ?? PRDATA ?n ??nh
+            apb_rdata = PRDATA;     // l?y ?úng giá tr? m?i
+            PSEL = 0; PENABLE = 0;
+        end
+    endtask
+
+    // ----------------------------------------------------------------
+    // uart_inject: drive RX serial LSB-first
+    // ----------------------------------------------------------------
+    task uart_inject;
+        input [7:0] data;
+        integer i;
+        begin
+            $display("  [RX-IN] Inject 0x%02h ('%c')", data,
+                     (data >= 8'h20 && data <= 8'h7E) ? data : ".");
+            @(negedge PCLK); RX = 0;
+            repeat(BAUD_CLKS) @(posedge PCLK);
+            for (i = 0; i < 8; i = i + 1) begin
+                @(negedge PCLK); RX = data[i];
+                repeat(BAUD_CLKS) @(posedge PCLK);
+            end
+            @(negedge PCLK); RX = 1;
+            repeat(BAUD_CLKS) @(posedge PCLK);
+        end
+    endtask
+
+    // ----------------------------------------------------------------
+    // uart_capture: sample TX serial LSB-first
+    // ----------------------------------------------------------------
+    reg [7:0] cap_byte;
+
+    task uart_capture;
+        integer i;
+        begin
+            @(negedge TX);
+            repeat(BAUD_CLKS)     @(posedge PCLK);
+            repeat(BAUD_CLKS / 2) @(posedge PCLK);
+            for (i = 0; i < 8; i = i + 1) begin
+                cap_byte[i] = TX;
+                repeat(BAUD_CLKS) @(posedge PCLK);
+            end
+            $display("  [TX-OUT] Captured 0x%02h ('%c')", cap_byte,
+                     (cap_byte >= 8'h20 && cap_byte <= 8'h7E) ? cap_byte : ".");
+        end
+    endtask
+
+    // ================================================================
+    // MAIN TEST
+    // ================================================================
+    initial begin
+        $dumpfile("tb_apb_uart_bridge.vcd");
+        $dumpvars(0, tb_apb_uart_bridge);
+
+        // FIX-1: power-on reset ?úng cách (PRESETn = 0 lúc khai báo)
+        do_reset;
+
+        $display("\n================================================");
+        $display("  Testbench: apb_uart_bridge  v2");
+        $display("  DVSR=%0d  BAUD_CLKS=%0d  FIFO_W=%0d  depth=%0d",
+                 DVSR, BAUD_CLKS, FIFO_W, FIFO_DEPTH);
+        $display("================================================\n");
+
+        // ------------------------------------------------------------
+        // TC1: Reset state
+        // ------------------------------------------------------------
+        $display("--- TC1: Reset state ---");
+        check1("PREADY = 1",  PREADY,  1'b1);
+        check1("PSLVERR = 0", PSLVERR, 1'b0);
+        check1("TX idle",     TX,      1'b1);
+        apb_read(ADDR_STATUS);
+        // Status = {30'h0, tx_full=0, rx_empty=1} = 32'h0000_0001
+        check32("Status after reset", apb_rdata, 32'h0000_0001);
+
+        // ------------------------------------------------------------
+        // TC2: PREADY & PSLVERR constant
+        // ------------------------------------------------------------
+        $display("\n--- TC2: PREADY=1 / PSLVERR=0 ---");
+        apb_write(ADDR_TX, 32'h41);
+        check1("PREADY after write", PREADY,  1'b1);
+        check1("PSLVERR always 0",   PSLVERR, 1'b0);
+        repeat(BAUD_CLKS * 12) @(posedge PCLK);
+
+        // ------------------------------------------------------------
+        // TC3: TX single byte 'A'
+        // ------------------------------------------------------------
+        $display("\n--- TC3: APB Write TX 'A' (0x41) ---");
+        fork
+            apb_write(ADDR_TX, 32'h0000_0041);
+            begin
+                uart_capture;
+                check32("TX serial 'A'", {24'h0, cap_byte}, 32'h41);
+            end
+        join
+        repeat(BAUD_CLKS * 2) @(posedge PCLK);
+
+        // ------------------------------------------------------------
+        // TC4: TX multiple bytes 'H','i','!'
+        // ------------------------------------------------------------
+        $display("\n--- TC4: APB Write TX multiple 'H','i','!' ---");
+        fork
+            begin
+                apb_write(ADDR_TX, 32'h48);
+                apb_write(ADDR_TX, 32'h69);
+                apb_write(ADDR_TX, 32'h21);
+            end
+            begin
+                uart_capture; check32("TX 'H'", {24'h0, cap_byte}, 32'h48);
+                uart_capture; check32("TX 'i'", {24'h0, cap_byte}, 32'h69);
+                uart_capture; check32("TX '!'", {24'h0, cap_byte}, 32'h21);
+            end
+        join
+        repeat(BAUD_CLKS * 2) @(posedge PCLK);
+
+        // ------------------------------------------------------------
+        // TC5: RX single byte 'U'
+        // ------------------------------------------------------------
+        $display("\n--- TC5: APB Read RX 'U' (0x55) ---");
+        uart_inject(8'h55);
+        repeat(10) @(posedge PCLK);
+        apb_read(ADDR_STATUS);
+        check32("Status rx_empty=0", apb_rdata & 32'h1, 32'h0);
+        apb_read(ADDR_RX);
+        check32("RX data 'U'", apb_rdata, 32'h0000_0055);
+        apb_read(ADDR_STATUS);
+        check32("Status rx_empty=1 after read", apb_rdata & 32'h1, 32'h1);
+
+        // ------------------------------------------------------------
+        // TC6: RX multiple bytes 'X','Y'
+        // ------------------------------------------------------------
+        $display("\n--- TC6: APB Read RX multiple 'X','Y' ---");
+        uart_inject(8'h58);
+        uart_inject(8'h59);
+        repeat(10) @(posedge PCLK);
+        apb_read(ADDR_RX);
+        check32("RX 'X'", apb_rdata, 32'h0000_0058);
+        apb_read(ADDR_RX);
+        check32("RX 'Y'", apb_rdata, 32'h0000_0059);
+        apb_read(ADDR_STATUS);
+        check32("Status rx_empty=1 after 2 reads", apb_rdata & 32'h1, 32'h1);
+
+        // ------------------------------------------------------------
+        // TC7: RX 2-FF synchronizer
+        // ------------------------------------------------------------
+        $display("\n--- TC7: RX synchronizer 2-FF ---");
+        uart_inject(8'hA5);
+        repeat(10) @(posedge PCLK);
+        apb_read(ADDR_RX);
+        check32("RX sync 2-FF 0xA5", apb_rdata, 32'h0000_00A5);
+
+        // ------------------------------------------------------------
+        // TC8: Status register ? tx_full bit
+        // FIX-3: PRDATA là registered output.
+        //   - B?n g?c check PRDATA tr?c ti?p sau posedge ? ??c giá tr? c?.
+        //   - S?a: dùng apb_read(ADDR_STATUS) sau khi ghi ?? byte,
+        //     ?? PRDATA ???c latch ?úng ? cycle k? ti?p.
+        //   - FIFO_W=2 ? depth=4. Ghi 4 byte ?? tx_full=1.
+        //   - Ghi tu?n t? (không dùng inline) ?? tránh nh?m l?n timing.
+        // ------------------------------------------------------------
+        $display("\n--- TC8: Status register bits (tx_full) ---");
+        begin : tc8
+            integer k;
+            for (k = 0; k < FIFO_DEPTH; k = k + 1)
+                apb_write(ADDR_TX, k[31:0] + 32'h10);
+            // T?t c? 4 byte ?ã vào FIFO, ch?a k?p drain ? tx_full=1
+            // Dùng apb_read ?? PRDATA ???c registered ?úng cách
+            apb_read(ADDR_STATUS);
+            check32("Status tx_full=1", (apb_rdata >> 1) & 32'h1, 32'h1);
+
+            // Ch? drain h?t
+            repeat(FIFO_DEPTH * BAUD_CLKS * 12) @(posedge PCLK);
+            apb_read(ADDR_STATUS);
+            check32("Status tx_full=0 after drain", (apb_rdata >> 1) & 32'h1, 32'h0);
+        end
+
+        // ------------------------------------------------------------
+        // TC9: Loopback RX?APB?TX
+        // ------------------------------------------------------------
+        $display("\n--- TC9: Loopback RX->APB->TX 'L' (0x4C) ---");
+        uart_inject(8'h4C);
+        repeat(10) @(posedge PCLK);
+        apb_read(ADDR_RX);
+        apb_write(ADDR_TX, apb_rdata);
+        uart_capture;
+        check32("Loopback TX 'L'", {24'h0, cap_byte}, 32'h4C);
+
+        // ------------------------------------------------------------
+        // TC10: Mid-run reset
+        // FIX-4: dùng do_reset ?? nh?t quán v?i power-on reset
+        // ------------------------------------------------------------
+        $display("\n--- TC10: Mid-run reset ---");
+        apb_write(ADDR_TX, 32'h55);
+        uart_inject(8'h30);
+        repeat(5) @(posedge PCLK);
+        do_reset;   // FIX-4
+        #1;
+        check1("TX idle after reset",  TX,      1'b1);
+        check1("PREADY after reset",   PREADY,  1'b1);
+        check1("PSLVERR after reset",  PSLVERR, 1'b0);
+        apb_read(ADDR_STATUS);
+        check32("Status reset: rx_empty=1", apb_rdata & 32'h1, 32'h1);
+
+        // ------------------------------------------------------------
+        // TC11: Read default/invalid address ? PRDATA = 0
+        // ------------------------------------------------------------
+        $display("\n--- TC11: APB read default address (0xC) ---");
+        apb_read(4'hC);
+        check32("Default PRDATA=0", apb_rdata, 32'h0);
+
+        // ------------------------------------------------------------
+        // TC12: TX edge bytes 0x00 và 0xFF
+        // ------------------------------------------------------------
+        $display("\n--- TC12: TX edge bytes 0x00 and 0xFF ---");
+        fork
+            apb_write(ADDR_TX, 32'h00);
+            begin uart_capture; check32("TX 0x00", {24'h0, cap_byte}, 32'h00); end
+        join
+        repeat(BAUD_CLKS * 2) @(posedge PCLK);
+        fork
+            apb_write(ADDR_TX, 32'hFF);
+            begin uart_capture; check32("TX 0xFF", {24'h0, cap_byte}, 32'hFF); end
+        join
+        repeat(BAUD_CLKS * 2) @(posedge PCLK);
+
+        // ------------------------------------------------------------
+        // TC13: RX edge bytes 0x00 và 0xFF
+        // ------------------------------------------------------------
+        $display("\n--- TC13: RX edge bytes 0x00 and 0xFF ---");
+        uart_inject(8'h00);
+        repeat(10) @(posedge PCLK);
+        apb_read(ADDR_RX);
+        check32("RX 0x00", apb_rdata, 32'h0);
+        uart_inject(8'hFF);
+        repeat(10) @(posedge PCLK);
+        apb_read(ADDR_RX);
+        check32("RX 0xFF", apb_rdata, 32'h0000_00FF);
+
+        // ------------------------------------------------------------
+        // SUMMARY
+        // ------------------------------------------------------------
+        repeat(10) @(posedge PCLK);
+        $display("\n================================================");
+        $display("  KET QUA: %0d PASS  |  %0d FAIL", pass_cnt, fail_cnt);
+        $display("================================================\n");
+        $finish;
+    end
+
+    initial begin
+        #50_000_000;
+        $display("\n[TIMEOUT]\n");
+        $finish;
+    end
+
+endmodule

@@ -1,0 +1,5 @@
+var g_data = {'dummy':{null},
+'work.hazard_unit':{h:'3',z:1},
+'/tb_hazard/uut':{h:'59',z:1},
+'work.tb_hazard':{h:'2',z:1},
+'/tb_hazard':{h:'4',z:1}};

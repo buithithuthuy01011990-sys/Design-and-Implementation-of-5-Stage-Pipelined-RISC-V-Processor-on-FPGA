@@ -1,0 +1,163 @@
+Reading D:/cai_sytem/tcl/vsim/pref.tcl
+
+# 10.7c
+
+# vsim -do " run -all; quit" tb_apb_uart_bridge 
+# Start time: 12:54:51 on Jun 09,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  Questa Sim-64
+# //  Version 10.7c win64 Aug 18 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading work.tb_apb_uart_bridge(fast)
+#  run -all
+#   Testbench: apb_uart_bridge  
+#   DVSR=3  BAUD_CLKS=48  FIFO_W=2  depth=4
+#  TC1: Reset 
+#   PASS [PREADY = 1]  got=1
+#   PASS [PSLVERR = 0]  got=0
+#   PASS [TX idle]  got=1
+#   PASS [Status after reset]  got=0x00000001
+# 
+# TC2: PREADY=1 / PSLVERR=0 
+#   PASS [PREADY after write]  got=1
+#   PASS [PSLVERR always 0]  got=0
+# [TX_FIFO_POP] t=155000 tx_din=0x41
+# [TX_START] t=165000 tx_byte=0x41
+# [TX_DONE] t=4945000 tx_byte=0x41
+# 
+# TC3: APB Write TX 'A' (0x41) 
+# [TX_FIFO_POP] t=5935000 tx_din=0x41
+# [TX_START] t=5945000 tx_byte=0x41
+#   [TX-OUT] Captured 0x41 ('A')
+#   PASS [TX serial 'A']  got=0x00000041
+# [TX_DONE] t=10735000 tx_byte=0x41
+# 
+#  TC4: APB Write TX multiple 'H','i','!' 
+# [TX_FIFO_POP] t=11525000 tx_din=0x48
+# [TX_START] t=11535000 tx_byte=0x48
+#   [TX-OUT] Captured 0x48 ('H')
+#   PASS [TX 'H']  got=0x00000048
+# [TX_DONE] t=16315000 tx_byte=0x48
+# [TX_FIFO_POP] t=16335000 tx_din=0x69
+# [TX_START] t=16345000 tx_byte=0x69
+#   [TX-OUT] Captured 0x69 ('i')
+#   PASS [TX 'i']  got=0x00000069
+# [TX_DONE] t=21145000 tx_byte=0x69
+# [TX_FIFO_POP] t=21165000 tx_din=0x21
+# [TX_START] t=21175000 tx_byte=0x21
+#   [TX-OUT] Captured 0x21 ('!')
+#   PASS [TX '!']  got=0x00000021
+# [TX_DONE] t=25975000 tx_byte=0x21
+# 
+#  TC5: APB Read RX 'U' (0x55) 
+#   [RX-IN] Inject 0x55 ('U')
+# [UART_RX_DONE] t=31285000 dout=0x55 ('U')
+# [RX_FIFO_WRITE] t=31285000 write_data=0x55 ('U')
+#   PASS [Status rx_empty=0]  got=0x00000000
+# [RX_FIFO_READ] t=31655000 r_data=0x55 ('U') rx_empty=0
+#   PASS [RX data 'U']  got=0x00000055
+#   PASS [Status rx_empty=1 after read]  got=0x00000001
+# 
+#  TC6: APB Read RX multiple 'X','Y' 
+#   [RX-IN] Inject 0x58 ('X')
+# [UART_RX_DONE] t=36265000 dout=0x58 ('X')
+# [RX_FIFO_WRITE] t=36265000 write_data=0x58 ('X')
+#   [RX-IN] Inject 0x59 ('Y')
+# [UART_RX_DONE] t=41065000 dout=0x59 ('Y')
+# [RX_FIFO_WRITE] t=41065000 write_data=0x59 ('Y')
+# [RX_FIFO_READ] t=41415000 r_data=0x58 ('X') rx_empty=0
+#   PASS [RX 'X']  got=0x00000058
+# [RX_FIFO_READ] t=41445000 r_data=0x59 ('Y') rx_empty=0
+#   PASS [RX 'Y']  got=0x00000059
+#   PASS [Status rx_empty=1 after 2 reads]  got=0x00000001
+# 
+#  TC7: RX synchronizer 2-FF 
+#   [RX-IN] Inject 0xa5 ('.')
+# [UART_RX_DONE] t=46075000 dout=0xa5 ('.')
+# [RX_FIFO_WRITE] t=46075000 write_data=0xa5 ('.')
+# [RX_FIFO_READ] t=46405000 r_data=0xa5 ('.') rx_empty=0
+#   PASS [RX sync 2-FF 0xA5]  got=0x000000a5
+# 
+# TC8: Status register bits
+# [TX_FIFO_POP] t=46465000 tx_din=0xaa
+# [TX_START] t=46475000 tx_byte=0xaa
+#   PASS [Status tx_full=1]  got=0x00000001
+# [TX_DONE] t=51265000 tx_byte=0xaa
+# [TX_FIFO_POP] t=51285000 tx_din=0x10
+# [TX_START] t=51295000 tx_byte=0x10
+# [TX_DONE] t=56095000 tx_byte=0x10
+# [TX_FIFO_POP] t=56115000 tx_din=0x11
+# [TX_START] t=56125000 tx_byte=0x11
+# [TX_DONE] t=60925000 tx_byte=0x11
+# [TX_FIFO_POP] t=60945000 tx_din=0x12
+# [TX_START] t=60955000 tx_byte=0x12
+# [TX_DONE] t=65755000 tx_byte=0x12
+# [TX_FIFO_POP] t=65775000 tx_din=0x13
+# [TX_START] t=65785000 tx_byte=0x13
+# [TX_DONE] t=70585000 tx_byte=0x13
+#   PASS [Status tx_full=0]  got=0x00000000
+# 
+#  TC9: Loopback RX->APB->TX 'L' (0x4C) 
+#   [RX-IN] Inject 0x4c ('L')
+# [UART_RX_DONE] t=80035000 dout=0x4c ('L')
+# [RX_FIFO_WRITE] t=80035000 write_data=0x4c ('L')
+# [RX_FIFO_READ] t=80385000 r_data=0x4c ('L') rx_empty=0
+# [TX_FIFO_POP] t=80445000 tx_din=0x4c
+# [TX_START] t=80455000 tx_byte=0x4c
+#   [TX-OUT] Captured 0x4c ('L')
+#   PASS [Loopback TX 'L']  got=0x0000004c
+# 
+#  TC10:  reset 
+#   [RX-IN] Inject 0x30 ('0')
+# [TX_DONE] t=85255000 tx_byte=0x4c
+# [TX_FIFO_POP] t=85275000 tx_din=0x55
+# [TX_START] t=85285000 tx_byte=0x55
+# [UART_RX_DONE] t=89635000 dout=0x30 ('0')
+# [RX_FIFO_WRITE] t=89635000 write_data=0x30 ('0')
+#   PASS [TX idle after reset]  got=1
+#   PASS [PREADY after reset]  got=1
+#   PASS [PSLVERR after reset]  got=0
+#   PASS [Status reset: rx_empty=1]  got=0x00000001
+# 
+#  TC11: APB read default address (0xC) 
+#   PASS [Default PRDATA=0]  got=0x00000000
+# 
+#  TC12: TX  bytes 0x00 and 0xFF 
+# [TX_FIFO_POP] t=90085000 tx_din=0x00
+# [TX_START] t=90095000 tx_byte=0x00
+#   [TX-OUT] Captured 0x00 ('.')
+#   PASS [TX 0x00]  got=0x00000000
+# [TX_DONE] t=94875000 tx_byte=0x00
+# [TX_FIFO_POP] t=95675000 tx_din=0xff
+# [TX_START] t=95685000 tx_byte=0xff
+#   [TX-OUT] Captured 0xff ('.')
+#   PASS [TX 0xFF]  got=0x000000ff
+# [TX_DONE] t=100485000 tx_byte=0xff
+# 
+#  TC13: RX edge bytes 0x00 and 0xFF 
+#   [RX-IN] Inject 0x00 ('.')
+# [UART_RX_DONE] t=105795000 dout=0x00 ('.')
+# [RX_FIFO_WRITE] t=105795000 write_data=0x00 ('.')
+# [RX_FIFO_READ] t=106135000 r_data=0x00 ('.') rx_empty=0
+#   PASS [RX 0x00]  got=0x00000000
+#   [RX-IN] Inject 0xff ('.')
+# [UART_RX_DONE] t=110715000 dout=0xff ('.')
+# [RX_FIFO_WRITE] t=110715000 write_data=0xff ('.')
+# [RX_FIFO_READ] t=111065000 r_data=0xff ('.') rx_empty=0
+#   PASS [RX 0xFF]  got=0x000000ff
+#   KET QUA: 29 PASS  |  0 FAIL
+# ** Note: $finish    : tb_apb_uart.v(374)
+#    Time: 111165 ns  Iteration: 1  Instance: /tb_apb_uart_bridge
+# End time: 12:54:51 on Jun 09,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

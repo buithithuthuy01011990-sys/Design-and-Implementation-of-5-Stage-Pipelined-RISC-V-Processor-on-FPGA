@@ -1,0 +1,763 @@
+QuestaSim-64 vcover 10.7c Coverage Utility 2018.08 Aug 18 2018
+Start time: 14:27:23 on Jun 08,2026
+vcover report -details hazard.ucdb 
+Coverage Report by file with details
+
+=================================================================================
+=== File: hazard.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            3         3         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file hazard.v --
+
+    1                                                module hazard_unit(
+    2                                                    input        reset,
+    3                                                    input        RegWriteM,
+    4                                                    input        RegWriteW,
+    5                                                    input [4:0]  RD_M, RD_W,
+    6                                                    input [4:0]  Rs1_E, Rs2_E,
+    7                                                    output [1:0] ForwardAE, ForwardBE,
+    8                                                   
+    9                                                    input        ResultSrcE_0,   
+    10                                                   input [4:0]  RD_E,          
+    11                                                   input [4:0]  Rs1_D, Rs2_D,   
+    12                                                   output       StallF,         
+    13                                                   output       StallD,
+    14                                                   output       FlushE,
+    15                                                   output       FlushD          
+    16                                               );
+    17                                                  
+    18                                                   // Forwarding logic 
+    19              1                          9         assign ForwardAE = (reset) ? 2'b00 :
+    20                                                       ((RegWriteM) & (RD_M != 5'h0) & (RD_M == Rs1_E)) ? 2'b10 :
+    21                                                       ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs1_E)) ? 2'b01 : 2'b00;
+    22                                               
+    23              1                          9         assign ForwardBE = (reset) ? 2'b00 :
+    24                                                       ((RegWriteM) & (RD_M != 5'h0) & (RD_M == Rs2_E)) ? 2'b10 :
+    25                                                       ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs2_E)) ? 2'b01 : 2'b00;
+    26                                                 
+    27                                                   // Load-use hazard
+    28                                                   wire load_use_hazard;
+    29              1                          1         assign load_use_hazard = ResultSrcE_0 &
+    30                                                                            ((RD_E == Rs1_D) | (RD_E == Rs2_D));
+    31                                               
+    32                                                   assign StallF = load_use_hazard;
+    33                                                   assign StallD = load_use_hazard;
+    34                                                   assign FlushE = load_use_hazard;  // flush ID/EX khi load-use
+    35                                               
+    36                                                   assign FlushD = 1'b0; 
+    37                                               
+    38                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        12         8         4     66.66
+
+================================Branch Details================================
+
+Branch Coverage for file hazard.v --
+
+------------------------------------IF Branch------------------------------------
+    19                                         8     Count coming in to IF
+    19              1                          7         assign ForwardAE = (reset) ? 2'b00 :
+    20              1                          1             ((RegWriteM) & (RD_M != 5'h0) & (RD_M == Rs1_E)) ? 2'b10 :
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    20                                         1     Count coming in to IF
+    20              2                    ***0***             ((RegWriteM) & (RD_M != 5'h0) & (RD_M == Rs1_E)) ? 2'b10 :
+    21              1                          1             ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs1_E)) ? 2'b01 : 2'b00;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    21                                         1     Count coming in to IF
+    21              2                    ***0***             ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs1_E)) ? 2'b01 : 2'b00;
+    21              3                          1             ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs1_E)) ? 2'b01 : 2'b00;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    23                                         8     Count coming in to IF
+    23              1                          7         assign ForwardBE = (reset) ? 2'b00 :
+    24              1                          1             ((RegWriteM) & (RD_M != 5'h0) & (RD_M == Rs2_E)) ? 2'b10 :
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    24                                         1     Count coming in to IF
+    24              2                    ***0***             ((RegWriteM) & (RD_M != 5'h0) & (RD_M == Rs2_E)) ? 2'b10 :
+    25              1                          1             ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs2_E)) ? 2'b01 : 2'b00;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    25                                         1     Count coming in to IF
+    25              2                    ***0***             ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs2_E)) ? 2'b01 : 2'b00;
+    25              3                          1             ((RegWriteW) & (RD_W != 5'h0) & (RD_W == Rs2_E)) ? 2'b01 : 2'b00;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms             12         0        12      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file hazard.v --
+
+----------------Focused Condition View-------------------
+Line       20 Item    1  ((RegWriteM & (RD_M != 0)) & (RD_M == Rs1_E))
+Condition totals: 0 of 3 input terms covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+        RegWriteM         N  No hits                  Hit '_0' and '_1'
+      (RD_M != 0)         N  No hits                  Hit '_0' and '_1'
+  (RD_M == Rs1_E)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  RegWriteM_0           ((RD_M == Rs1_E) && (RD_M != 0))
+  Row   2:    ***0***  RegWriteM_1           ((RD_M == Rs1_E) && (RD_M != 0))
+  Row   3:    ***0***  (RD_M != 0)_0         ((RD_M == Rs1_E) && RegWriteM)
+  Row   4:    ***0***  (RD_M != 0)_1         ((RD_M == Rs1_E) && RegWriteM)
+  Row   5:    ***0***  (RD_M == Rs1_E)_0     (RegWriteM & (RD_M != 0))     
+  Row   6:    ***0***  (RD_M == Rs1_E)_1     (RegWriteM & (RD_M != 0))     
+
+----------------Focused Condition View-------------------
+Line       21 Item    1  ((RegWriteW & (RD_W != 0)) & (RD_W == Rs1_E))
+Condition totals: 0 of 3 input terms covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+        RegWriteW         N  No hits                  Hit '_0' and '_1'
+      (RD_W != 0)         N  No hits                  Hit '_0' and '_1'
+  (RD_W == Rs1_E)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  RegWriteW_0           ((RD_W == Rs1_E) && (RD_W != 0))
+  Row   2:    ***0***  RegWriteW_1           ((RD_W == Rs1_E) && (RD_W != 0))
+  Row   3:    ***0***  (RD_W != 0)_0         ((RD_W == Rs1_E) && RegWriteW)
+  Row   4:    ***0***  (RD_W != 0)_1         ((RD_W == Rs1_E) && RegWriteW)
+  Row   5:    ***0***  (RD_W == Rs1_E)_0     (RegWriteW & (RD_W != 0))     
+  Row   6:    ***0***  (RD_W == Rs1_E)_1     (RegWriteW & (RD_W != 0))     
+
+----------------Focused Condition View-------------------
+Line       24 Item    1  ((RegWriteM & (RD_M != 0)) & (RD_M == Rs2_E))
+Condition totals: 0 of 3 input terms covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+        RegWriteM         N  No hits                  Hit '_0' and '_1'
+      (RD_M != 0)         N  No hits                  Hit '_0' and '_1'
+  (RD_M == Rs2_E)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  RegWriteM_0           ((RD_M == Rs2_E) && (RD_M != 0))
+  Row   2:    ***0***  RegWriteM_1           ((RD_M == Rs2_E) && (RD_M != 0))
+  Row   3:    ***0***  (RD_M != 0)_0         ((RD_M == Rs2_E) && RegWriteM)
+  Row   4:    ***0***  (RD_M != 0)_1         ((RD_M == Rs2_E) && RegWriteM)
+  Row   5:    ***0***  (RD_M == Rs2_E)_0     (RegWriteM & (RD_M != 0))     
+  Row   6:    ***0***  (RD_M == Rs2_E)_1     (RegWriteM & (RD_M != 0))     
+
+----------------Focused Condition View-------------------
+Line       25 Item    1  ((RegWriteW & (RD_W != 0)) & (RD_W == Rs2_E))
+Condition totals: 0 of 3 input terms covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+        RegWriteW         N  No hits                  Hit '_0' and '_1'
+      (RD_W != 0)         N  No hits                  Hit '_0' and '_1'
+  (RD_W == Rs2_E)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  RegWriteW_0           ((RD_W == Rs2_E) && (RD_W != 0))
+  Row   2:    ***0***  RegWriteW_1           ((RD_W == Rs2_E) && (RD_W != 0))
+  Row   3:    ***0***  (RD_W != 0)_0         ((RD_W == Rs2_E) && RegWriteW)
+  Row   4:    ***0***  (RD_W != 0)_1         ((RD_W == Rs2_E) && RegWriteW)
+  Row   5:    ***0***  (RD_W == Rs2_E)_0     (RegWriteW & (RD_W != 0))     
+  Row   6:    ***0***  (RD_W == Rs2_E)_1     (RegWriteW & (RD_W != 0))     
+
+
+Expression Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Expression Terms             3         0         3      0.00
+
+================================Expression Details================================
+
+Expression Coverage for file hazard.v --
+
+----------------Focused Expression View-----------------
+Line       29 Item    1  (ResultSrcE_0 & ((RD_E == Rs1_D) | (RD_E == Rs2_D)))
+Expression totals: 0 of 3 input terms covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+     ResultSrcE_0         N  No hits                  Hit '_0' and '_1'
+  (RD_E == Rs1_D)         N  No hits                  Hit '_0' and '_1'
+  (RD_E == Rs2_D)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  ResultSrcE_0_0        ((RD_E == Rs1_D) | (RD_E == Rs2_D))
+  Row   2:    ***0***  ResultSrcE_0_1        ((RD_E == Rs1_D) | (RD_E == Rs2_D))
+  Row   3:    ***0***  (RD_E == Rs1_D)_0     (ResultSrcE_0 && ~(RD_E == Rs2_D))
+  Row   4:    ***0***  (RD_E == Rs1_D)_1     (ResultSrcE_0 && ~(RD_E == Rs2_D))
+  Row   5:    ***0***  (RD_E == Rs2_D)_0     (ResultSrcE_0 && ~(RD_E == Rs1_D))
+  Row   6:    ***0***  (RD_E == Rs2_D)_1     (ResultSrcE_0 && ~(RD_E == Rs1_D))
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                     40         0        40      0.00
+
+================================Toggle Details================================
+
+Toggle Coverage for File hazard.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          9                           ResultSrcE_0           0           0        0.00 
+         10                                RD_E[4]           0           0        0.00 
+         10                                RD_E[3]           0           0        0.00 
+         10                                RD_E[2]           0           0        0.00 
+         10                                RD_E[1]           0           0        0.00 
+         10                                RD_E[0]           0           0        0.00 
+         11                               Rs2_D[4]           0           0        0.00 
+         11                               Rs2_D[3]           0           0        0.00 
+         11                               Rs2_D[2]           0           0        0.00 
+         11                               Rs2_D[1]           0           0        0.00 
+         11                               Rs2_D[0]           0           0        0.00 
+         11                               Rs1_D[4]           0           0        0.00 
+         11                               Rs1_D[3]           0           0        0.00 
+         11                               Rs1_D[2]           0           0        0.00 
+         11                               Rs1_D[1]           0           0        0.00 
+         11                               Rs1_D[0]           0           0        0.00 
+         12                                 StallF           0           0        0.00 
+         13                                 StallD           0           0        0.00 
+         14                                 FlushE           0           0        0.00 
+         28                        load_use_hazard           0           0        0.00 
+
+Total Node Count     =         20 
+Toggled Node Count   =          0 
+Untoggled Node Count =         20 
+
+Toggle Coverage      =       0.00% (0 of 40 bins)
+
+=================================================================================
+=== File: tb_hazard.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           79        70         9     88.60
+
+================================Statement Details================================
+
+Statement Coverage for file tb_hazard.v --
+NOTE: The modification timestamp for source file 'tb_hazard.v' has been altered since compilation.
+
+    1                                                `timescale 1ns/1ps
+    2                                                
+    3                                                module tb_hazard;
+    4                                                
+    5                                                    // ?? Inputs ??????????????????????????????????????????????
+    6                                                    reg        reset;
+    7                                                    reg        RegWriteM, RegWriteW;
+    8                                                    reg  [4:0] RD_M, RD_W;
+    9                                                    reg  [4:0] Rs1_E, Rs2_E;
+    10                                                   reg        ResultSrcE_0;
+    11                                                   reg  [4:0] RD_E;
+    12                                                   reg  [4:0] Rs1_D, Rs2_D;
+    13                                               
+    14                                                   // ?? Outputs ?????????????????????????????????????????????
+    15                                                   wire [1:0] ForwardAE, ForwardBE;
+    16                                                   wire       StallF, StallD, FlushE, FlushD;
+    17                                               
+    18                                                   // ?? DUT ?????????????????????????????????????????????????
+    19                                                   hazard_unit uut (
+    20                                                       .reset        (reset),
+    21                                                       .RegWriteM    (RegWriteM),
+    22                                                       .RegWriteW    (RegWriteW),
+    23                                                       .RD_M         (RD_M),
+    24                                                       .RD_W         (RD_W),
+    25              1                          1             .Rs1_E        (Rs1_E),
+    26                                                       .Rs2_E        (Rs2_E),
+    27              1                          1             .ForwardAE    (ForwardAE),
+    28              1                          1             .ForwardBE    (ForwardBE),
+    28              2                          1     
+    29              1                          1             .ResultSrcE_0 (ResultSrcE_0),
+    29              2                          1     
+    30              1                          1             .RD_E         (RD_E),
+    30              2                          1     
+    31              1                          1             .Rs1_D        (Rs1_D),
+    32              1                          1             .Rs2_D        (Rs2_D),
+    33                                                       .StallF       (StallF),
+    34                                                       .StallD       (StallD),
+    35              1                          1             .FlushE       (FlushE),
+    36              1                          1             .FlushD       (FlushD)
+    36              2                          1     
+    37              1                          1         );
+    37              2                          1     
+    38              1                          1     
+    39              1                          1         // ?? Counters ?????????????????????????????????????????????
+    40              1                          1         integer pass_cnt, fail_cnt;
+    41                                               
+    42              1                          1         // ?? Tasks ????????????????????????????????????????????????
+    43                                                   task chk1;
+    44                                                       input [200:0] name;
+    45              1                    ***0***             input         got;
+    46                                                       input         exp;
+    47                                                       begin
+    48                                                           if (got === exp) begin
+    49              1                          1                     $display("  [PASS] %0s  got=%0b", name, got);
+    50              1                          1                     pass_cnt = pass_cnt + 1;
+    50              2                          1     
+    51              1                          1                 end else begin
+    51              2                          1     
+    52              1                          1                     $display("  [FAIL] %0s  got=%0b  exp=%0b", name, got, exp);
+    53              1                          1                     fail_cnt = fail_cnt + 1;
+    54              1                          1                 end
+    55                                                       end
+    56              1                    ***0***         endtask
+    57                                               
+    58              1                          1         task chk2;
+    59                                                       input [200:0] name;
+    60                                                       input  [1:0]  got;
+    61              1                          1             input  [1:0]  exp;
+    62              1                          1             begin
+    62              2                          1     
+    63              1                          1                 if (got === exp) begin
+    64              1                          1                     $display("  [PASS] %0s  got=%02b", name, got);
+    65              1                          1                     pass_cnt = pass_cnt + 1;
+    66                                                           end else begin
+    67              1                    ***0***                     $display("  [FAIL] %0s  got=%02b  exp=%02b", name, got, exp);
+    68                                                               fail_cnt = fail_cnt + 1;
+    69              1                          1                 end
+    70                                                       end
+    71                                                   endtask
+    72              1                          1     
+    73              1                          1         // ??t t?t c? v? tr?ng thái "không có hazard"
+    73              2                          1     
+    74              1                          1         task init;
+    74              2                          1     
+    75              1                          1             begin
+    76              1                          1                 reset        = 0;
+    77              1                          1                 RegWriteM    = 0; RegWriteW    = 0;
+    78                                                           RD_M         = 0; RD_W         = 0;
+    79              1                    ***0***                 Rs1_E        = 0; Rs2_E        = 0;
+    80                                                           ResultSrcE_0 = 0;
+    81              1                          1                 RD_E         = 0;
+    82                                                           Rs1_D        = 0; Rs2_D        = 0;
+    83                                                       end
+    84              1                          1         endtask
+    85              1                          1     
+    85              2                          1     
+    86              1                          1         // ?? Stimulus ?????????????????????????????????????????????
+    87              1                          1         initial begin
+    88              1                          1             $dumpfile("tb_hazard.vcd");
+    89                                                       $dumpvars(0, tb_hazard);
+    90              1                    ***0***     
+    91                                                       pass_cnt = 0; fail_cnt = 0;
+    92              1                          1     
+    93                                                       // ====================================================
+    94                                                       // TC1 ? Reset: m?i output v? giá tr? an toàn
+    95              1                          1             // ====================================================
+    96              1                          1             $display("\n[TC1] Reset active");
+    96              2                          1     
+    97              1                          1             init;
+    97              2                          1     
+    98              1                          1             // ??t m?t k?ch b?n "có th? forward" nh?ng reset ph?i ch?n t?t c?
+    99              1                          1             RegWriteM = 1; RD_M = 5'd3; Rs1_E = 5'd3;
+    100             1                          1             RegWriteW = 1; RD_W = 5'd4; Rs2_E = 5'd4;
+    101                                                      ResultSrcE_0 = 1; RD_E = 5'd5; Rs1_D = 5'd5;
+    102             1                    ***0***             reset = 1; #1;
+    103                                                      chk2("TC1 ForwardAE=00 khi reset", ForwardAE, 2'b00);
+    104                                                      chk2("TC1 ForwardBE=00 khi reset", ForwardBE, 2'b00);
+    105             1                          1             // StallF/StallD/FlushE do load_use ? reset không ?nh h??ng logic hazard
+    106                                                      // (theo thi?t k? FlushD = 0 c?ng)
+    107                                                      chk1("TC1 FlushD=0 (hardwired)",   FlushD,    1'b0);
+    108                                                      reset = 0; #1;
+    109             1                          1     
+    110             1                          1             // ====================================================
+    110             2                          1     
+    111             1                          1             // NHÓM FORWARDING
+    112             1                          1             // ====================================================
+    113             1                          1     
+    114                                                      // TC2 ? ForwardA t? MEM stage (MEM?EX, ForwardAE=10)
+    115             1                          1             $display("\n[TC2] ForwardA: EX/MEM -> EX  (ForwardAE=10)");
+    116                                                      init;
+    117             1                    ***0***             RegWriteM = 1; RD_M = 5'd5; Rs1_E = 5'd5;   // RD_M == Rs1_E
+    118                                                      Rs2_E = 5'd9; // Rs2 khác ? ForwardBE không ???c kích
+    119                                                      #1;
+    120             1                          1             chk2("TC2 ForwardAE=10", ForwardAE, 2'b10);
+    121             1                          1             chk2("TC2 ForwardBE=00", ForwardBE, 2'b00);
+    122                                              
+    123                                                      // TC3 ? ForwardA t? WB stage (WB?EX, ForwardAE=01)
+    124                                                      $display("\n[TC3] ForwardA: MEM/WB -> EX  (ForwardAE=01)");
+    125             1                          1             init;
+    126             1                    ***0***             RegWriteW = 1; RD_W = 5'd7; Rs1_E = 5'd7;   // RD_W == Rs1_E
+    127             1                    ***0***             Rs2_E = 5'd9;
+    128                                                      #1;
+    129                                                      chk2("TC3 ForwardAE=01", ForwardAE, 2'b01);
+    130                                                      chk2("TC3 ForwardBE=00", ForwardBE, 2'b00);
+    131                                              
+    132                                                      // TC4 ? ForwardB t? MEM stage (ForwardBE=10)
+    133                                                      $display("\n[TC4] ForwardB: EX/MEM -> EX  (ForwardBE=10)");
+    134                                                      init;
+    135                                                      RegWriteM = 1; RD_M = 5'd6; Rs2_E = 5'd6;
+    136                                                      Rs1_E = 5'd9;
+    137                                                      #1;
+    138                                                      chk2("TC4 ForwardAE=00", ForwardAE, 2'b00);
+    139                                                      chk2("TC4 ForwardBE=10", ForwardBE, 2'b10);
+    140                                              
+    141                                                      // TC5 ? ForwardB t? WB stage (ForwardBE=01)
+    142                                                      $display("\n[TC5] ForwardB: MEM/WB -> EX  (ForwardBE=01)");
+    143                                                      init;
+    144                                                      RegWriteW = 1; RD_W = 5'd8; Rs2_E = 5'd8;
+    145                                                      Rs1_E = 5'd9;
+    146                                                      #1;
+    147                                                      chk2("TC5 ForwardAE=00", ForwardAE, 2'b00);
+    148                                                      chk2("TC5 ForwardBE=01", ForwardBE, 2'b01);
+    149                                              
+    150                                                      // TC6 ? Double forward: c? A l?n B ??u forward t? MEM
+    151                                                      $display("\n[TC6] ForwardA=10 & ForwardB=10 (c? hai t? MEM)");
+    152                                                      init;
+    153                                                      RegWriteM = 1; RD_M = 5'd3;
+    154                                                      Rs1_E = 5'd3; Rs2_E = 5'd3;   // cùng source
+    155                                                      #1;
+    156                                                      chk2("TC6 ForwardAE=10", ForwardAE, 2'b10);
+    157                                                      chk2("TC6 ForwardBE=10", ForwardBE, 2'b10);
+    158                                              
+    159                                                      // TC7 ? Forward A t? MEM, B t? WB (hai ngu?n khác nhau)
+    160                                                      $display("\n[TC7] ForwardA=10 (MEM) & ForwardB=01 (WB)");
+    161                                                      init;
+    162                                                      RegWriteM = 1; RD_M = 5'd2; Rs1_E = 5'd2;   // A t? MEM
+    163                                                      RegWriteW = 1; RD_W = 5'd4; Rs2_E = 5'd4;   // B t? WB
+    164                                                      #1;
+    165                                                      chk2("TC7 ForwardAE=10", ForwardAE, 2'b10);
+    166                                                      chk2("TC7 ForwardBE=01", ForwardBE, 2'b01);
+    167                                              
+    168                                                      // TC8 ? MEM ?u tiên h?n WB khi cùng register (RD_M==RD_W==Rs1_E)
+    169                                                      $display("\n[TC8] MEM vs WB priority: MEM thang (ForwardAE=10)");
+    170                                                      init;
+    171                                                      RegWriteM = 1; RD_M = 5'd5;
+    172                                                      RegWriteW = 1; RD_W = 5'd5;
+    173                                                      Rs1_E = 5'd5;   // c? MEM l?n WB ??u match
+    174                                                      #1;
+    175                                                      chk2("TC8 ForwardAE=10 (MEM wins)", ForwardAE, 2'b10);
+    176                                              
+    177                                                      // TC9 ? Không forward khi RD = x0
+    178                                                      $display("\n[TC9] Khong forward khi RD=x0 (x0 cung luon = 0)");
+    179                                                      init;
+    180                                                      RegWriteM = 1; RD_M = 5'd0; Rs1_E = 5'd0;
+    181                                                      RegWriteW = 1; RD_W = 5'd0; Rs2_E = 5'd0;
+    182                                                      #1;
+    183                                                      chk2("TC9 ForwardAE=00 (RD_M=x0)", ForwardAE, 2'b00);
+    184                                                      chk2("TC9 ForwardBE=00 (RD_W=x0)", ForwardBE, 2'b00);
+    185                                              
+    186                                                      // TC10 ? Không forward khi RegWrite=0
+    187                                                      $display("\n[TC10] Khong forward khi RegWriteM=0");
+    188                                                      init;
+    189                                                      RegWriteM = 0; RD_M = 5'd3; Rs1_E = 5'd3;   // RD match nh?ng không ghi
+    190                                                      #1;
+    191                                                      chk2("TC10 ForwardAE=00 (RegWriteM=0)", ForwardAE, 2'b00);
+    192                                              
+    193                                                      // ====================================================
+    194                                                      // NHÓM LOAD-USE HAZARD
+    195                                                      // ====================================================
+    196                                              
+    197                                                      // TC11 ? Load-use: LW rd, ? s? d?ng rd ? l?nh ti?p theo (Rs1_D match)
+    198                                                      $display("\n[TC11] Load-use hazard: RD_E==Rs1_D");
+    199                                                      init;
+    200                                                      ResultSrcE_0 = 1;   // l?nh ? EX là LW
+    201                                                      RD_E  = 5'd3;
+    202                                                      Rs1_D = 5'd3;       // l?nh sau (? ID) dùng Rs1 = k?t qu? LW
+    203                                                      Rs2_D = 5'd9;
+    204                                                      #1;
+    205                                                      chk1("TC11 StallF=1", StallF, 1'b1);
+    206                                                      chk1("TC11 StallD=1", StallD, 1'b1);
+    207                                                      chk1("TC11 FlushE=1", FlushE, 1'b1);
+    208                                                      chk1("TC11 FlushD=0", FlushD, 1'b0);  // hardwired
+    209                                              
+    210                                                      // TC12 ? Load-use: Rs2_D match
+    211                                                      $display("\n[TC12] Load-use hazard: RD_E==Rs2_D");
+    212                                                      init;
+    213                                                      ResultSrcE_0 = 1;
+    214                                                      RD_E  = 5'd5;
+    215                                                      Rs1_D = 5'd9;
+    216                                                      Rs2_D = 5'd5;
+    217                                                      #1;
+    218                                                      chk1("TC12 StallF=1", StallF, 1'b1);
+    219                                                      chk1("TC12 StallD=1", StallD, 1'b1);
+    220                                                      chk1("TC12 FlushE=1", FlushE, 1'b1);
+    221                                              
+    222                                                      // TC13 ? Load nh?ng không dùng k?t qu? (không hazard)
+    223                                                      $display("\n[TC13] Load EX nhung ID dung register khac -> no hazard");
+    224                                                      init;
+    225                                                      ResultSrcE_0 = 1;
+    226                                                      RD_E  = 5'd3;
+    227                                                      Rs1_D = 5'd7;   // khác RD_E
+    228                                                      Rs2_D = 5'd8;   // khác RD_E
+    229                                                      #1;
+    230                                                      chk1("TC13 StallF=0", StallF, 1'b0);
+    231                                                      chk1("TC13 StallD=0", StallD, 1'b0);
+    232                                                      chk1("TC13 FlushE=0", FlushE, 1'b0);
+    233                                              
+    234                                                      // TC14 ? ResultSrcE_0=0 (không ph?i LW) ? không stall dù RD_E match
+    235                                                      $display("\n[TC14] ResultSrcE_0=0 (R-type) -> khong stall du RD match");
+    236                                                      init;
+    237                                                      ResultSrcE_0 = 0;   // R-type, không ph?i load
+    238                                                      RD_E  = 5'd3;
+    239                                                      Rs1_D = 5'd3;       // match nh?ng không stall
+    240                                                      #1;
+    241                                                      chk1("TC14 StallF=0", StallF, 1'b0);
+    242                                                      chk1("TC14 StallD=0", StallD, 1'b0);
+    243                                                      chk1("TC14 FlushE=0", FlushE, 1'b0);
+    244                                              
+    245                                                      // TC15 ? Load-use v?i RD_E = x0 ? không stall (x0 luôn = 0)
+    246                                                      $display("\n[TC15] Load-use RD_E=x0 -> khong stall");
+    247                                                      init;
+    248                                                      ResultSrcE_0 = 1;
+    249                                                      RD_E  = 5'd0;   // x0
+    250                                                      Rs1_D = 5'd0;
+    251                                                      Rs2_D = 5'd0;
+    252                                                      #1;
+    253                                                      // L?u ý: theo code g?c không ki?m tra RD_E!=0, nên k?t qu? ph? thu?c implementation
+    254                                                      // Ghi nh?n k?t qu? th?c t? (expected theo spec: không stall)
+    255                                                      $display("         StallF=%0b StallD=%0b FlushE=%0b (theo impl)", StallF, StallD, FlushE);
+    256                                              
+    257                                                      // TC16 ? FlushD luôn = 0 (hardwired)
+    258                                                      $display("\n[TC16] FlushD hardwired = 0 trong moi truong hop");
+    259                                                      init;
+    260                                                      // Branch scenario (set ForwardA match ?? kích)
+    261                                                      RegWriteM = 1; RD_M = 5'd1; Rs1_E = 5'd1;
+    262                                                      ResultSrcE_0 = 1; RD_E = 5'd2; Rs1_D = 5'd2;
+    263                                                      #1;
+    264                                                      chk1("TC16 FlushD=0 luon", FlushD, 1'b0);
+    265                                              
+    266                                                      // ====================================================
+    267                                                      // T?ng k?t
+    268                                                      // ====================================================
+    269                                                      $display("\n========================================");
+    270                                                      $display("  KET QUA: %0d PASS  |  %0d FAIL", pass_cnt, fail_cnt);
+    271                                                      $display("========================================");
+    272                                                      if (fail_cnt == 0)
+    273                                                          $display("  >>> TAT CA TEST CASE DA PASSED <<<\n");
+    274                                                      else
+    275                                                          $display("  >>> CO %0d TEST CASE BI FAILED <<<\n", fail_cnt);
+    276                                                      $finish;
+    277                                                  end
+    278                                              
+    279                                                  initial begin
+    280                                                      #5000; $display("[TIMEOUT]"); $finish;
+    281                                                  end
+    282                                              
+    283                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        14         7         7     50.00
+
+================================Branch Details================================
+
+Branch Coverage for file tb_hazard.v --
+NOTE: The modification timestamp for source file 'tb_hazard.v' has been altered since compilation.
+
+------------------------------------IF Branch------------------------------------
+    41                                         1     Count coming in to IF
+    41              1                          1     
+    44              1                    ***0***             input [200:0] name;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    55                                         1     Count coming in to IF
+    55              1                    ***0***             end
+    57              1                          1     
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    66                                         1     Count coming in to IF
+    66              1                    ***0***                 end else begin
+    68              1                          1                     fail_cnt = fail_cnt + 1;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    78                                         1     Count coming in to IF
+    78              1                    ***0***                 RD_M         = 0; RD_W         = 0;
+    80              1                          1                 ResultSrcE_0 = 0;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    89                                         1     Count coming in to IF
+    89              1                    ***0***             $dumpvars(0, tb_hazard);
+    91              1                          1             pass_cnt = 0; fail_cnt = 0;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    101                                        1     Count coming in to IF
+    101             1                    ***0***             ResultSrcE_0 = 1; RD_E = 5'd5; Rs1_D = 5'd5;
+    104             1                          1             chk2("TC1 ForwardBE=00 khi reset", ForwardBE, 2'b00);
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    114                                        1     Count coming in to IF
+    114             1                          1             // TC2 ? ForwardA t? MEM stage (MEM?EX, ForwardAE=10)
+    116             1                    ***0***             init;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms             10         0        10      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file tb_hazard.v --
+NOTE: The modification timestamp for source file 'tb_hazard.v' has been altered since compilation.
+
+----------------Focused Condition View-------------------
+Line       41 Item    1  ((ForwardAE == 0) && (ForwardBE == 0))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardAE == 0)         N  '_0' not hit             Hit '_0'
+  (ForwardBE == 0)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ForwardAE == 0)_0    -                             
+  Row   2:          1  (ForwardAE == 0)_1    (ForwardBE == 0)              
+  Row   3:    ***0***  (ForwardBE == 0)_0    (ForwardAE == 0)              
+  Row   4:          1  (ForwardBE == 0)_1    (ForwardAE == 0)              
+
+----------------Focused Condition View-------------------
+Line       55 Item    1  (ForwardAE == 2)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardAE == 2)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (ForwardAE == 2)_0    -                             
+  Row   2:    ***0***  (ForwardAE == 2)_1    -                             
+
+----------------Focused Condition View-------------------
+Line       66 Item    1  (ForwardBE == 2)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardBE == 2)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (ForwardBE == 2)_0    -                             
+  Row   2:    ***0***  (ForwardBE == 2)_1    -                             
+
+----------------Focused Condition View-------------------
+Line       78 Item    1  (ForwardAE == 1)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardAE == 1)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (ForwardAE == 1)_0    -                             
+  Row   2:    ***0***  (ForwardAE == 1)_1    -                             
+
+----------------Focused Condition View-------------------
+Line       89 Item    1  (ForwardBE == 1)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardBE == 1)         N  '_1' not hit             Hit '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (ForwardBE == 1)_0    -                             
+  Row   2:    ***0***  (ForwardBE == 1)_1    -                             
+
+----------------Focused Condition View-------------------
+Line       101 Item    1  ((ForwardAE == 2) && (ForwardBE == 2))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardAE == 2)         N  '_1' not hit             Hit '_1'
+  (ForwardBE == 2)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (ForwardAE == 2)_0    -                             
+  Row   2:    ***0***  (ForwardAE == 2)_1    (ForwardBE == 2)              
+  Row   3:    ***0***  (ForwardBE == 2)_0    (ForwardAE == 2)              
+  Row   4:    ***0***  (ForwardBE == 2)_1    (ForwardAE == 2)              
+
+----------------Focused Condition View-------------------
+Line       114 Item    1  ((ForwardAE == 0) && (ForwardBE == 0))
+Condition totals: 0 of 2 input terms covered = 0.00%
+
+        Input Term   Covered  Reason for no coverage   Hint
+       -----------  --------  -----------------------  --------------
+  (ForwardAE == 0)         N  '_0' not hit             Hit '_0'
+  (ForwardBE == 0)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (ForwardAE == 0)_0    -                             
+  Row   2:          1  (ForwardAE == 0)_1    (ForwardBE == 0)              
+  Row   3:    ***0***  (ForwardBE == 0)_0    (ForwardAE == 0)              
+  Row   4:          1  (ForwardBE == 0)_1    (ForwardAE == 0)              
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                     54        36        18     66.66
+
+================================Toggle Details================================
+
+Toggle Coverage for File tb_hazard.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          5                                  reset           0           1       50.00 
+          7                                RD_W[4]           0           0        0.00 
+          7                                RD_W[3]           0           1       50.00 
+          7                                RD_M[4]           0           0        0.00 
+          8                               Rs2_E[4]           0           0        0.00 
+          8                               Rs1_E[4]           0           0        0.00 
+         10                           ForwardBE[1]           0           0        0.00 
+         10                           ForwardBE[0]           0           0        0.00 
+         10                           ForwardAE[1]           0           0        0.00 
+         10                           ForwardAE[0]           0           0        0.00 
+
+Total Node Count     =         27 
+Toggled Node Count   =         17 
+Untoggled Node Count =         10 
+
+Toggle Coverage      =      66.66% (36 of 54 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 37.00%
+
+End time: 14:27:23 on Jun 08,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

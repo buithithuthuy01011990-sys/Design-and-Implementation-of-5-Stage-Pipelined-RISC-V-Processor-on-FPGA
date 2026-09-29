@@ -1,0 +1,2 @@
+onerror resume
+vsimcmd::import_column_layout files AllColumns 1 name pathspec fullpath type stmtcnt stmthits stmtperc stmtgrph brchcnt brchhits brchperc brchgrph condcnt condhits condperc condgrph exprcnt exprhits exprperc exprgrph toggles toghits togperc toggraph fsmscnt fsmshits fsmsperc fsmsgrph fsmtcnt fsmthits fsmtperc fsmtgrph feccondcnt feccondhits feccondperc feccondgrph fecexprcnt fecexprhits fecexprperc fecexprgrph

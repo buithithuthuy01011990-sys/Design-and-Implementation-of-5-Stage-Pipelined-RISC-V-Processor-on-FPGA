@@ -1,0 +1,505 @@
+`timescale 1ns/1ps
+
+// =============================================================================
+//  tb_pipeline_top.v  ?  RISC-V 5-stage Pipeline Testbench (final)
+//
+//  Fixes vs previous revision:
+//    [F1] UART monitor: PADDR tr?c ti?p, không concat 28'h4000000
+//    [F2] Background monitor (tx_*_seen) b?t APB transfer t? ??u simulation,
+//         tránh miss khi TEST 3 b?t ??u sau khi 'H' ?ã x?y ra trong TEST 2
+//    [F3] TEST 3/4/5/7: dùng forever @(posedge clk) + disable, b? #1 delay
+//         ? sample PADDR/PWDATA ?úng cycle PENABLE=1, không b? zero-out
+//    [F4] TEST 7: ??m FAIL th?c s? n?u timeout
+//    [F5] TEST 8: ki?m tra apb_stall không b? stuck
+//    [NEW] TEST 9: ki?m tra APB handshake SETUP ? ACCESS ?úng th? t?
+// =============================================================================
+
+module tb_pipeline_top;
+
+    // -------------------------------------------------------------------------
+    // Clock & reset
+    // -------------------------------------------------------------------------
+    reg clk, reset;
+    initial clk = 0;
+    always #5 clk = ~clk;   // 100 MHz
+
+    // -------------------------------------------------------------------------
+    // APB slave stimulus
+    // -------------------------------------------------------------------------
+    reg  [31:0] PRDATA;
+    reg         PREADY;
+
+    initial begin
+        PRDATA = 32'h0;
+        PREADY = 1'b1;
+    end
+
+    // -------------------------------------------------------------------------
+    // DUT ports
+    // -------------------------------------------------------------------------
+    wire        PSEL, PENABLE, PWRITE;
+    wire [31:0] PADDR;
+    wire [31:0] PWDATA;
+    wire [31:0] ALU_ResultM, WriteDataM;
+    wire        MemWriteM;
+
+    Pipeline_top dut (
+        .clk         (clk),
+        .reset       (reset),
+        .PRDATA      (PRDATA),
+        .PREADY      (PREADY),
+        .PSEL        (PSEL),
+        .PENABLE     (PENABLE),
+        .PWRITE      (PWRITE),
+        .PADDR       (PADDR),
+        .PWDATA      (PWDATA),
+        .ALU_ResultM (ALU_ResultM),
+        .WriteDataM  (WriteDataM),
+        .MemWriteM   (MemWriteM)
+    );
+
+    // -------------------------------------------------------------------------
+    // [F1] UART TX monitor ? dùng PADDR tr?c ti?p
+    // -------------------------------------------------------------------------
+    always @(posedge clk) begin
+        if (PSEL && PENABLE && PWRITE && PREADY) begin
+            $display("[APB-TX] t=%0t  addr=0x%08X  data=0x%08X  char='%c'",
+                     $time,
+                     PADDR,
+                     PWDATA,
+                     (PWDATA[7:0] >= 8'h20 && PWDATA[7:0] <= 8'h7E)
+                         ? PWDATA[7:0] : 8'h2E);
+        end
+    end
+
+    // -------------------------------------------------------------------------
+    // [F2] Background APB transfer monitor
+    //      Ch?y t? ??u simulation ? TEST 3/4/5 không bao gi? miss transfer.
+    // -------------------------------------------------------------------------
+    reg         tx_H_seen,  tx_i_seen,  tx_lf_seen;
+    reg [31:0]  tx_H_addr,  tx_i_addr,  tx_lf_addr;
+    reg [31:0]  tx_H_data,  tx_i_data,  tx_lf_data;
+
+    initial begin
+        tx_H_seen  = 0; tx_H_addr  = 0; tx_H_data  = 0;
+        tx_i_seen  = 0; tx_i_addr  = 0; tx_i_data  = 0;
+        tx_lf_seen = 0; tx_lf_addr = 0; tx_lf_data = 0;
+    end
+
+    always @(posedge clk) begin
+        if (PSEL && PENABLE && PWRITE && PREADY) begin
+            case (PWDATA[7:0])
+                8'h48 : begin
+                    tx_H_seen  <= 1'b1;
+                    tx_H_addr  <= PADDR;
+                    tx_H_data  <= PWDATA;
+                end
+                8'h69 : begin
+                    tx_i_seen  <= 1'b1;
+                    tx_i_addr  <= PADDR;
+                    tx_i_data  <= PWDATA;
+                end
+                8'h0A : begin
+                    tx_lf_seen <= 1'b1;
+                    tx_lf_addr <= PADDR;
+                    tx_lf_data <= PWDATA;
+                end
+            endcase
+        end
+    end
+
+    task clear_tx_flags;
+        begin
+            @(negedge clk);
+            tx_H_seen  = 0; tx_H_addr  = 0; tx_H_data  = 0;
+            tx_i_seen  = 0; tx_i_addr  = 0; tx_i_data  = 0;
+            tx_lf_seen = 0; tx_lf_addr = 0; tx_lf_data = 0;
+        end
+    endtask
+
+    // -------------------------------------------------------------------------
+    // Pass / fail counters + helper tasks
+    // -------------------------------------------------------------------------
+    integer pass_cnt, fail_cnt;
+
+    task check32;
+        input [8*40-1:0] name;
+        input [31:0] got, exp;
+        begin
+            if (got === exp) begin
+                $display("  PASS [%0s]  got=0x%08h", name, got);
+                pass_cnt = pass_cnt + 1;
+            end else begin
+                $display("  FAIL [%0s]  got=0x%08h  exp=0x%08h", name, got, exp);
+                fail_cnt = fail_cnt + 1;
+            end
+        end
+    endtask
+
+    task check1;
+        input [8*40-1:0] name;
+        input got, exp;
+        begin
+            if (got === exp) begin
+                $display("  PASS [%0s]  got=%0b", name, got);
+                pass_cnt = pass_cnt + 1;
+            end else begin
+                $display("  FAIL [%0s]  got=%0b  exp=%0b", name, got, exp);
+                fail_cnt = fail_cnt + 1;
+            end
+        end
+    endtask
+
+    // -------------------------------------------------------------------------
+    // [F3] Helper task: wait for specific PWDATA byte trên APB bus
+    //      Sample PADDR/PWDATA ?úng cycle PENABLE=1, không có #1 delay
+    // -------------------------------------------------------------------------
+    task wait_apb_char;
+        input  [7:0]       expected_char;
+        input  integer     max_cycles;
+        output             timed_out;
+        output [31:0]      got_addr;
+        output [31:0]      got_data;
+
+        integer cnt;
+        reg     found;
+        begin
+            found     = 0;
+            timed_out = 0;
+            got_addr  = 0;
+            got_data  = 0;
+            cnt       = 0;
+
+            while (!found && cnt < max_cycles) begin
+                @(posedge clk);
+                cnt = cnt + 1;
+                if (PSEL && PENABLE && PWRITE && PREADY
+                        && PWDATA[7:0] == expected_char) begin
+                    got_addr = PADDR;   // sample ngay t?i cycle này
+                    got_data = PWDATA;
+                    found    = 1;
+                end
+            end
+
+            if (!found) timed_out = 1;
+        end
+    endtask
+
+    // -------------------------------------------------------------------------
+    // Main stimulus
+    // -------------------------------------------------------------------------
+    integer cy;
+    reg     timed_out;
+    reg [31:0] got_addr, got_data;
+
+    // -------------------------------------------------------------------------
+    // Coverage helper: record ALUControl values seen in Execute stage
+    // bit[0]  = ADD,  bit[1]  = SUB,  bit[2]  = AND,  bit[3]  = OR
+    // bit[4]  = XOR,  bit[5]  = SLT,  bit[6]  = SLL,  bit[7]  = SRL
+    // bit[8]  = SRA,  bit[9]  = MUL,  bit[10] = MULH, bit[11] = MULHSU
+    // bit[12] = MULHU,bit[13] = DIV,  bit[14] = DIVU, bit[15] = REM
+    // -------------------------------------------------------------------------
+    reg [15:0] alu_seen;
+    reg [15:0] alu_expected;
+
+    always @(posedge clk) begin
+        if (reset) begin
+            alu_seen <= 16'h0000;
+        end else begin
+            alu_seen[dut.ALUControlE] <= 1'b1;
+        end
+    end
+
+    initial begin
+        $dumpfile("tb_pipeline_top.vcd");
+        $dumpvars(0, tb_pipeline_top);
+        pass_cnt = 0;
+        fail_cnt = 0;
+        alu_expected = 16'hFFFF;   // expect ALUControl 0..15 to appear at least once
+
+        // --- Reset sequence ------------------------------------------------
+        reset = 1;
+        repeat(4) @(posedge clk);
+        @(negedge clk); reset = 0;
+
+        $display("  Testbench: Pipeline_top (RISC-V 5-stage)  ");
+
+        // =====================================================================
+        // TEST 1: Signals cleared after reset
+        // =====================================================================
+        $display("\n--- TEST 1: Reset ---");
+        @(posedge clk); #1;
+        check32("ALU_ResultM after reset", ALU_ResultM, 32'h0);
+        check1 ("MemWriteM after reset",   MemWriteM,   1'b0);
+
+        // =====================================================================
+        // TEST 2: Cycle-by-cycle trace (30 cycles)
+        //   Background monitor v?n ch?y ? TEST 3 không miss dù 'H' x?y ra ? ?ây
+        // =====================================================================
+        $display("\n--- TEST 2: Run 30 cycles ---");
+        $display("%-4s | %-10s %-10s | %-8s %-8s | %-10s %s",
+                 "Cy", "PC_fetch", "InstrD", "ALUSrc", "ALUCtrl",
+                 "ALU_M", "MemWr");
+
+        for (cy = 1; cy <= 30; cy = cy + 1) begin
+            @(posedge clk); #1;
+            $display("Cy%-2d | PC=%08h  InstrD=%08h | ALUSrc=%b  ALUCtrl=%04b | ALU_M=%08h  MemWr=%b",
+                cy,
+                dut.Fetch.PCD,
+                dut.Decode.InstrD,
+                dut.ALUSrcE,
+                dut.ALUControlE,
+                ALU_ResultM,
+                MemWriteM);
+        end
+
+        // =====================================================================
+        // TEST 3: APB transfer 'H' (0x48)
+        //   [F2] N?u background monitor ?ã b?t ? pass ngay, addr/data chính xác
+        //   [F3] N?u ch?a ? wait_apb_char sample ?úng cycle
+        // =====================================================================
+        $display("\n--- TEST 3: Wait for TX 'H' (PWDATA=0x48) ---");
+        if (tx_H_seen) begin
+            $display("  PASS: TX 'H' detected (captured earlier)  addr=%08h  data=%08h",
+                     tx_H_addr, tx_H_data);
+            pass_cnt = pass_cnt + 1;
+        end else begin
+            wait_apb_char(8'h48, 300, timed_out, got_addr, got_data);
+            if (timed_out) begin
+                $display("  FAIL: TIMEOUT waiting for TX H");
+                fail_cnt = fail_cnt + 1;
+            end else begin
+                $display("  PASS: TX 'H' detected  addr=%08h  data=%08h",
+                         got_addr, got_data);
+                pass_cnt = pass_cnt + 1;
+            end
+        end
+
+        // =====================================================================
+        // TEST 4: APB transfer 'i' (0x69)
+        // =====================================================================
+        $display("\n--- TEST 4: Wait for TX 'i' (PWDATA=0x69) ---");
+        if (tx_i_seen) begin
+            $display("  PASS: TX 'i' detected (captured earlier)  addr=%08h  data=%08h",
+                     tx_i_addr, tx_i_data);
+            pass_cnt = pass_cnt + 1;
+        end else begin
+            wait_apb_char(8'h69, 300, timed_out, got_addr, got_data);
+            if (timed_out) begin
+                $display("  FAIL: TIMEOUT waiting for TX i");
+                fail_cnt = fail_cnt + 1;
+            end else begin
+                $display("  PASS: TX 'i' detected  addr=%08h  data=%08h",
+                         got_addr, got_data);
+                pass_cnt = pass_cnt + 1;
+            end
+        end
+
+        // =====================================================================
+        // TEST 5: APB transfer LF (0x0A)
+        // =====================================================================
+        $display("\n--- TEST 5: Wait for TX LF (PWDATA=0x0A) ---");
+        if (tx_lf_seen) begin
+            $display("  PASS: TX LF detected (captured earlier)  addr=%08h  data=%08h",
+                     tx_lf_addr, tx_lf_data);
+            pass_cnt = pass_cnt + 1;
+        end else begin
+            wait_apb_char(8'h0A, 300, timed_out, got_addr, got_data);
+            if (timed_out) begin
+                $display("  FAIL: TIMEOUT waiting for TX LF");
+                fail_cnt = fail_cnt + 1;
+            end else begin
+                $display("  PASS: TX LF detected   addr=%08h  data=%08h",
+                         got_addr, got_data);
+                pass_cnt = pass_cnt + 1;
+            end
+        end
+
+        // =====================================================================
+        // TEST 6: Mid-run reset flushes pipeline
+        // =====================================================================
+        $display("\n--- TEST 6: Mid-run reset (flush) ---");
+        @(negedge clk); reset = 1;
+        repeat(3) @(posedge clk); #1;
+        check1 ("MemWriteM=0 after reset",   MemWriteM,   1'b0);
+        check32("ALU_ResultM=0 after reset", ALU_ResultM, 32'h0);
+        @(negedge clk); reset = 0;
+
+        // Xóa flags ?? TEST 7 detect l?n phát m?i sau reset
+        clear_tx_flags;
+
+        // =====================================================================
+        // TEST 7: Pipeline resumes, phát l?i 'H' sau reset
+        //   [F4] ??m FAIL th?c s? n?u timeout
+        // =====================================================================
+        $display("\n--- TEST 7: Pipeline resumes after reset ---");
+        wait_apb_char(8'h48, 400, timed_out, got_addr, got_data);
+        if (timed_out) begin
+            $display("  FAIL: TX 'H' not seen after reset within 400 cycles");
+            fail_cnt = fail_cnt + 1;
+        end else begin
+            $display("  PASS: TX 'H' again after reset  addr=%08h  data=%08h",
+                     got_addr, got_data);
+            pass_cnt = pass_cnt + 1;
+        end
+
+        // =====================================================================
+        // TEST 8: APB stall t? nh? sau transaction, không stuck
+        //   [F5] ??m cycle stall gi? HIGH, FAIL n?u > 20
+        // =====================================================================
+        $display("\n--- TEST 8: APB stall releases after transaction ---");
+        begin : check_stall
+            integer stall_cycles;
+            integer wait_cycles;
+            reg     stall_failed;
+
+            stall_cycles  = 0;
+            wait_cycles   = 0;
+            stall_failed  = 0;
+
+            // ??i stall lên (t?i ?a 200 cycles)
+            while (!dut.apb_stall && wait_cycles < 200) begin
+                @(posedge clk);
+                wait_cycles = wait_cycles + 1;
+            end
+
+            if (!dut.apb_stall) begin
+                $display("  INFO: apb_stall không lên trong 200 cycles");
+            end else begin
+                while (dut.apb_stall) begin
+                    @(posedge clk);
+                    stall_cycles = stall_cycles + 1;
+                    if (stall_cycles > 20) begin
+                        $display("  FAIL: apb_stall stuck HIGH > 20 cycles");
+                        fail_cnt  = fail_cnt + 1;
+                        stall_failed = 1;
+                        disable check_stall;
+                    end
+                end
+                if (!stall_failed) begin
+                    $display("  PASS: apb_stall released after %0d cycle(s)",
+                             stall_cycles);
+                    pass_cnt = pass_cnt + 1;
+                end
+            end
+        end
+
+        // =====================================================================
+        // TEST 9: APB handshake SETUP ? ACCESS ?úng th? t?
+        // =====================================================================
+        $display("\n--- TEST 9: APB handshake sequence (SETUP->ACCESS) ---");
+        begin : check_handshake
+            integer hs_wait;
+            reg     setup_seen;
+            reg     seq_ok;
+
+            hs_wait    = 0;
+            setup_seen = 0;
+            seq_ok     = 0;
+
+            // Tìm SETUP phase: PSEL=1, PENABLE=0
+            while (!setup_seen && hs_wait < 500) begin
+                @(posedge clk);
+                hs_wait = hs_wait + 1;
+                if (PSEL && !PENABLE && PWRITE) begin
+                    setup_seen = 1;
+                    $display("  [HS] SETUP  phase: PSEL=%b PENABLE=%b PADDR=%08h",
+                             PSEL, PENABLE, PADDR);
+                end
+            end
+
+            if (setup_seen) begin
+                // Cycle k? ph?i là ACCESS: PSEL=1, PENABLE=1
+                @(posedge clk);
+                if (PSEL && PENABLE) begin
+                    $display("  [HS] ACCESS phase: PSEL=%b PENABLE=%b PREADY=%b PWDATA=%08h",
+                             PSEL, PENABLE, PREADY, PWDATA);
+                    $display("  PASS: APB handshake sequence correct");
+                    pass_cnt = pass_cnt + 1;
+                    seq_ok   = 1;
+                end
+                if (!seq_ok) begin
+                    $display("  FAIL: PENABLE không lên sau SETUP (PSEL=%b PENABLE=%b)",
+                             PSEL, PENABLE);
+                    fail_cnt = fail_cnt + 1;
+                end
+            end else begin
+                $display("  INFO: Không th?y SETUP phase trong 500 cycles");
+            end
+        end
+
+        // =====================================================================
+        // TEST 10: Functional coverage helper for ALU / ALU_Decoder
+        //   C?n firmware.hex m?i có ?? l?nh: ADD/SUB/AND/OR/XOR/SLT/SHIFT/M/DIV/REM
+        // =====================================================================
+        $display("\n--- TEST 10: ALUControl coverage monitor ---");
+        begin : check_alucontrol_coverage
+            integer cov_wait;
+            cov_wait = 0;
+
+            // Ch? t?i ?a 1000 cycles ?? program coverage ch?y h?t qua Execute stage
+            while (((alu_seen & alu_expected) != alu_expected) && cov_wait < 1000) begin
+                @(posedge clk);
+                cov_wait = cov_wait + 1;
+            end
+
+            $display("  ALUControl seen mask = %016b", alu_seen);
+
+            if ((alu_seen & alu_expected) == alu_expected) begin
+                $display("  PASS: All ALUControl codes 0..15 were exercised");
+                pass_cnt = pass_cnt + 1;
+            end else begin
+                $display("  FAIL: Missing ALUControl coverage");
+                if (!alu_seen[0])  $display("    missing ADD  ALUControl=0000");
+                if (!alu_seen[1])  $display("    missing SUB  ALUControl=0001");
+                if (!alu_seen[2])  $display("    missing AND  ALUControl=0010");
+                if (!alu_seen[3])  $display("    missing OR   ALUControl=0011");
+                if (!alu_seen[4])  $display("    missing XOR  ALUControl=0100");
+                if (!alu_seen[5])  $display("    missing SLT  ALUControl=0101");
+                if (!alu_seen[6])  $display("    missing SLL  ALUControl=0110");
+                if (!alu_seen[7])  $display("    missing SRL  ALUControl=0111");
+                if (!alu_seen[8])  $display("    missing SRA  ALUControl=1000");
+                if (!alu_seen[9])  $display("    missing MUL  ALUControl=1001");
+                if (!alu_seen[10]) $display("    missing MULH ALUControl=1010");
+              
+                if (!alu_seen[12]) $display("    missing MULHU ALUControl=1100");
+                if (!alu_seen[13]) $display("    missing DIV  ALUControl=1101");
+                if (!alu_seen[14]) $display("    missing DIVU ALUControl=1110");
+                if (!alu_seen[15]) $display("    missing REM  ALUControl=1111");
+                fail_cnt = fail_cnt + 1;
+            end
+        end
+
+        // =====================================================================
+        // DEBUG snapshot
+        // =====================================================================
+        $display("\n--- DEBUG: Internal signals ---");
+        $display("  PC Fetch     : %08h", dut.Fetch.PCD);
+        $display("  InstrD       : %08h", dut.Decode.InstrD);
+        $display("  ALUControlE  : %04b", dut.ALUControlE);
+        $display("  ALU_ResultM  : %08h", ALU_ResultM);
+        $display("  apb_stall    : %b",   dut.apb_stall);
+        $display("  StallF_final : %b",   dut.StallF_final);
+        $display("  PSEL         : %b",   PSEL);
+        $display("  PENABLE      : %b",   PENABLE);
+        $display("  PREADY       : %b",   PREADY);
+        $display("  PADDR        : %08h", PADDR);
+        $display("  PWDATA       : %08h", PWDATA);
+
+        // =====================================================================
+        // Final result
+        // =====================================================================
+        $display("\n  KET QUA: %0d PASS  |  %0d FAIL", pass_cnt, fail_cnt);
+        $finish;
+    end
+
+    // -------------------------------------------------------------------------
+    // Global simulation timeout
+    // -------------------------------------------------------------------------
+    initial begin
+        #500_000;
+        $display("\n[TIMEOUT] Simulation exceeded 500 us");
+        $finish;
+    end
+
+endmodule

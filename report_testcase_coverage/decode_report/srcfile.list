@@ -1,0 +1,7 @@
+ALU_Decoder.v
+Main_Decoder.v
+control_unit.v
+decode.v
+extend.v
+register_file.v
+tb_decode.v

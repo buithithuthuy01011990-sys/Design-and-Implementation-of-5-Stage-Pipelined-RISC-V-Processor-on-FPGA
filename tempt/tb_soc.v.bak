@@ -1,0 +1,289 @@
+`timescale 1ns/1ps
+
+module tb_riscv_uart_soc;
+
+    localparam DVSR        = 27 ;
+    localparam DVSR_BIT    = 5 ;
+    localparam FIFO_W      = 4;
+
+    localparam CLK_PERIOD  = 20;
+    localparam BAUD_CYCLES = 16 * DVSR;
+
+    reg clk   = 0;
+    reg reset = 1;
+
+    wire uart_tx;
+    reg  uart_rx = 1;
+
+    wire [31:0] dbg_ALU_ResultM;
+    wire [31:0] dbg_WriteDataM;
+    wire        dbg_MemWriteM;
+
+    integer current_tc;
+
+    reg tc4_apb_pass;
+    reg tc4_uart_pass;
+    reg tc5_doan1_pass;
+
+    reg [7:0] tx_byte;
+    integer tx_bit;
+
+    reg [47:0] uart_shift_6byte;
+
+    // DUT
+    riscv_uart_soc #(
+        .DVSR     (DVSR),
+        .DVSR_BIT (DVSR_BIT),
+        .FIFO_W   (FIFO_W)
+    ) dut (
+        .clk             (clk),
+        .reset           (reset),
+        .uart_tx         (uart_tx),
+        .uart_rx         (uart_rx),
+        .dbg_ALU_ResultM (dbg_ALU_ResultM),
+        .dbg_WriteDataM  (dbg_WriteDataM),
+        .dbg_MemWriteM   (dbg_MemWriteM)
+    );
+
+    // Clock
+    always #(CLK_PERIOD/2) clk = ~clk;
+
+    // Reset
+    initial begin
+        reset = 1'b1;
+
+        repeat(10) @(posedge clk);
+        @(negedge clk);
+
+        reset = 1'b0;
+
+        $display("\n[RESET DONE] t=%0t\n", $time);
+    end
+
+    // Dump waveform
+    initial begin
+        $dumpfile("tb_riscv_uart_soc.vcd");
+        $dumpvars(0, tb_riscv_uart_soc);
+    end
+
+    // Init
+    initial begin
+        current_tc        = 0;
+
+        tc4_apb_pass      = 1'b0;
+        tc4_uart_pass     = 1'b0;
+        tc5_doan1_pass    = 1'b0;
+
+        tx_byte           = 8'h00;
+        uart_shift_6byte  = 48'h0;
+    end
+
+    // Monitor Memory Write
+    always @(posedge clk) begin
+        if (!reset && dbg_MemWriteM && current_tc != 0) begin
+
+            if (dbg_ALU_ResultM[31:16] == 16'h4000) begin
+                $display("[TC%0d SW->UART] t=%0t addr=0x%08X data=0x%08X",
+                         current_tc, $time, dbg_ALU_ResultM, dbg_WriteDataM);
+            end else begin
+                $display("[TC%0d SW->MEM ] t=%0t addr=0x%08X data=0x%08X",
+                         current_tc, $time, dbg_ALU_ResultM, dbg_WriteDataM);
+            end
+
+        end
+    end
+
+    // Monitor APB - check TC4
+    always @(posedge clk) begin
+        if (!reset && dut.cpu.PSEL && dut.cpu.PENABLE && dut.cpu.PREADY) begin
+
+            if (dut.cpu.PWRITE) begin
+
+                if (current_tc == 4) begin
+                    $display("[TC4 APB] t=%0t WRITE PADDR=0x%08X PWDATA=0x%08X",
+                             $time, dut.cpu.PADDR, dut.cpu.PWDATA);
+                end
+
+                if (dut.cpu.PADDR == 32'h40000000 &&
+                    dut.cpu.PWDATA == 32'h00000048) begin
+
+                    tc4_apb_pass <= 1'b1;
+
+                    if (current_tc == 4) begin
+                        $display("[TC4 APB PASS] PADDR=0x40000000, PWDATA=0x00000048");
+                    end
+
+                end
+
+            end else begin
+
+                if (current_tc == 4) begin
+                    $display("[TC4 APB] t=%0t READ PADDR=0x%08X PRDATA=0x%08X",
+                             $time, dut.cpu.PADDR, dut.cpu.PRDATA);
+                end
+
+            end
+        end
+    end
+
+    // UART TX monitor
+    initial begin
+        wait(uart_tx === 1'b1);
+
+        forever begin
+
+            // Wait start bit
+            @(negedge uart_tx);
+
+            // Move to middle of first data bit
+            #(CLK_PERIOD * BAUD_CYCLES + CLK_PERIOD * BAUD_CYCLES / 2);
+
+            // Read 8 data bits, LSB first
+            for (tx_bit = 0; tx_bit < 8; tx_bit = tx_bit + 1) begin
+                tx_byte[tx_bit] = uart_tx;
+                #(CLK_PERIOD * BAUD_CYCLES);
+            end
+
+            if (current_tc == 1 || current_tc == 4 || current_tc == 5) begin
+                $display("[TC%0d UART_TX] t=%0t byte=0x%02X ('%c')",
+                         current_tc,
+                         $time,
+                         tx_byte,
+                         (tx_byte >= 8'h20 && tx_byte <= 8'h7E) ? tx_byte : 8'h2E);
+            end
+
+            // TC4: check byte 0x48
+            if (!tc4_uart_pass && tx_byte == 8'h48) begin
+                tc4_uart_pass = 1'b1;
+
+                if (current_tc == 4) begin
+                    $display("[TC4 UART PASS] UART TX da phat byte 0x48");
+                end
+            end
+
+            // TC5: shift 6 byte de bat chuoi doan1\n
+            uart_shift_6byte = {uart_shift_6byte[39:0], tx_byte};
+
+            if (!tc5_doan1_pass &&
+                uart_shift_6byte == {8'h64, 8'h6F, 8'h61, 8'h6E, 8'h31, 8'h0A}) begin
+
+                tc5_doan1_pass = 1'b1;
+
+                $display("[TC5 PASS] UART TX da phat dung chuoi \"doan1\\n\"");
+                $display("[TC5 PASS] HEX = 64 6F 61 6E 31 0A");
+            end
+
+            // Wait idle
+            wait(uart_tx === 1'b1);
+        end
+    end
+
+    // UART RX task
+    task send_uart_byte;
+        input [7:0] data;
+        integer i;
+        begin
+            $display("[TC%0d UART_RX] Inject byte = 0x%02X ('%c') @ t=%0t",
+                     current_tc,
+                     data,
+                     (data >= 8'h20 && data <= 8'h7E) ? data : 8'h2E,
+                     $time);
+
+            // Start bit
+            uart_rx = 1'b0;
+            repeat(BAUD_CYCLES) @(posedge clk);
+
+            // Data bits, LSB first
+            for (i = 0; i < 8; i = i + 1) begin
+                uart_rx = data[i];
+                repeat(BAUD_CYCLES) @(posedge clk);
+            end
+
+            // Stop bit
+            uart_rx = 1'b1;
+            repeat(BAUD_CYCLES) @(posedge clk);
+        end
+    endtask
+
+    // Check register x5
+    initial begin
+        wait(reset == 0);
+        repeat(25) @(posedge clk);
+
+        $display("[REG] x5 = 0x%08X expect 0x40000000",
+                 dut.cpu.Decode.rf.Register[5]);
+    end
+
+    // Main testcase flow
+    initial begin
+        wait(reset == 0);
+
+        // TC1
+        current_tc = 1;
+        $display("\n================ TC1: CPU UART TX ================\n");
+
+        repeat(14000 ) @(posedge clk);
+
+        // TC2
+        current_tc = 2;
+        $display("\n================ TC2: UART RX ================\n");
+
+        send_uart_byte(8'h58); // X
+        repeat(500) @(posedge clk);
+
+        send_uart_byte(8'h59); // Y
+        repeat(500) @(posedge clk);
+
+        // TC3
+        current_tc = 3;
+        $display("\n================ TC3: END UART RX ================\n");
+
+        repeat(1000) @(posedge clk);
+
+        // TC4
+        current_tc = 4;
+        $display("\n================ TC4: CPU tinh toan va gui ket qua ra UART ================\n");
+        $display("Expect APB WRITE: PADDR=0x40000000, PWDATA=0x00000048");
+        $display("Expect UART TX  : byte=0x48");
+
+        repeat(5000) @(posedge clk);
+
+        if (tc4_apb_pass && tc4_uart_pass) begin
+            $display("[TEST PASS] TC4 thanh cong");
+        end else begin
+            $display("[TEST FAIL] TC4 chua dat");
+            $display("tc4_apb_pass  = %0d", tc4_apb_pass);
+            $display("tc4_uart_pass = %0d", tc4_uart_pass);
+        end
+
+        // TC5
+        current_tc = 5;
+        $display("\n================ TC5: CPU gui chuoi doan1 ra UART ================\n");
+        $display("Expect UART TX: d o a n 1 \\n");
+        $display("Expect HEX    : 64 6F 61 6E 31 0A");
+
+        repeat(20000) @(posedge clk);
+
+        if (tc5_doan1_pass) begin
+            $display("[TEST PASS] TC5 thanh cong: CPU gui dung chuoi doan1");
+        end else begin
+            $display("[TEST FAIL] TC5 chua dat");
+        end
+
+        current_tc = 0;
+
+        $display("\n================ SIMULATION FINISHED ================\n");
+
+        $finish;
+    end
+
+    // Timeout
+    initial begin
+        #2_000_000;  
+
+        $display("\n[TIMEOUT] Simulation timeout\n");
+
+        $finish;
+    end
+
+endmodule

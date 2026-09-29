@@ -1,0 +1,96 @@
+Reading D:/cai_sytem/tcl/vsim/pref.tcl
+
+# 10.7c
+
+# vsim -do " run -all; quit " tb_hazard 
+# Start time: 12:46:23 on Jun 09,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  Questa Sim-64
+# //  Version 10.7c win64 Aug 18 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading work.tb_hazard(fast)
+#  run -all
+# 
+# [TC1] Reset active
+#   [PASS] C1 ForwardAE=00 khi reset  got=00
+#   [PASS] C1 ForwardBE=00 khi reset  got=00
+#   [PASS] TC1 FlushD=0 hardwired  got=0
+# 
+# [TC2] ForwardA: EX/MEM -> EX  ForwardAE=10
+#   [PASS] TC2 ForwardAE=10  got=10
+#   [PASS] TC2 ForwardBE=00  got=00
+# 
+# [TC3] ForwardA: MEM/WB -> EX  ForwardAE=01
+#   [PASS] TC3 ForwardAE=01  got=01
+#   [PASS] TC3 ForwardBE=00  got=00
+# 
+# [TC4] ForwardB: EX/MEM -> EX  ForwardBE=10
+#   [PASS] TC4 ForwardAE=00  got=00
+#   [PASS] TC4 ForwardBE=10  got=10
+# 
+# [TC5] ForwardB: MEM/WB -> EX  ForwardBE=01
+#   [PASS] TC5 ForwardAE=00  got=00
+#   [PASS] TC5 ForwardBE=01  got=01
+# 
+# [TC6] ForwardA=10 & ForwardB=10
+#   [PASS] TC6 ForwardAE=10  got=10
+#   [PASS] TC6 ForwardBE=10  got=10
+# 
+# [TC7] ForwardA=10 MEM & ForwardB=01 WB
+#   [PASS] TC7 ForwardAE=10  got=10
+#   [PASS] TC7 ForwardBE=01  got=01
+# 
+# [TC8] MEM vs WB priority
+#   [PASS] TC8 ForwardAE=10 MEM wins  got=10
+# 
+# [TC9] Khong forward khi RD=x0
+#   [PASS] TC9 ForwardAE=00 RD_M=x0  got=00
+#   [PASS] TC9 ForwardBE=00 RD_W=x0  got=00
+# 
+# [TC10] Khong forward khi RegWriteM=0
+#   [PASS]  ForwardAE=00 RegWriteM=0  got=00
+# 
+# [TC11] Load-use hazard: RD_E==Rs1_D
+#   [PASS] TC11 StallF=1  got=1
+#   [PASS] TC11 StallD=1  got=1
+#   [PASS] TC11 FlushE=1  got=1
+#   [PASS] TC11 FlushD=0  got=0
+# 
+# [TC12] Load-use hazard: RD_E==Rs2_D
+#   [PASS] TC12 StallF=1  got=1
+#   [PASS] TC12 StallD=1  got=1
+#   [PASS] TC12 FlushE=1  got=1
+# 
+# [TC13] Load EX nhung ID dung register khac
+#   [PASS] TC13 StallF=0  got=0
+#   [PASS] TC13 StallD=0  got=0
+#   [PASS] TC13 FlushE=0  got=0
+# 
+# [TC14] ResultSrcE_0=0 R-type
+#   [PASS] TC14 StallF=0  got=0
+#   [PASS] TC14 StallD=0  got=0
+#   [PASS] TC14 FlushE=0  got=0
+# 
+# [TC15] Load-use RD_E=x0
+#          StallF=1 StallD=1 FlushE=1
+# 
+# [TC16] FlushD hardwired = 0
+#   [PASS] TC16 FlushD=0 luon  got=0
+#   KET QUA: 33 PASS  |  0 FAIL
+#   >>> TAT CA TEST CASE DA PASSED <<<
+# 
+# ** Note: $finish    : tb_hazard.v(274)
+#    Time: 17 ns  Iteration: 0  Instance: /tb_hazard
+# End time: 12:46:24 on Jun 09,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

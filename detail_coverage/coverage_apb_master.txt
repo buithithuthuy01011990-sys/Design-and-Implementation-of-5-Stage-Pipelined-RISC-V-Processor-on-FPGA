@@ -1,0 +1,1191 @@
+Coverage Report by file with details
+
+=================================================================================
+=== File: apb_master.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           43        43         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file apb_master.v --
+
+    1                                                
+    2                                                module mem_to_apb_master (
+    3                                                    input  wire        clk,
+    4                                                    input  wire        reset,
+    5                                                    input  wire [31:0] ALU_ResultM,
+    6                                                    input  wire [31:0] WriteDataM,
+    7                                                    input  wire        MemWriteM,
+    8                                                    input  wire        MemReadM,
+    9                                                    output reg  [31:0] ReadDataM,
+    10                                               
+    11                                                   // APB master outputs
+    12                                                   output reg         PSEL,
+    13                                                   output reg         PENABLE,
+    14                                                   output reg         PWRITE,
+    15                                                   output reg  [31:0] PADDR,     
+    16                                                   output reg  [31:0] PWDATA,
+    17                                               
+    18                                                   // APB slave inputs
+    19                                                   input  wire [31:0] PRDATA,
+    20                                                   input  wire        PREADY,
+    21                                               
+    22                                                   output wire        apb_stall
+    23                                               );
+    24                                               
+    25                                               
+    26              1                         23         wire uart_sel = (ALU_ResultM[31:4] == 28'h4000000);
+    27              1                         36         wire apb_req  = uart_sel & (MemWriteM | MemReadM);
+    28                                               
+    29                                                     // FSM state encoding
+    30                                                   
+    31                                                       localparam [1:0]
+    32                                                       IDLE   = 2'd0,
+    33                                                       SETUP  = 2'd1,
+    34                                                       ACCESS = 2'd2;
+    35                                               
+    36                                                   reg [1:0]  state, state_next;
+    37                                               
+    38                                                   // -------------------------------------------------------------------------
+    39                                                   // Latched transaction registers
+    40                                                   // -------------------------------------------------------------------------
+    41                                                   reg [31:0] addr_lat, wdata_lat;
+    42                                                   reg        wr_lat;
+    43                                               
+    44                                                 
+    45              1                        113         wire latch_en = (state == IDLE   &&  apb_req) |
+    46                                                                   (state == ACCESS && PREADY && apb_req);
+    47                                               
+    48                                                  
+    49                                                   localparam WATCHDOG_MAX = 8'd255;
+    50                                                   reg [7:0] watchdog_cnt;
+    51              1                        312         wire      watchdog_hit = (watchdog_cnt == WATCHDOG_MAX);
+    52                                               
+    53              1                        374         always @(posedge clk or posedge reset) begin
+    54                                                       if (reset)
+    55              1                          5                 watchdog_cnt <= 8'd0;
+    56                                                       else if (state == ACCESS && !PREADY)
+    57              1                        305                 watchdog_cnt <= watchdog_cnt + 8'd1;
+    58                                                       else
+    59              1                         64                 watchdog_cnt <= 8'd0;
+    60                                                   end
+    61                                               
+    62                                                   // -------------------------------------------------------------------------
+    63                                                   // Sequential: state + latch registers
+    64                                                   // -------------------------------------------------------------------------
+    65              1                         74         always @(posedge clk or posedge reset) begin
+    66                                                       if (reset) begin
+    67              1                          2                 state     <= IDLE;
+    68              1                          2                 addr_lat  <= 32'h0;
+    69              1                          2                 wdata_lat <= 32'h0;
+    70              1                          2                 wr_lat    <= 1'b0;
+    71                                                       end else begin
+    72              1                         72                 state <= state_next;
+    73                                                           if (latch_en) begin
+    74              1                         16                     addr_lat  <= ALU_ResultM;
+    75              1                         16                     wdata_lat <= WriteDataM;
+    76              1                         16                     wr_lat    <= MemWriteM;
+    77                                                           end
+    78                                                       end
+    79                                                   end
+    80                                               
+    81                                                   // -------------------------------------------------------------------------
+    82                                                   // Combinational: next-state + APB output driving
+    83                                                   //
+    84                                                   // FIX 3: IDLE no longer drives PWRITE/PADDR/PWDATA from raw (unlatched)
+    85                                                   //        inputs; all outputs default to 0 and are only driven from latched
+    86                                                   //        values in SETUP/ACCESS.  PSEL remains 0 in IDLE so no APB slave
+    87                                                   //        will sample these outputs, but driving 0 is cleaner and avoids
+    88                                                   //        lint warnings about combinational glitches.
+    89                                                   // -------------------------------------------------------------------------
+    90              1                         98         always @(*) begin
+    91                                                       // Safe defaults
+    92              1                         98             state_next = state;
+    93              1                         98             PSEL       = 1'b0;
+    94              1                         98             PENABLE    = 1'b0;
+    95              1                         98             PWRITE     = 1'b0;
+    96              1                         98             PADDR      = 32'h0;
+    97              1                         98             PWDATA     = 32'h0;
+    98                                               
+    99                                                       case (state)
+    100                                                          // -----------------------------------------------------------------
+    101                                                          IDLE: begin
+    102                                                              // FIX 3: do NOT drive APB signals from raw (unlatched) inputs.
+    103                                                              // Just request a move to SETUP; latch_en captures the inputs.
+    104                                                              if (apb_req)
+    105             1                         14                         state_next = SETUP;
+    106                                                          end
+    107                                              
+    108                                                          // -----------------------------------------------------------------
+    109                                                          SETUP: begin
+    110             1                         20                     PSEL       = 1'b1;
+    111             1                         20                     PENABLE    = 1'b0;
+    112             1                         20                     PWRITE     = wr_lat;
+    113             1                         20                     PADDR      = addr_lat;          // full 32-bit latched address
+    114             1                         20                     PWDATA     = wdata_lat;
+    115             1                         20                     state_next = ACCESS;
+    116                                                          end
+    117                                              
+    118                                                          // -----------------------------------------------------------------
+    119                                                          ACCESS: begin
+    120             1                         36                     PSEL    = 1'b1;
+    121             1                         36                     PENABLE = 1'b1;
+    122             1                         36                     PWRITE  = wr_lat;
+    123             1                         36                     PADDR   = addr_lat;
+    124             1                         36                     PWDATA  = wdata_lat;
+    125                                              
+    126                                                              if (PREADY) begin
+    127             1                         17                         state_next = apb_req ? SETUP : IDLE;
+    128                                                              end else if (watchdog_hit) begin
+    129                                                                  // FIX 4: slave never responded ? abort back to IDLE
+    130             1                          1                         state_next = IDLE;
+    131                                                              end
+    132                                                          end
+    133                                              
+    134             1                          1                 default: state_next = IDLE;
+    135                                                      endcase
+    136                                                  end
+    137                                              
+    138                                                  // -------------------------------------------------------------------------
+    139                                                  // Read-data capture
+    140                                                  // -------------------------------------------------------------------------
+    141             1                         61         always @(posedge clk or posedge reset) begin
+    142                                                      if (reset)
+    143             1                          2                 ReadDataM <= 32'h0;
+    144                                                      else if (state == ACCESS && PREADY && !wr_lat)
+    145             1                          7                 ReadDataM <= PRDATA;
+    146                                                  end
+    147                                              
+    148                                                  // -------------------------------------------------------------------------
+    149                                                  // FIX 1: Pipeline stall signal
+    150                                                  //
+    151                                                  // Original had:  (apb_req & (state == IDLE)) | ...
+    152                                                  //   ? stall could drop prematurely if apb_req glitched low while still IDLE
+    153                                                  //
+    154                                                  // Fixed:  stall whenever a request is present OR a transaction is in-flight,
+    155                                                  //         regardless of whether apb_req is still asserted.
+    156                                                  // -------------------------------------------------------------------------
+    157             1                        113         assign apb_stall = apb_req                          // new request arriving
+    158                                                                   | (state == SETUP)                 // APB setup phase
+    159                                                                   | (state == ACCESS && !PREADY);    // waiting for slave
+    160                                              
+    161                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        21        21         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file apb_master.v --
+
+------------------------------------IF Branch------------------------------------
+    54                                       374     Count coming in to IF
+    54              1                          5             if (reset)
+    56              1                        305             else if (state == ACCESS && !PREADY)
+    58              1                         64             else
+Branch totals: 3 hits of 3 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    66                                        74     Count coming in to IF
+    66              1                          2             if (reset) begin
+    71              1                         72             end else begin
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    73                                        72     Count coming in to IF
+    73              1                         16                 if (latch_en) begin
+                                              56     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------CASE Branch------------------------------------
+    99                                        98     Count coming in to CASE
+    101             1                         41                 IDLE: begin
+    109             1                         20                 SETUP: begin
+    119             1                         36                 ACCESS: begin
+    134             1                          1                 default: state_next = IDLE;
+Branch totals: 4 hits of 4 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    104                                       41     Count coming in to IF
+    104             1                         14                     if (apb_req)
+                                              27     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    126                                       36     Count coming in to IF
+    126             1                         17                     if (PREADY) begin
+    128             1                          1                     end else if (watchdog_hit) begin
+                                              18     All False Count
+Branch totals: 3 hits of 3 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    127                                       17     Count coming in to IF
+    127             1                          2                         state_next = apb_req ? SETUP : IDLE;
+    127             2                         15                         state_next = apb_req ? SETUP : IDLE;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    142                                       61     Count coming in to IF
+    142             1                          2             if (reset)
+    144             1                          7             else if (state == ACCESS && PREADY && !wr_lat)
+                                              52     All False Count
+Branch totals: 3 hits of 3 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              5         5         0    100.00
+
+================================Condition Details================================
+
+Condition Coverage for file apb_master.v --
+
+----------------Focused Condition View-------------------
+Line       56 Item    1  ((state == 2) && ~PREADY)
+Condition totals: 2 of 2 input terms covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       144 Item    1  ((~wr_lat && (state == 2)) && PREADY)
+Condition totals: 3 of 3 input terms covered = 100.00%
+
+
+Expression Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Expression Terms            13        13         0    100.00
+
+================================Expression Details================================
+
+Expression Coverage for file apb_master.v --
+
+----------------Focused Expression View-----------------
+Line       26 Item    1  (ALU_ResultM[31:4] == 67108864)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       27 Item    1  (uart_sel & (MemWriteM | MemReadM))
+Expression totals: 3 of 3 input terms covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       45 Item    1  (((state == 0) && apb_req) | (((state == 2) && PREADY) && apb_req))
+Expression totals: 4 of 4 input terms covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       51 Item    1  (watchdog_cnt == 255)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       157 Item    1  ((apb_req | (state == 1)) | ((state == 2) && ~PREADY))
+Expression totals: 4 of 4 input terms covered = 100.00%
+
+
+FSM Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FSMs                                                       90.00
+        States                       3         3         0    100.00
+        Transitions                  5         4         1     80.00
+
+================================FSM Details================================
+
+FSM Coverage for file apb_master.v --
+
+FSM_ID: state
+    Current State Object : state
+    ----------------------
+    State Value MapInfo :
+    ---------------------
+Line          State Name               Value
+----          ----------               -----
+ 101                IDLE                   0
+ 109               SETUP                   1
+ 119              ACCESS                   2
+    Covered States :
+    ----------------
+                   State           Hit_count
+                   -----           ---------
+                    IDLE                  34
+                   SETUP                  16
+                  ACCESS                  24
+    Covered Transitions :
+    ---------------------
+Line            Trans_ID           Hit_count          Transition          
+----            --------           ---------          ----------          
+ 105                   0                  14          IDLE -> SETUP       
+ 115                   1                  16          SETUP -> ACCESS     
+ 130                   3                  14          ACCESS -> IDLE      
+ 127                   4                   2          ACCESS -> SETUP     
+    Uncovered Transitions :
+    -----------------------
+Line            Trans_ID          Transition          
+----            --------          ----------          
+  67                   2          SETUP -> IDLE       
+
+
+    Summary                     Active      Hits    Misses % Covered
+    -------                     ------      ----    ------ ---------
+        States                       3         3         0    100.00
+        Transitions                  5         4         1     80.00
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    360       226       134     62.77
+
+================================Toggle Details================================
+
+Toggle Coverage for File apb_master.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          9                           ReadDataM[9]           0           1       50.00 
+          9                           ReadDataM[7]           0           1       50.00 
+          9                           ReadDataM[3]           0           1       50.00 
+          9                          ReadDataM[31]           0           1       50.00 
+          9                          ReadDataM[28]           0           1       50.00 
+          9                          ReadDataM[27]           0           1       50.00 
+          9                          ReadDataM[26]           0           1       50.00 
+          9                          ReadDataM[23]           0           1       50.00 
+          9                          ReadDataM[19]           0           1       50.00 
+          9                          ReadDataM[14]           0           1       50.00 
+          9                          ReadDataM[10]           0           1       50.00 
+         15                               PADDR[9]           0           0        0.00 
+         15                               PADDR[8]           0           0        0.00 
+         15                               PADDR[7]           0           0        0.00 
+         15                               PADDR[6]           0           0        0.00 
+         15                               PADDR[5]           0           0        0.00 
+         15                               PADDR[4]           0           0        0.00 
+         15                              PADDR[31]           0           0        0.00 
+         15                              PADDR[29]           0           0        0.00 
+         15                              PADDR[28]           0           0        0.00 
+         15                              PADDR[27]           0           0        0.00 
+         15                              PADDR[26]           0           0        0.00 
+         15                              PADDR[25]           0           0        0.00 
+         15                              PADDR[24]           0           0        0.00 
+         15                              PADDR[23]           0           0        0.00 
+         15                              PADDR[22]           0           0        0.00 
+         15                              PADDR[21]           0           0        0.00 
+         15                              PADDR[20]           0           0        0.00 
+         15                               PADDR[1]           0           0        0.00 
+         15                              PADDR[19]           0           0        0.00 
+         15                              PADDR[18]           0           0        0.00 
+         15                              PADDR[17]           0           0        0.00 
+         15                              PADDR[16]           0           0        0.00 
+         15                              PADDR[15]           0           0        0.00 
+         15                              PADDR[14]           0           0        0.00 
+         15                              PADDR[13]           0           0        0.00 
+         15                              PADDR[12]           0           0        0.00 
+         15                              PADDR[11]           0           0        0.00 
+         15                              PADDR[10]           0           0        0.00 
+         15                               PADDR[0]           0           0        0.00 
+         16                              PWDATA[8]           0           0        0.00 
+         41                           wdata_lat[8]           0           0        0.00 
+         41                           wdata_lat[4]           0           1       50.00 
+         41                          wdata_lat[14]           0           1       50.00 
+         41                            addr_lat[9]           0           0        0.00 
+         41                            addr_lat[8]           0           0        0.00 
+         41                            addr_lat[7]           0           0        0.00 
+         41                            addr_lat[6]           0           0        0.00 
+         41                            addr_lat[5]           0           0        0.00 
+         41                            addr_lat[4]           0           0        0.00 
+         41                           addr_lat[31]           0           0        0.00 
+         41                           addr_lat[30]           0           1       50.00 
+         41                           addr_lat[29]           0           0        0.00 
+         41                           addr_lat[28]           0           0        0.00 
+         41                           addr_lat[27]           0           0        0.00 
+         41                           addr_lat[26]           0           0        0.00 
+         41                           addr_lat[25]           0           0        0.00 
+         41                           addr_lat[24]           0           0        0.00 
+         41                           addr_lat[23]           0           0        0.00 
+         41                           addr_lat[22]           0           0        0.00 
+         41                           addr_lat[21]           0           0        0.00 
+         41                           addr_lat[20]           0           0        0.00 
+         41                            addr_lat[1]           0           0        0.00 
+         41                           addr_lat[19]           0           0        0.00 
+         41                           addr_lat[18]           0           0        0.00 
+         41                           addr_lat[17]           0           0        0.00 
+         41                           addr_lat[16]           0           0        0.00 
+         41                           addr_lat[15]           0           0        0.00 
+         41                           addr_lat[14]           0           0        0.00 
+         41                           addr_lat[13]           0           0        0.00 
+         41                           addr_lat[12]           0           0        0.00 
+         41                           addr_lat[11]           0           0        0.00 
+         41                           addr_lat[10]           0           0        0.00 
+         41                            addr_lat[0]           0           0        0.00 
+
+Total Node Count     =        180 
+Toggled Node Count   =        106 
+Untoggled Node Count =         74 
+
+Toggle Coverage      =      62.77% (226 of 360 bins)
+
+=================================================================================
+=== File: tb_apb.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                          339       334         5     98.52
+
+================================Statement Details================================
+
+Statement Coverage for file tb_apb.v --
+NOTE: The modification timestamp for source file 'tb_apb.v' has been altered since compilation.
+
+    1                                                // =============================================================================
+    2                                                // tb_mem_to_apb_master.sv  ?  v3 (single reset)
+    3                                                //
+    4                                                // Reset ch? dùng 1 l?n duy nh?t ? ??u (TC01).
+    5                                                // Các TC sau dùng idle_cleanup() ? ch? deassert Mem*/PREADY và ??i 1 chu k?.
+    6                                                //
+    7                                                // Interface contract:
+    8                                                //   ? Drive signals t?i @(negedge clk)
+    9                                                //   ? IDLE?SETUP: 1 posedge; SETUP?ACCESS: 1 posedge
+    10                                               //   ? K?t thúc không back-to-back: deassert MemWrite/Read cùng lúc assert PREADY
+    11                                               //     ? apb_req=0 khi PREADY ???c sample ? FSM v? IDLE
+    12                                               // =============================================================================
+    13                                               
+    14                                               `timescale 1ns/1ps
+    15                                               
+    16                                               module tb_mem_to_apb_master;
+    17                                               
+    18                                                   // -------------------------------------------------------------------------
+    19                                                   // Clock & reset ? ch? dùng 1 l?n
+    20                                                   // -------------------------------------------------------------------------
+    21                                                   localparam CLK_HALF = 5;
+    22                                               
+    23              1                          1         reg clk   = 0;
+    24              1                          1         reg reset = 1;
+    25              1                        746         always #CLK_HALF clk = ~clk;
+    25              2                        745     
+    26                                               
+    27                                                   // -------------------------------------------------------------------------
+    28                                                   // DUT ports
+    29                                                   // -------------------------------------------------------------------------
+    30              1                          1         reg  [31:0] ALU_ResultM = 0;
+    31              1                          1         reg  [31:0] WriteDataM  = 0;
+    32              1                          1         reg         MemWriteM   = 0;
+    33              1                          1         reg         MemReadM    = 0;
+    34              1                          1         reg  [31:0] PRDATA      = 0;
+    35              1                          1         reg         PREADY      = 0;
+    36                                               
+    37                                                   wire [31:0] ReadDataM;
+    38                                                   wire        PSEL, PENABLE, PWRITE;
+    39                                                   wire [31:0] PADDR, PWDATA;
+    40                                                   wire        apb_stall;
+    41                                               
+    42                                                   mem_to_apb_master dut (
+    43                                                       .clk        (clk),
+    44                                                       .reset      (reset),
+    45                                                       .ALU_ResultM(ALU_ResultM),
+    46                                                       .WriteDataM (WriteDataM),
+    47                                                       .MemWriteM  (MemWriteM),
+    48                                                       .MemReadM   (MemReadM),
+    49                                                       .ReadDataM  (ReadDataM),
+    50                                                       .PSEL       (PSEL),
+    51                                                       .PENABLE    (PENABLE),
+    52                                                       .PWRITE     (PWRITE),
+    53                                                       .PADDR      (PADDR),
+    54                                                       .PWDATA     (PWDATA),
+    55                                                       .PRDATA     (PRDATA),
+    56                                                       .PREADY     (PREADY),
+    57                                                       .apb_stall  (apb_stall)
+    58                                                   );
+    59                                               
+    60                                                   // -------------------------------------------------------------------------
+    61                                                   // Pass/fail
+    62                                                   // -------------------------------------------------------------------------
+    63              1                          1         integer pass_cnt = 0;
+    64              1                          1         integer fail_cnt = 0;
+    65                                               
+    66                                                   task check;
+    67                                                       input        cond;
+    68                                                       input [255:0] msg;
+    69                                                       begin
+    70                                                           if (cond) begin
+    71              1                         65                     $display("  PASS: %0s", msg);
+    72              1                         65                     pass_cnt = pass_cnt + 1;
+    73                                                           end else begin
+    74              1                    ***0***                     $display("  FAIL: %0s  (time=%0t)", msg, $time);
+    75              1                    ***0***                     fail_cnt = fail_cnt + 1;
+    76                                                           end
+    77                                                       end
+    78                                                   endtask
+    79                                               
+    80                                                   // -------------------------------------------------------------------------
+    81                                                   // idle_cleanup ? dùng gi?a các TC thay cho do_reset
+    82                                                   // ??m b?o: Mem*=0, PREADY=0, ALU_ResultM=0, FSM v? IDLE sau 1 chu k?.
+    83                                                   // KHÔNG pulse reset ? gi? nguyên tr?ng thái thanh ghi (ReadDataM, v.v.)
+    84                                                   // -------------------------------------------------------------------------
+    85                                                   task idle_cleanup;
+    86                                                       begin
+    87              1                          1                 @(negedge clk);
+    88              1                          1                 MemWriteM   = 0;
+    89              1                          1                 MemReadM    = 0;
+    90              1                          1                 PREADY      = 0;
+    91              1                          1                 ALU_ResultM = 0;
+    92              1                          1                 WriteDataM  = 0;
+    93              1                          1                 PRDATA      = 0;
+    94              1                          1                 @(posedge clk); // 1 chu k? idle ?? FSM ?n ??nh
+    95                                                       end
+    96                                                   endtask
+    97                                               
+    98                                                   // =========================================================================
+    99                                                   // Test suite
+    100                                                  // =========================================================================
+    101                                                  initial begin
+    102             1                          1             $dumpfile("tb_mem_to_apb_master.vcd");
+    103             1                          1             $dumpvars(0, tb_mem_to_apb_master);
+    104                                              
+    105                                                      // =====================================================================
+    106                                                      // TC01  Reset / power-on defaults  ? RESET DUY NH?T
+    107                                                      // =====================================================================
+    108             1                          1             $display("\n=== TC01: Reset / power-on defaults ===");
+    109             1                          1             reset = 1;
+    110             1                          4             repeat(4) @(posedge clk);
+    110             2                          4     
+    111             1                          1             #1; reset = 0;
+    111             2                          1     
+    112             1                          1             @(posedge clk); #1;
+    112             2                          1     
+    113                                              
+    114             1                          1             check(PSEL     == 0, "TC01a PSEL=0 after reset");
+    115             1                          1             check(PENABLE  == 0, "TC01b PENABLE=0 after reset");
+    116             1                          1             check(PWRITE   == 0, "TC01c PWRITE=0 after reset");
+    117             1                          1             check(PADDR    == 0, "TC01d PADDR=0 after reset");
+    118             1                          1             check(PWDATA   == 0, "TC01e PWDATA=0 after reset");
+    119             1                          1             check(apb_stall== 0, "TC01f apb_stall=0 after reset");
+    120             1                          1             check(ReadDataM== 0, "TC01g ReadDataM=0 after reset");
+    121                                              
+    122                                                      // =====================================================================
+    123                                                      // TC02  Single write, PREADY immediate
+    124                                                      // =====================================================================
+    125             1                          1             $display("\n=== TC02: Single write, immediate PREADY ===");
+    126                                                      // TC01 left FSM in IDLE ? no cleanup needed
+    127                                              
+    128             1                          1             @(negedge clk);
+    129             1                          1             ALU_ResultM = 32'h4000_0004;
+    130             1                          1             WriteDataM  = 32'hDEAD_BEEF;
+    131             1                          1             MemWriteM   = 1;
+    132                                              
+    133             1                          1             @(posedge clk); #1;  // IDLE ? SETUP
+    133             2                          1     
+    134             1                          1             check(PSEL    == 1,             "TC02a PSEL=1 in SETUP");
+    135             1                          1             check(PENABLE == 0,             "TC02b PENABLE=0 in SETUP");
+    136             1                          1             check(PWRITE  == 1,             "TC02c PWRITE=1 in SETUP");
+    137             1                          1             check(PADDR   == 32'h4000_0004, "TC02d PADDR correct in SETUP");
+    138             1                          1             check(PWDATA  == 32'hDEAD_BEEF, "TC02e PWDATA correct in SETUP");
+    139             1                          1             check(apb_stall == 1,           "TC02f stall=1 in SETUP");
+    140                                              
+    141             1                          1             @(posedge clk); #1;  // SETUP ? ACCESS
+    141             2                          1     
+    142             1                          1             check(PSEL    == 1, "TC02g PSEL=1 in ACCESS");
+    143             1                          1             check(PENABLE == 1, "TC02h PENABLE=1 in ACCESS");
+    144             1                          1             check(PWRITE  == 1, "TC02i PWRITE=1 in ACCESS");
+    145             1                          1             check(apb_stall == 1, "TC02j stall=1 ACCESS/no-PREADY");
+    146                                              
+    147             1                          1             @(negedge clk); PREADY=1; MemWriteM=0;
+    147             2                          1     
+    147             3                          1     
+    148             1                          1             @(posedge clk); #1;  // complete ? IDLE
+    148             2                          1     
+    149             1                          1             check(apb_stall == 0, "TC02k stall released after completion");
+    150             1                          1             check(PSEL == 0,      "TC02l PSEL=0 back in IDLE");
+    151                                              
+    152             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    152             2                          1     
+    152             3                          1     
+    153                                              
+    154                                                      // =====================================================================
+    155                                                      // TC03  Single read, PREADY immediate
+    156                                                      // =====================================================================
+    157             1                          1             $display("\n=== TC03: Single read, immediate PREADY ===");
+    158                                              
+    159             1                          1             @(negedge clk);
+    160             1                          1             ALU_ResultM = 32'h4000_0008;
+    161             1                          1             MemReadM    = 1;
+    162             1                          1             PRDATA      = 32'hCAFE_1234;
+    163                                              
+    164             1                          1             @(posedge clk); // IDLE ? SETUP
+    165             1                          1             @(posedge clk); #1; // SETUP ? ACCESS
+    165             2                          1     
+    166             1                          1             check(PWRITE == 0,             "TC03a PWRITE=0 for read");
+    167             1                          1             check(PADDR  == 32'h4000_0008, "TC03b PADDR correct");
+    168             1                          1             check(PSEL   == 1,             "TC03c PSEL=1 in ACCESS");
+    169             1                          1             check(PENABLE== 1,             "TC03d PENABLE=1 in ACCESS");
+    170                                              
+    171             1                          1             @(negedge clk); PREADY=1; MemReadM=0;
+    171             2                          1     
+    171             3                          1     
+    172             1                          1             @(posedge clk); #1;
+    172             2                          1     
+    173             1                          1             check(ReadDataM == 32'hCAFE_1234, "TC03e ReadDataM captured PRDATA");
+    174             1                          1             check(PSEL      == 0,             "TC03f PSEL=0 after completion");
+    175                                              
+    176             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    176             2                          1     
+    176             3                          1     
+    177                                              
+    178                                                      // =====================================================================
+    179                                                      // TC04  Write v?i 3 wait states
+    180                                                      // =====================================================================
+    181             1                          1             $display("\n=== TC04: Write with 3 wait states ===");
+    182                                              
+    183             1                          1             @(negedge clk);
+    184             1                          1             ALU_ResultM = 32'h4000_000C;
+    185             1                          1             WriteDataM  = 32'h1111_2222;
+    186             1                          1             MemWriteM   = 1;
+    187                                              
+    188             1                          1             @(posedge clk); // IDLE ? SETUP
+    189             1                          1             @(posedge clk); #1; check(apb_stall==1, "TC04a stall wait-1");
+    189             2                          1     
+    189             3                          1     
+    190             1                          1             @(posedge clk); #1; check(apb_stall==1, "TC04b stall wait-2");
+    190             2                          1     
+    190             3                          1     
+    191             1                          1             @(posedge clk); #1; check(apb_stall==1, "TC04c stall wait-3");
+    191             2                          1     
+    191             3                          1     
+    192                                              
+    193             1                          1             @(negedge clk); PREADY=1; MemWriteM=0;
+    193             2                          1     
+    193             3                          1     
+    194             1                          1             @(posedge clk); #1;
+    194             2                          1     
+    195             1                          1             check(apb_stall==0, "TC04d stall released");
+    196             1                          1             check(PSEL==0,      "TC04e PSEL=0 after write with waits");
+    197                                              
+    198             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    198             2                          1     
+    198             3                          1     
+    199                                              
+    200                                                      // =====================================================================
+    201                                                      // TC05  Read v?i 3 wait states
+    202                                                      // =====================================================================
+    203             1                          1             $display("\n=== TC05: Read with 3 wait states ===");
+    204                                              
+    205             1                          1             @(negedge clk);
+    206             1                          1             ALU_ResultM = 32'h4000_0000;
+    207             1                          1             MemReadM    = 1;
+    208             1                          1             PRDATA      = 32'hABCD_EF01;
+    209                                              
+    210             1                          1             @(posedge clk); @(posedge clk);         // IDLE?SETUP?ACCESS
+    210             2                          1     
+    211             1                          1             @(posedge clk); @(posedge clk); @(posedge clk); // 3 waits
+    211             2                          1     
+    211             3                          1     
+    212                                              
+    213             1                          1             @(negedge clk); PREADY=1; MemReadM=0;
+    213             2                          1     
+    213             3                          1     
+    214             1                          1             @(posedge clk); #1;
+    214             2                          1     
+    215             1                          1             check(ReadDataM==32'hABCD_EF01, "TC05a ReadDataM correct after waits");
+    216             1                          1             check(PSEL==0,                  "TC05b PSEL=0 after read with waits");
+    217                                              
+    218             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    218             2                          1     
+    218             3                          1     
+    219                                              
+    220                                                      // =====================================================================
+    221                                                      // TC06  Back-to-back write ? write
+    222                                                      // =====================================================================
+    223             1                          1             $display("\n=== TC06: Back-to-back write->write ===");
+    224                                              
+    225             1                          1             @(negedge clk);
+    226             1                          1             ALU_ResultM = 32'h4000_0004;
+    227             1                          1             WriteDataM  = 32'hAAAA_0001;
+    228             1                          1             MemWriteM   = 1;
+    229                                              
+    230             1                          1             @(posedge clk); @(posedge clk); // IDLE?SETUP?ACCESS (1st write)
+    230             2                          1     
+    231                                              
+    232                                                      // C?p nh?t request th? 2 trong lúc ACCESS
+    233             1                          1             @(negedge clk);
+    234             1                          1             ALU_ResultM = 32'h4000_0008;
+    235             1                          1             WriteDataM  = 32'hBBBB_0002;
+    236             1                          1             PREADY = 1; // complete 1st + latch 2nd (MemWriteM v?n =1)
+    237                                              
+    238             1                          1             @(posedge clk); #1; // 1st done ? SETUP cho 2nd
+    238             2                          1     
+    239             1                          1             check(PSEL   == 1,             "TC06a PSEL=1 in 2nd SETUP");
+    240             1                          1             check(PENABLE== 0,             "TC06b PENABLE=0 in SETUP");
+    241             1                          1             check(PWRITE == 1,             "TC06c PWRITE=1 for 2nd write");
+    242             1                          1             check(PADDR  == 32'h4000_0008, "TC06d 2nd addr latched");
+    243             1                          1             check(PWDATA == 32'hBBBB_0002, "TC06e 2nd wdata latched");
+    244                                              
+    245             1                          1             @(negedge clk); PREADY=0;
+    245             2                          1     
+    246             1                          1             @(posedge clk); // SETUP?ACCESS (2nd)
+    247             1                          1             @(negedge clk); PREADY=1; MemWriteM=0;
+    247             2                          1     
+    247             3                          1     
+    248             1                          1             @(posedge clk); #1;
+    248             2                          1     
+    249             1                          1             check(PSEL==0, "TC06f PSEL=0 after 2nd write done");
+    250                                              
+    251             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    251             2                          1     
+    251             3                          1     
+    252                                              
+    253                                                      // =====================================================================
+    254                                                      // TC07  Back-to-back write ? read
+    255                                                      // =====================================================================
+    256             1                          1             $display("\n=== TC07: Back-to-back write->read ===");
+    257                                              
+    258             1                          1             @(negedge clk);
+    259             1                          1             ALU_ResultM = 32'h4000_0000;
+    260             1                          1             WriteDataM  = 32'h5555_AAAA;
+    261             1                          1             MemWriteM   = 1;
+    262             1                          1             MemReadM    = 0;
+    263             1                          1             PRDATA      = 0;
+    264                                              
+    265             1                          1             @(posedge clk); @(posedge clk); // IDLE?SETUP?ACCESS (write)
+    265             2                          1     
+    266                                              
+    267                                                      // Switch sang read trong lúc ACCESS
+    268             1                          1             @(negedge clk);
+    269             1                          1             ALU_ResultM = 32'h4000_000C;
+    270             1                          1             MemWriteM   = 0;
+    271             1                          1             MemReadM    = 1;
+    272             1                          1             PRDATA      = 32'h9999_6666;
+    273             1                          1             PREADY      = 1;
+    274                                              
+    275             1                          1             @(posedge clk); #1; // write done ? SETUP read
+    275             2                          1     
+    276             1                          1             check(PWRITE==0,             "TC07a PWRITE=0 in 2nd SETUP (read)");
+    277             1                          1             check(PADDR ==32'h4000_000C, "TC07b addr for 2nd txn");
+    278                                              
+    279             1                          1             @(negedge clk); PREADY=0;
+    279             2                          1     
+    280             1                          1             @(posedge clk); // SETUP?ACCESS (read)
+    281             1                          1             @(negedge clk); PREADY=1; MemReadM=0;
+    281             2                          1     
+    281             3                          1     
+    282             1                          1             @(posedge clk); #1;
+    282             2                          1     
+    283             1                          1             check(ReadDataM==32'h9999_6666, "TC07c ReadDataM from back-to-back read");
+    284                                              
+    285             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    285             2                          1     
+    285             3                          1     
+    286                                              
+    287                                                      // =====================================================================
+    288                                                      // TC08  apb_stall bao ph? toàn b? SETUP + ACCESS
+    289                                                      // =====================================================================
+    290             1                          1             $display("\n=== TC08: apb_stall coverage ===");
+    291                                              
+    292             1                          1             @(negedge clk); ALU_ResultM=32'h4000_0004; MemWriteM=1;
+    292             2                          1     
+    292             3                          1     
+    293                                              
+    294             1                          1             @(posedge clk); #1; check(apb_stall==1, "TC08a stall=1 in SETUP");
+    294             2                          1     
+    294             3                          1     
+    295             1                          1             @(posedge clk); #1; check(apb_stall==1, "TC08b stall=1 in ACCESS/no-PREADY");
+    295             2                          1     
+    295             3                          1     
+    296                                              
+    297             1                          1             @(negedge clk); PREADY=1; MemWriteM=0;
+    297             2                          1     
+    297             3                          1     
+    298             1                          1             @(posedge clk); #1; check(apb_stall==0, "TC08c stall=0 after done");
+    298             2                          1     
+    298             3                          1     
+    299                                              
+    300             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    300             2                          1     
+    300             3                          1     
+    301                                              
+    302                                                      // =====================================================================
+    303                                                      // TC09  Address decode ? t?t c? 4 offset trong UART window
+    304                                                      // =====================================================================
+    305             1                          1             $display("\n=== TC09: Address decode - inside UART window ===");
+    306                                                      begin : tc09
+    307                                                          integer k;
+    308             1                          1                 for (k = 0; k < 4; k = k + 1) begin
+    308             2                          4     
+    309             1                          4                     @(negedge clk);
+    310             1                          4                     ALU_ResultM = 32'h4000_0000 + (k * 4);
+    311             1                          4                     MemReadM    = 1;
+    312             1                          4                     @(posedge clk); #1;
+    312             2                          4     
+    313             1                          4                     check(apb_stall==1, "TC09 stall=1 for UART addr");
+    314             1                          4                     check(PSEL==1,      "TC09 PSEL=1 for UART addr");
+    315             1                          4                     @(negedge clk); PREADY=1; MemReadM=0;
+    315             2                          4     
+    315             3                          4     
+    316             1                          4                     @(posedge clk);
+    317             1                          4                     @(negedge clk); PREADY=0; @(posedge clk);
+    317             2                          4     
+    317             3                          4     
+    318                                                          end
+    319                                                      end
+    320                                              
+    321                                                      // =====================================================================
+    322                                                      // TC10  Address decode ? ngoài UART window
+    323                                                      // =====================================================================
+    324             1                          1             $display("\n=== TC10: Address decode - outside UART window ===");
+    325                                              
+    326             1                          1             @(negedge clk); ALU_ResultM=32'h4000_0010; MemReadM=1;
+    326             2                          1     
+    326             3                          1     
+    327             1                          1             @(posedge clk); #1;
+    327             2                          1     
+    328             1                          1             check(apb_stall==0, "TC10a no stall 0x40000010");
+    329             1                          1             check(PSEL==0,      "TC10b PSEL=0 0x40000010");
+    330                                              
+    331             1                          1             @(negedge clk); ALU_ResultM=32'h2000_0000;
+    331             2                          1     
+    332             1                          1             @(posedge clk); #1;
+    332             2                          1     
+    333             1                          1             check(apb_stall==0, "TC10c no stall 0x20000000");
+    334             1                          1             check(PSEL==0,      "TC10d PSEL=0 0x20000000");
+    335                                              
+    336             1                          1             @(negedge clk); MemReadM=0; ALU_ResultM=0; @(posedge clk);
+    336             2                          1     
+    336             3                          1     
+    336             4                          1     
+    337                                              
+    338                                                      // =====================================================================
+    339                                                      // TC11  Watchdog timeout
+    340                                                      // =====================================================================
+    341             1                          1             $display("\n=== TC11: Watchdog timeout ===");
+    342                                              
+    343             1                          1             @(negedge clk); ALU_ResultM=32'h4000_0004; MemWriteM=1; PREADY=0;
+    343             2                          1     
+    343             3                          1     
+    343             4                          1     
+    344                                              
+    345                                                      begin : tc11_wait
+    346                                                          integer cy;
+    347                                                          reg escaped, prev_pe;
+    348             1                          1                 escaped = 0; prev_pe = 0;
+    348             2                          1     
+    349             1                          1                 for (cy = 0; cy < 300; cy = cy + 1) begin
+    349             2                        300     
+    350             1                        300                     @(posedge clk); #1;
+    350             2                        300     
+    351             1                          1                     if (prev_pe && !PENABLE) escaped = 1;
+    352             1                        300                     prev_pe = PENABLE;
+    353                                                          end
+    354             1                          1                 check(escaped==1, "TC11a FSM escaped ACCESS via watchdog");
+    355                                                      end
+    356             1                          1             check(apb_stall==1, "TC11b stall held while MemWriteM asserted");
+    357                                              
+    358                                                      // Cleanup: deassert MemWriteM + assert PREADY together so the in-flight
+    359                                                      // txn drains cleanly and FSM returns to IDLE (not stuck in ACCESS forever)
+    360             1                          1             @(negedge clk); MemWriteM=0; ALU_ResultM=0; PREADY=1;
+    360             2                          1     
+    360             3                          1     
+    360             4                          1     
+    361             1                          1             @(posedge clk); @(posedge clk); // drain SETUP or ACCESS state
+    361             2                          1     
+    362             1                          1             @(negedge clk); PREADY=0;
+    362             2                          1     
+    363             1                          1             @(posedge clk);
+    364                                              
+    365                                                      // =====================================================================
+    366                                                      // TC12  ReadDataM KHÔNG c?p nh?t khi write hoàn thành
+    367                                                      // =====================================================================
+    368             1                          1             $display("\n=== TC12: ReadDataM unchanged on write ===");
+    369                                              
+    370                                                      // Seed b?ng read
+    371             1                          1             @(negedge clk);
+    372             1                          1             ALU_ResultM=32'h4000_0000; MemReadM=1; PRDATA=32'hFACE_FEED;
+    372             2                          1     
+    372             3                          1     
+    373             1                          1             @(posedge clk); @(posedge clk);
+    373             2                          1     
+    374             1                          1             @(negedge clk); PREADY=1; MemReadM=0;
+    374             2                          1     
+    374             3                          1     
+    375             1                          1             @(posedge clk); #1;
+    375             2                          1     
+    376             1                          1             check(ReadDataM==32'hFACE_FEED, "TC12-pre ReadDataM seeded");
+    377             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    377             2                          1     
+    377             3                          1     
+    378                                              
+    379                                                      // Write ? ReadDataM ph?i gi? nguyên
+    380             1                          1             @(negedge clk);
+    381             1                          1             ALU_ResultM=32'h4000_0004; WriteDataM=32'h1234_5678;
+    381             2                          1     
+    382             1                          1             MemWriteM=1; PRDATA=32'hDEAD_DEAD;
+    382             2                          1     
+    383             1                          1             @(posedge clk); @(posedge clk);
+    383             2                          1     
+    384             1                          1             @(negedge clk); PREADY=1; MemWriteM=0;
+    384             2                          1     
+    384             3                          1     
+    385             1                          1             @(posedge clk); #1;
+    385             2                          1     
+    386             1                          1             check(ReadDataM==32'hFACE_FEED, "TC12 ReadDataM unchanged after write");
+    387                                              
+    388             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    388             2                          1     
+    388             3                          1     
+    389                                              
+    390                                                      // =====================================================================
+    391                                                      // TC13  PADDR 32-bit ??y ?? (FIX 2)
+    392                                                      // =====================================================================
+    393             1                          1             $display("\n=== TC13: PADDR full 32-bit ===");
+    394                                              
+    395             1                          1             @(negedge clk); ALU_ResultM=32'h4000_000C; MemReadM=1;
+    395             2                          1     
+    395             3                          1     
+    396             1                          1             @(posedge clk); @(posedge clk); #1; // IDLE?SETUP?ACCESS
+    396             2                          1     
+    396             3                          1     
+    397             1                          1             check(PADDR==32'h4000_000C, "TC13 PADDR full 32-bit correct");
+    398                                              
+    399             1                          1             @(negedge clk); PREADY=1; MemReadM=0;
+    399             2                          1     
+    399             3                          1     
+    400             1                          1             @(posedge clk);
+    401             1                          1             @(negedge clk); PREADY=0; @(posedge clk);
+    401             2                          1     
+    401             3                          1     
+    402                                              
+    403                                                      // =====================================================================
+    404                                                      // TC14  IDLE outputs s?ch (FIX 3)
+    405                                                      // =====================================================================
+    406             1                          1             $display("\n=== TC14: IDLE outputs clean ===");
+    407             1                          1             idle_cleanup;
+    408             1                          1             #1;
+    409             1                          1             check(PSEL   ==0, "TC14a PSEL=0 in IDLE");
+    410             1                          1             check(PENABLE==0, "TC14b PENABLE=0 in IDLE");
+    411             1                          1             check(PADDR  ==0, "TC14c PADDR=0 in IDLE");
+    412             1                          1             check(PWDATA ==0, "TC14d PWDATA=0 in IDLE");
+    413                                              
+    414                                                      // =====================================================================
+    415                                                      // Summary
+    416                                                      // =====================================================================
+    417             1                          1             $display("\n========================================");
+    418             1                          1             $display("  Results:  %0d passed,  %0d failed", pass_cnt, fail_cnt);
+    419             1                          1             $display("========================================\n");
+    420                                                      if (fail_cnt == 0)
+    421             1                          1                 $display("  ALL TESTS PASSED");
+    422                                                      else
+    423             1                    ***0***                 $display("  SOME TESTS FAILED");
+    424             1                          1             $finish;
+    425                                                  end
+    426                                              
+    427             1                          1         initial begin #500_000; $display("TIMEOUT"); $finish; end
+    427             2                    ***0***     
+    427             3                    ***0***     
+    428                                              
+    429                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         6         4         2     66.66
+
+================================Branch Details================================
+
+Branch Coverage for file tb_apb.v --
+NOTE: The modification timestamp for source file 'tb_apb.v' has been altered since compilation.
+
+------------------------------------IF Branch------------------------------------
+    70                                        65     Count coming in to IF
+    70              1                         65                 if (cond) begin
+    73              1                    ***0***                 end else begin
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    351                                      300     Count coming in to IF
+    351             1                          1                     if (prev_pe && !PENABLE) escaped = 1;
+                                             299     All False Count
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    420                                        1     Count coming in to IF
+    420             1                          1             if (fail_cnt == 0)
+    422             1                    ***0***             else
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              3         2         1     66.66
+
+================================Condition Details================================
+
+Condition Coverage for file tb_apb.v --
+NOTE: The modification timestamp for source file 'tb_apb.v' has been altered since compilation.
+
+----------------Focused Condition View-------------------
+Line       351 Item    1  (prev_pe && ~PENABLE)
+Condition totals: 2 of 2 input terms covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       420 Item    1  (fail_cnt == 0)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+  (fail_cnt == 0)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (fail_cnt == 0)_0     -                             
+  Row   2:          1  (fail_cnt == 0)_1     -                             
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    530       285       245     53.77
+
+================================Toggle Details================================
+
+Toggle Coverage for File tb_apb.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+         24                                  reset           1           0       50.00 
+         30                         ALU_ResultM[9]           0           0        0.00 
+         30                         ALU_ResultM[8]           0           0        0.00 
+         30                         ALU_ResultM[7]           0           0        0.00 
+         30                         ALU_ResultM[6]           0           0        0.00 
+         30                         ALU_ResultM[5]           0           0        0.00 
+         30                        ALU_ResultM[31]           0           0        0.00 
+         30                        ALU_ResultM[28]           0           0        0.00 
+         30                        ALU_ResultM[27]           0           0        0.00 
+         30                        ALU_ResultM[26]           0           0        0.00 
+         30                        ALU_ResultM[25]           0           0        0.00 
+         30                        ALU_ResultM[24]           0           0        0.00 
+         30                        ALU_ResultM[23]           0           0        0.00 
+         30                        ALU_ResultM[22]           0           0        0.00 
+         30                        ALU_ResultM[21]           0           0        0.00 
+         30                        ALU_ResultM[20]           0           0        0.00 
+         30                         ALU_ResultM[1]           0           0        0.00 
+         30                        ALU_ResultM[19]           0           0        0.00 
+         30                        ALU_ResultM[18]           0           0        0.00 
+         30                        ALU_ResultM[17]           0           0        0.00 
+         30                        ALU_ResultM[16]           0           0        0.00 
+         30                        ALU_ResultM[15]           0           0        0.00 
+         30                        ALU_ResultM[14]           0           0        0.00 
+         30                        ALU_ResultM[13]           0           0        0.00 
+         30                        ALU_ResultM[12]           0           0        0.00 
+         30                        ALU_ResultM[11]           0           0        0.00 
+         30                        ALU_ResultM[10]           0           0        0.00 
+         30                         ALU_ResultM[0]           0           0        0.00 
+         31                          WriteDataM[8]           0           0        0.00 
+         37                           ReadDataM[9]           0           1       50.00 
+         37                           ReadDataM[7]           0           1       50.00 
+         37                           ReadDataM[3]           0           1       50.00 
+         37                          ReadDataM[31]           0           1       50.00 
+         37                          ReadDataM[28]           0           1       50.00 
+         37                          ReadDataM[27]           0           1       50.00 
+         37                          ReadDataM[26]           0           1       50.00 
+         37                          ReadDataM[23]           0           1       50.00 
+         37                          ReadDataM[19]           0           1       50.00 
+         37                          ReadDataM[14]           0           1       50.00 
+         37                          ReadDataM[10]           0           1       50.00 
+         39                              PWDATA[8]           0           0        0.00 
+         39                               PADDR[9]           0           0        0.00 
+         39                               PADDR[8]           0           0        0.00 
+         39                               PADDR[7]           0           0        0.00 
+         39                               PADDR[6]           0           0        0.00 
+         39                               PADDR[5]           0           0        0.00 
+         39                               PADDR[4]           0           0        0.00 
+         39                              PADDR[31]           0           0        0.00 
+         39                              PADDR[29]           0           0        0.00 
+         39                              PADDR[28]           0           0        0.00 
+         39                              PADDR[27]           0           0        0.00 
+         39                              PADDR[26]           0           0        0.00 
+         39                              PADDR[25]           0           0        0.00 
+         39                              PADDR[24]           0           0        0.00 
+         39                              PADDR[23]           0           0        0.00 
+         39                              PADDR[22]           0           0        0.00 
+         39                              PADDR[21]           0           0        0.00 
+         39                              PADDR[20]           0           0        0.00 
+         39                               PADDR[1]           0           0        0.00 
+         39                              PADDR[19]           0           0        0.00 
+         39                              PADDR[18]           0           0        0.00 
+         39                              PADDR[17]           0           0        0.00 
+         39                              PADDR[16]           0           0        0.00 
+         39                              PADDR[15]           0           0        0.00 
+         39                              PADDR[14]           0           0        0.00 
+         39                              PADDR[13]           0           0        0.00 
+         39                              PADDR[12]           0           0        0.00 
+         39                              PADDR[11]           0           0        0.00 
+         39                              PADDR[10]           0           0        0.00 
+         39                               PADDR[0]           0           0        0.00 
+         63                            pass_cnt[9]           0           0        0.00 
+         63                            pass_cnt[8]           0           0        0.00 
+         63                            pass_cnt[7]           0           0        0.00 
+         63                            pass_cnt[6]           0           0        0.00 
+         63                            pass_cnt[5]           0           1       50.00 
+         63                           pass_cnt[31]           0           0        0.00 
+         63                           pass_cnt[30]           0           0        0.00 
+         63                           pass_cnt[29]           0           0        0.00 
+         63                           pass_cnt[28]           0           0        0.00 
+         63                           pass_cnt[27]           0           0        0.00 
+         63                           pass_cnt[26]           0           0        0.00 
+         63                           pass_cnt[25]           0           0        0.00 
+         63                           pass_cnt[24]           0           0        0.00 
+         63                           pass_cnt[23]           0           0        0.00 
+         63                           pass_cnt[22]           0           0        0.00 
+         63                           pass_cnt[21]           0           0        0.00 
+         63                           pass_cnt[20]           0           0        0.00 
+         63                           pass_cnt[19]           0           0        0.00 
+         63                           pass_cnt[18]           0           0        0.00 
+         63                           pass_cnt[17]           0           0        0.00 
+         63                           pass_cnt[16]           0           0        0.00 
+         63                           pass_cnt[15]           0           0        0.00 
+         63                           pass_cnt[14]           0           0        0.00 
+         63                           pass_cnt[13]           0           0        0.00 
+         63                           pass_cnt[12]           0           0        0.00 
+         63                           pass_cnt[11]           0           0        0.00 
+         63                           pass_cnt[10]           0           0        0.00 
+         64                            fail_cnt[9]           0           0        0.00 
+         64                            fail_cnt[8]           0           0        0.00 
+         64                            fail_cnt[7]           0           0        0.00 
+         64                            fail_cnt[6]           0           0        0.00 
+         64                            fail_cnt[5]           0           0        0.00 
+         64                            fail_cnt[4]           0           0        0.00 
+         64                            fail_cnt[3]           0           0        0.00 
+         64                           fail_cnt[31]           0           0        0.00 
+         64                           fail_cnt[30]           0           0        0.00 
+         64                            fail_cnt[2]           0           0        0.00 
+         64                           fail_cnt[29]           0           0        0.00 
+         64                           fail_cnt[28]           0           0        0.00 
+         64                           fail_cnt[27]           0           0        0.00 
+         64                           fail_cnt[26]           0           0        0.00 
+         64                           fail_cnt[25]           0           0        0.00 
+         64                           fail_cnt[24]           0           0        0.00 
+         64                           fail_cnt[23]           0           0        0.00 
+         64                           fail_cnt[22]           0           0        0.00 
+         64                           fail_cnt[21]           0           0        0.00 
+         64                           fail_cnt[20]           0           0        0.00 
+         64                            fail_cnt[1]           0           0        0.00 
+         64                           fail_cnt[19]           0           0        0.00 
+         64                           fail_cnt[18]           0           0        0.00 
+         64                           fail_cnt[17]           0           0        0.00 
+         64                           fail_cnt[16]           0           0        0.00 
+         64                           fail_cnt[15]           0           0        0.00 
+         64                           fail_cnt[14]           0           0        0.00 
+         64                           fail_cnt[13]           0           0        0.00 
+         64                           fail_cnt[12]           0           0        0.00 
+         64                           fail_cnt[11]           0           0        0.00 
+         64                           fail_cnt[10]           0           0        0.00 
+         64                            fail_cnt[0]           0           0        0.00 
+
+Total Node Count     =        265 
+Toggled Node Count   =        136 
+Untoggled Node Count =        129 
+
+Toggle Coverage      =      53.77% (285 of 530 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 87.69%
+

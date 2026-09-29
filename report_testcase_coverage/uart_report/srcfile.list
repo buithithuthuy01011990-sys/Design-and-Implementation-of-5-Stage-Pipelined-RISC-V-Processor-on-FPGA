@@ -1,0 +1,6 @@
+FIFO.V
+baud_generator.v
+tb_uart.v
+uart.v
+uart_rx.v
+uart_tx.v

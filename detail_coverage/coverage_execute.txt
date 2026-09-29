@@ -1,0 +1,1311 @@
+QuestaSim-64 vcover 10.7c Coverage Utility 2018.08 Aug 18 2018
+Start time: 12:44:27 on Jun 09,2026
+vcover report -details execute.ucdb 
+Coverage Report by file with details
+
+=================================================================================
+=== File: ali.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           33        26         7     78.78
+
+================================Statement Details================================
+
+Statement Coverage for file ali.v --
+
+    1                                                module ALU (
+    2                                                    input  [31:0] A, B,
+    3                                                    input  [3:0]  ALUControl,
+    4                                                    output reg [31:0] Result,
+    5                                                    output Carry, OverFlow, Zero, Negative
+    6                                                );
+    7                                                    wire [31:0] Sum;
+    8                                                    wire        Cout;
+    9               1                         49         assign {Cout, Sum} = (ALUControl == 4'b0001) ? (A + (~B + 1)) : (A + B);
+    10                                                
+    11              1                         27         wire slt_result = ($signed(A) < $signed(B));
+    12                                                
+    13              1                         27         wire [63:0] mul_ss = $signed(A)   * $signed(B);
+    14              1                         27         wire [63:0] mul_su = $signed(A)   * $unsigned(B);
+    15              1                         27         wire [63:0] mul_uu = $unsigned(A) * $unsigned(B);
+    16                                                
+    17              1                         27         wire [31:0] div_s = (B==0) ? 32'hFFFF_FFFF :  (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h8000_0000 : $signed(A) / $signed(B);
+    18              1                         27         wire [31:0] div_u = (B==0) ? 32'hFFFF_FFFF : A / B;
+    19                                                   
+    20              1                         27         wire [31:0] rem_s = (B==0)   ? A : (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h0 : $signed(A) % $signed(B);
+    21                                                   
+    22                                                   
+    23                                                   
+    24              1                         27         wire [31:0] rem_u = (B==0) ? A : A % B;
+    25                                                
+    26                                                  
+    27              1                         25         wire [4:0] shamt = B[4:0];
+    28                                                
+    29              1                         28         always @(*) begin
+    30                                                       case (ALUControl)
+    31              1                         10                 4'b0000: Result = Sum;                        
+    32              1                          5                 4'b0001: Result = Sum;                        
+    33              1                          1                 4'b0010: Result = A & B;                     
+    34              1                          1                 4'b0011: Result = A | B;                      // OR
+    35              1                          1                 4'b0100: Result = A ^ B;                      // XOR
+    36              1                          3                 4'b0101: Result = {31'b0, slt_result};        // SLT
+    37              1                    ***0***                 4'b0110: Result = A << shamt;                 // SLL  
+    38              1                    ***0***                 4'b0111: Result = A >> shamt;                 // SRL  
+    39              1                    ***0***                 4'b1000: Result = $signed(A) >>> shamt;       // SRA  
+    40              1                          1                 4'b1001: Result = mul_ss[31:0];               // MUL
+    41              1                    ***0***                 4'b1010: Result = mul_ss[63:32];              // MULH
+    42              1                    ***0***                 4'b1011: Result = mul_su[63:32];              // MULHSU
+    43              1                    ***0***                 4'b1100: Result = mul_uu[63:32];              // MULHU
+    44              1                          2                 4'b1101: Result = div_s;                      // DIV
+    45              1                          1                 4'b1110: Result = div_u;                      // DIVU
+    46              1                          3                 4'b1111: Result = rem_s;                      // REM
+    47              1                    ***0***                 default: Result = 32'b0;
+    48                                                       endcase
+    49                                                   end
+    50                                                
+    51              1                         32         assign Carry    = ((ALUControl==4'b0000)||(ALUControl==4'b0001)) ? Cout : 1'b0;
+    52                                                
+    53              1                         16         wire add_ov = (~A[31] & ~B[31] &  Sum[31]) | ( A[31] &  B[31] & ~Sum[31]);
+    54              1                         16         wire sub_ov = (~A[31] &  B[31] &  Sum[31]) | ( A[31] & ~B[31] & ~Sum[31]);
+    55              1                         36         assign OverFlow = (ALUControl==4'b0000) ? add_ov :
+    56                                                                     (ALUControl==4'b0001) ? sub_ov : 1'b0;
+    57                                                
+    58              1                         26         assign Zero     = (Result == 32'b0);
+    59                                                   assign Negative = Result[31];
+    60                                                
+    61                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                        37        30         7     81.08
+
+================================Branch Details================================
+
+Branch Coverage for file ali.v --
+
+------------------------------------IF Branch------------------------------------
+    9                                         48     Count coming in to IF
+    9               1                         10         assign {Cout, Sum} = (ALUControl == 4'b0001) ? (A + (~B + 1)) : (A + B);
+    9               2                         38         assign {Cout, Sum} = (ALUControl == 4'b0001) ? (A + (~B + 1)) : (A + B);
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    17                                        26     Count coming in to IF
+    17              1                          5         wire [31:0] div_s = (B==0) ? 32'hFFFF_FFFF :  (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h8000_0000 : $signed(A) / $signed(B);
+    17              2                         21         wire [31:0] div_s = (B==0) ? 32'hFFFF_FFFF :  (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h8000_0000 : $signed(A) / $signed(B);
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    17                                        21     Count coming in to IF
+    17              3                          1         wire [31:0] div_s = (B==0) ? 32'hFFFF_FFFF :  (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h8000_0000 : $signed(A) / $signed(B);
+    17              4                         20         wire [31:0] div_s = (B==0) ? 32'hFFFF_FFFF :  (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h8000_0000 : $signed(A) / $signed(B);
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    18                                        26     Count coming in to IF
+    18              1                          5         wire [31:0] div_u = (B==0) ? 32'hFFFF_FFFF : A / B;
+    18              2                         21         wire [31:0] div_u = (B==0) ? 32'hFFFF_FFFF : A / B;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    20                                        26     Count coming in to IF
+    20              1                          5         wire [31:0] rem_s = (B==0)   ? A : (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h0 : $signed(A) % $signed(B);
+    20              2                         21         wire [31:0] rem_s = (B==0)   ? A : (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h0 : $signed(A) % $signed(B);
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    20                                        21     Count coming in to IF
+    20              3                          1         wire [31:0] rem_s = (B==0)   ? A : (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h0 : $signed(A) % $signed(B);
+    20              4                         20         wire [31:0] rem_s = (B==0)   ? A : (A==32'h8000_0000 && B==32'hFFFF_FFFF) ? 32'h0 : $signed(A) % $signed(B);
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    24                                        26     Count coming in to IF
+    24              1                          5         wire [31:0] rem_u = (B==0) ? A : A % B;
+    24              2                         21         wire [31:0] rem_u = (B==0) ? A : A % B;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------CASE Branch------------------------------------
+    30                                        28     Count coming in to CASE
+    31              1                         10                 4'b0000: Result = Sum;                        
+    32              1                          5                 4'b0001: Result = Sum;                        
+    33              1                          1                 4'b0010: Result = A & B;                     
+    34              1                          1                 4'b0011: Result = A | B;                      // OR
+    35              1                          1                 4'b0100: Result = A ^ B;                      // XOR
+    36              1                          3                 4'b0101: Result = {31'b0, slt_result};        // SLT
+    37              1                    ***0***                 4'b0110: Result = A << shamt;                 // SLL  
+    38              1                    ***0***                 4'b0111: Result = A >> shamt;                 // SRL  
+    39              1                    ***0***                 4'b1000: Result = $signed(A) >>> shamt;       // SRA  
+    40              1                          1                 4'b1001: Result = mul_ss[31:0];               // MUL
+    41              1                    ***0***                 4'b1010: Result = mul_ss[63:32];              // MULH
+    42              1                    ***0***                 4'b1011: Result = mul_su[63:32];              // MULHSU
+    43              1                    ***0***                 4'b1100: Result = mul_uu[63:32];              // MULHU
+    44              1                          2                 4'b1101: Result = div_s;                      // DIV
+    45              1                          1                 4'b1110: Result = div_u;                      // DIVU
+    46              1                          3                 4'b1111: Result = rem_s;                      // REM
+    47              1                    ***0***                 default: Result = 32'b0;
+Branch totals: 10 hits of 17 branches = 58.82%
+
+------------------------------------IF Branch------------------------------------
+    51                                        31     Count coming in to IF
+    51              1                         15         assign Carry    = ((ALUControl==4'b0000)||(ALUControl==4'b0001)) ? Cout : 1'b0;
+    51              2                         16         assign Carry    = ((ALUControl==4'b0000)||(ALUControl==4'b0001)) ? Cout : 1'b0;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    55                                        35     Count coming in to IF
+    55              1                         12         assign OverFlow = (ALUControl==4'b0000) ? add_ov :
+    56              1                         23                           (ALUControl==4'b0001) ? sub_ov : 1'b0;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    56                                        23     Count coming in to IF
+    56              2                          7                           (ALUControl==4'b0001) ? sub_ov : 1'b0;
+    56              3                         16                           (ALUControl==4'b0001) ? sub_ov : 1'b0;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              9         7         2     77.77
+
+================================Condition Details================================
+
+Condition Coverage for file ali.v --
+
+----------------Focused Condition View-------------------
+Line       9 Item    1  (ALUControl == 1)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       17 Item    1  (B == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       17 Item    2  ((A == -2147483648) && (B == -1))
+Condition totals: 1 of 2 input terms covered = 50.00%
+
+          Input Term   Covered  Reason for no coverage   Hint
+         -----------  --------  -----------------------  --------------
+  (A == -2147483648)         Y
+           (B == -1)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (A == -2147483648)_0  -                             
+  Row   2:          1  (A == -2147483648)_1  (B == -1)                     
+  Row   3:    ***0***  (B == -1)_0           (A == -2147483648)            
+  Row   4:          1  (B == -1)_1           (A == -2147483648)            
+
+----------------Focused Condition View-------------------
+Line       18 Item    1  (B == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       20 Item    1  (B == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       20 Item    2  ((A == -2147483648) && (B == -1))
+Condition totals: 1 of 2 input terms covered = 50.00%
+
+          Input Term   Covered  Reason for no coverage   Hint
+         -----------  --------  -----------------------  --------------
+  (A == -2147483648)         Y
+           (B == -1)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (A == -2147483648)_0  -                             
+  Row   2:          1  (A == -2147483648)_1  (B == -1)                     
+  Row   3:    ***0***  (B == -1)_0           (A == -2147483648)            
+  Row   4:          1  (B == -1)_1           (A == -2147483648)            
+
+----------------Focused Condition View-------------------
+Line       24 Item    1  (B == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+
+Expression Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Expression Terms            15        15         0    100.00
+
+================================Expression Details================================
+
+Expression Coverage for file ali.v --
+
+----------------Focused Expression View-----------------
+Line       11 Item    1  (A < B)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       51 Item    1  (((ALUControl == 0) || (ALUControl == 1))? Cout: 1'b0)
+Expression totals: 3 of 3 input terms covered = 100.00%
+
+-----------Focused Expression View (Bimodal)------------
+Line       53 Item    1  (((Src_A[31] ~| Src_B[31]) & Sum[31]) | ((~Sum[31] & Src_A[31]) & Src_B[31]))
+Expression totals: 3 of 3 input terms covered = 100.00%
+
+-----------Focused Expression View (Bimodal)------------
+Line       54 Item    1  (((~Src_A[31] & Src_B[31]) & Sum[31]) | ((Src_B[31] ~| Sum[31]) & Src_A[31]))
+Expression totals: 3 of 3 input terms covered = 100.00%
+
+-----------Focused Expression View (Bimodal)------------
+Line       55 Item    1  ((ALUControl == 0)? add_ov: ((ALUControl == 1)? sub_ov: 1'b0))
+Expression totals: 4 of 4 input terms covered = 100.00%
+
+----------------Focused Expression View-----------------
+Line       58 Item    1  (Result == 0)
+Expression totals: 1 of 1 input term covered = 100.00%
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    792       712        80     89.89
+
+================================Toggle Details================================
+
+Toggle Coverage for File ali.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          5                               OverFlow           0           0        0.00 
+         14                             mul_su[63]           0           0        0.00 
+         15                             mul_uu[63]           0           0        0.00 
+         20                              rem_s[31]           0           0        0.00 
+         20                              rem_s[30]           0           0        0.00 
+         20                              rem_s[29]           0           0        0.00 
+         20                              rem_s[28]           0           0        0.00 
+         20                              rem_s[27]           0           0        0.00 
+         20                              rem_s[26]           0           0        0.00 
+         20                              rem_s[25]           0           0        0.00 
+         20                              rem_s[24]           0           0        0.00 
+         20                              rem_s[23]           0           0        0.00 
+         20                              rem_s[22]           0           0        0.00 
+         20                              rem_s[21]           0           0        0.00 
+         20                              rem_s[20]           0           0        0.00 
+         20                              rem_s[19]           0           0        0.00 
+         20                              rem_s[18]           0           0        0.00 
+         20                              rem_s[17]           0           0        0.00 
+         20                              rem_s[16]           0           0        0.00 
+         20                              rem_s[15]           0           0        0.00 
+         20                              rem_s[14]           0           0        0.00 
+         20                              rem_s[13]           0           0        0.00 
+         24                              rem_u[30]           0           0        0.00 
+         24                              rem_u[29]           0           0        0.00 
+         24                              rem_u[28]           0           0        0.00 
+         24                              rem_u[27]           0           0        0.00 
+         24                              rem_u[26]           0           0        0.00 
+         24                              rem_u[25]           0           0        0.00 
+         24                              rem_u[24]           0           0        0.00 
+         24                              rem_u[23]           0           0        0.00 
+         24                              rem_u[22]           0           0        0.00 
+         24                              rem_u[21]           0           0        0.00 
+         24                              rem_u[20]           0           0        0.00 
+         24                              rem_u[19]           0           0        0.00 
+         24                              rem_u[18]           0           0        0.00 
+         24                              rem_u[17]           0           0        0.00 
+         24                              rem_u[16]           0           0        0.00 
+         24                              rem_u[15]           0           0        0.00 
+         24                              rem_u[14]           0           0        0.00 
+         24                              rem_u[13]           0           0        0.00 
+
+Total Node Count     =        396 
+Toggled Node Count   =        356 
+Untoggled Node Count =         40 
+
+Toggle Coverage      =      89.89% (712 of 792 bins)
+
+=================================================================================
+=== File: execute.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                           16        16         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file execute.v --
+
+    1                                                
+    2                                                module execute_cycle
+    3                                                (
+    4                                                    clk, reset, RegWriteE, ALUSrcE, MemWriteE, ResultSrcE,JumpE, BranchE, ALUControlE, 
+    5                                                    RD1_E, RD2_E, Imm_Ext_E, RD_E, PCE, PCPlus4E, PCSrcE, PCTargetE, RegWriteM, MemWriteM, ResultSrcM, RD_M,
+    6                                                    PCPlus4M, WriteDataM, ALU_ResultM, ResultW,
+    7                                                    ForwardA_E, ForwardB_E , RS1_E, RS2_E
+    8                                                    
+    9                                                );
+    10                                               
+    11                                                   
+    12                                                   input clk, reset, RegWriteE,ALUSrcE,MemWriteE,BranchE, JumpE;
+    13                                                   input  [1:0]  ResultSrcE;
+    14                                                   input [3:0] ALUControlE;
+    15                                                   input [31:0] RD1_E, RD2_E, Imm_Ext_E;
+    16                                                   input [4:0] RD_E;
+    17                                                   input [31:0] PCE, PCPlus4E;
+    18                                                   input [31:0] ResultW;
+    19                                                   input [1:0] ForwardA_E, ForwardB_E;
+    20                                                   input [4:0] RS1_E, RS2_E;
+    21                                               
+    22                                                   output PCSrcE, RegWriteM, MemWriteM;
+    23                                                   output [1:0]  ResultSrcM;
+    24                                                   output [4:0] RD_M; 
+    25                                                   output [31:0] PCPlus4M, WriteDataM, ALU_ResultM;
+    26                                                   output [31:0] PCTargetE;
+    27                                               
+    28                                                   
+    29                                                   wire [31:0] Src_A, Src_B_interim, Src_B;
+    30                                                   wire [31:0] ResultE;
+    31                                                   wire ZeroE;
+    32                                               
+    33                                                  
+    34                                                   reg RegWriteE_r, MemWriteE_r;
+    35                                                   reg [1:0]  ResultSrcE_r; 
+    36                                                   reg [4:0] RD_E_r;
+    37                                                   reg [31:0] PCPlus4E_r, RD2_E_r, ResultE_r;
+    38                                               
+    39                                                  
+    40                                                   Mux_3_by_1 srca_mux (
+    41                                                                       .a(RD1_E),
+    42                                                                       .b(ResultW),
+    43                                                                       .c(ALU_ResultM),
+    44                                                                       .select(ForwardA_E),
+    45                                                                       .d(Src_A)
+    46                                                                       );
+    47                                               
+    48                                                  
+    49                                                   Mux_3_by_1 srcb_mux (
+    50                                                                       .a(RD2_E),
+    51                                                                       .b(ResultW),
+    52                                                                       .c(ALU_ResultM),
+    53                                                                       .select(ForwardB_E),
+    54                                                                       .d(Src_B_interim)
+    55                                                                       );
+    56                                                 
+    57                                                   Mux alu_src_mux (
+    58                                                           .a(Src_B_interim),
+    59                                                           .b(Imm_Ext_E),
+    60                                                           .select(ALUSrcE),
+    61                                                           .c(Src_B)
+    62                                                           );
+    63                                               
+    64                                                   
+    65                                                   ALU alu (
+    66                                                           .A(Src_A),
+    67                                                           .B(Src_B),
+    68                                                           .Result(ResultE),
+    69                                                           .ALUControl(ALUControlE),
+    70                                                           .OverFlow(),
+    71                                                           .Carry(),
+    72                                                           .Zero(ZeroE),
+    73                                                           .Negative()
+    74                                                           );
+    75                                               
+    76                                                 
+    77                                                   PC_Adder branch_adder (
+    78                                                           .a(PCE),
+    79                                                           .b(Imm_Ext_E),
+    80                                                           .c(PCTargetE)
+    81                                                           );
+    82                                               
+    83                                                  
+    84              1                         28         always @(posedge clk or posedge  reset ) 
+    85                                                   begin
+    86                                                       if(reset) 
+    87                                                       begin
+    88              1                          4                 RegWriteE_r <= 1'b0; 
+    89              1                          4                 MemWriteE_r <= 1'b0; 
+    90              1                          4                 ResultSrcE_r <= 2'b00; 
+    91              1                          4                 RD_E_r <= 5'h00;
+    92              1                          4                 PCPlus4E_r <= 32'h00000000; 
+    93              1                          4                 RD2_E_r <= 32'h00000000; 
+    94              1                          4                 ResultE_r <= 32'h00000000;
+    95                                                       end
+    96                                                       else
+    97                                                        begin
+    98              1                         24                 RegWriteE_r <= RegWriteE; 
+    99              1                         24                 MemWriteE_r <= MemWriteE; 
+    100             1                         24                 ResultSrcE_r <= ResultSrcE;
+    101             1                         24                 RD_E_r <= RD_E;
+    102             1                         24                 PCPlus4E_r <= PCPlus4E; 
+    103             1                         24                 RD2_E_r <= Src_B_interim; 
+    104             1                         24                 ResultE_r <= ResultE;
+    105                                                      end
+    106                                                  end
+    107                                              
+    108                                                  
+    109             1                         16         assign PCSrcE =( ZeroE &  BranchE )| JumpE;
+    110                                                  assign RegWriteM = RegWriteE_r;
+    111                                                  assign MemWriteM = MemWriteE_r;
+    112                                                  assign ResultSrcM = ResultSrcE_r;
+    113                                                  assign RD_M = RD_E_r;
+    114                                                  assign PCPlus4M = PCPlus4E_r;
+    115                                                  assign WriteDataM = RD2_E_r;
+    116                                                  assign ALU_ResultM = ResultE_r;
+    117                                              
+    118                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         2         2         0    100.00
+
+================================Branch Details================================
+
+Branch Coverage for file execute.v --
+
+------------------------------------IF Branch------------------------------------
+    86                                        28     Count coming in to IF
+    86              1                          4             if(reset) 
+    96              1                         24             else
+Branch totals: 2 hits of 2 branches = 100.00%
+
+
+Expression Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Expression Terms             3         3         0    100.00
+
+================================Expression Details================================
+
+Expression Coverage for file execute.v --
+
+----------------Focused Expression View-----------------
+Line       109 Item    1  ((ZeroE & BranchE) | JumpE)
+Expression totals: 3 of 3 input terms covered = 100.00%
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    468       462         6     98.71
+
+================================Toggle Details================================
+
+Toggle Coverage for File execute.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+         35                        ResultSrcE_r[0]           0           0        0.00 
+         37                          PCPlus4E_r[1]           0           0        0.00 
+         37                          PCPlus4E_r[0]           0           0        0.00 
+
+Total Node Count     =        234 
+Toggled Node Count   =        231 
+Untoggled Node Count =          3 
+
+Toggle Coverage      =      98.71% (462 of 468 bins)
+
+=================================================================================
+=== File: mux_pc.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            2         2         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file mux_pc.v --
+
+    1                                                module Mux (a,b,select,c);
+    2                                                
+    3                                                    input [31:0]a,b;
+    4                                                    input select;
+    5                                                    output [31:0]c;
+    6               1                         27         assign c = (select == 0) ? a : b;
+    7                                                    
+    8                                                endmodule
+    9                                                
+    10                                               module Mux_3_by_1 (a,b,c,select,d);
+    11                                                   input [31:0] a,b,c;
+    12                                                   input [1:0] select;
+    13                                                   output [31:0] d;
+    14                                               
+    15              1                        106         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    16                                                   
+    17                                               endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         8         5         3     62.50
+
+================================Branch Details================================
+
+Branch Coverage for file mux_pc.v --
+
+------------------------------------IF Branch------------------------------------
+    6                                         26     Count coming in to IF
+    6               1                         24         assign c = (select == 0) ? a : b;
+    6               2                          2         assign c = (select == 0) ? a : b;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    15                                       104     Count coming in to IF
+    15              1                         99         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    15              2                          5         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+Branch totals: 2 hits of 2 branches = 100.00%
+
+------------------------------------IF Branch------------------------------------
+    15                                         5     Count coming in to IF
+    15              3                          5         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    15              4                    ***0***         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    15                                   ***0***     Count coming in to IF
+    15              5                    ***0***         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+    15              6                    ***0***         assign d = (select == 2'b00) ? a : (select == 2'b01) ? b : (select == 2'b10) ? c : 32'h00000000;
+Branch totals: 0 hits of 2 branches = 0.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              4         2         2     50.00
+
+================================Condition Details================================
+
+Condition Coverage for file mux_pc.v --
+
+----------------Focused Condition View-------------------
+Line       6 Item    1  (select == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       15 Item    1  (select == 0)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       15 Item    2  (select == 1)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (select == 1)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (select == 1)_0       -                             
+  Row   2:          2  (select == 1)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       15 Item    3  (select == 2)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (select == 2)         N  No hits                  Hit '_0' and '_1'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (select == 2)_0       -                             
+  Row   2:    ***0***  (select == 2)_1       -                             
+
+
+
+=================================================================================
+=== File: pc_adder_ex.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                            1         1         0    100.00
+
+================================Statement Details================================
+
+Statement Coverage for file pc_adder_ex.v --
+
+    1                                                module PC_Adder (a,b,c);
+    2                                                
+    3                                                    input [31:0]a,b;
+    4                                                    output [31:0]c;
+    5                                                
+    6               1                          8         assign c = a + b;
+    7                                                    
+    8                                                endmodule
+
+
+=================================================================================
+=== File: tb_execute.v
+=================================================================================
+Statement Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                          267       261         6     97.75
+
+================================Statement Details================================
+
+Statement Coverage for file tb_execute.v --
+
+    1                                                `timescale 1ns/1ps
+    2                                                
+    3                                                module tb_execute_cycle;
+    4                                                
+    5                                                    reg clk, reset;
+    6                                                
+    7                                                    reg        RegWriteE, ALUSrcE, MemWriteE, BranchE, JumpE;
+    8                                                    reg  [1:0] ResultSrcE;
+    9                                                    reg  [3:0] ALUControlE;
+    10                                                   reg  [31:0] RD1_E, RD2_E, Imm_Ext_E;
+    11                                                   reg  [4:0]  RD_E, RS1_E, RS2_E;
+    12                                                   reg  [31:0] PCE, PCPlus4E;
+    13                                                   reg  [31:0] ResultW;
+    14                                                   reg  [1:0]  ForwardA_E, ForwardB_E;
+    15                                               
+    16                                                   wire        PCSrcE;
+    17                                                   wire        RegWriteM, MemWriteM;
+    18                                                   wire [1:0]  ResultSrcM;
+    19                                                   wire [4:0]  RD_M;
+    20                                                   wire [31:0] PCPlus4M, WriteDataM, ALU_ResultM;
+    21                                                   wire [31:0] PCTargetE;
+    22                                               
+    23                                                   execute_cycle dut (
+    24                                                       .clk(clk), .reset(reset),
+    25                                                       .RegWriteE(RegWriteE), .ALUSrcE(ALUSrcE),
+    26                                                       .MemWriteE(MemWriteE), .ResultSrcE(ResultSrcE),
+    27                                                       .JumpE(JumpE), .BranchE(BranchE),
+    28                                                       .ALUControlE(ALUControlE),
+    29                                                       .RD1_E(RD1_E), .RD2_E(RD2_E), .Imm_Ext_E(Imm_Ext_E),
+    30                                                       .RD_E(RD_E), .PCE(PCE), .PCPlus4E(PCPlus4E),
+    31                                                       .PCSrcE(PCSrcE), .PCTargetE(PCTargetE),
+    32                                                       .RegWriteM(RegWriteM), .MemWriteM(MemWriteM),
+    33                                                       .ResultSrcM(ResultSrcM), .RD_M(RD_M),
+    34                                                       .PCPlus4M(PCPlus4M), .WriteDataM(WriteDataM),
+    35                                                       .ALU_ResultM(ALU_ResultM),
+    36                                                       .ResultW(ResultW),
+    37                                                       .ForwardA_E(ForwardA_E), .ForwardB_E(ForwardB_E),
+    38                                                       .RS1_E(RS1_E), .RS2_E(RS2_E)
+    39                                                   );
+    40                                               
+    41              1                          1         initial clk = 0;
+    42              1                         98         always #5 clk = ~clk;
+    42              2                         97     
+    43                                               
+    44                                                   integer pass_cnt, fail_cnt;
+    45                                               
+    46                                                   task check32;
+    47                                                       input [8*32-1:0] name;
+    48                                                       input [31:0] got, exp;
+    49                                                       begin
+    50                                                           if (got === exp) begin
+    51              1                         31                     $display("  PASS [%0s]  got=0x%08h", name, got);
+    52              1                         31                     pass_cnt = pass_cnt + 1;
+    53                                                           end else begin
+    54              1                    ***0***                     $display("  FAIL [%0s]  got=0x%08h  exp=0x%08h", name, got, exp);
+    55              1                    ***0***                     fail_cnt = fail_cnt + 1;
+    56                                                           end
+    57                                                       end
+    58                                                   endtask
+    59                                               
+    60                                                   task check1;
+    61                                                       input [8*32-1:0] name;
+    62                                                       input got, exp;
+    63                                                       begin
+    64                                                           if (got === exp) begin
+    65              1                         10                     $display("  PASS [%0s]  got=%0b", name, got);
+    66              1                         10                     pass_cnt = pass_cnt + 1;
+    67                                                           end else begin
+    68              1                    ***0***                     $display("  FAIL [%0s]  got=%0b  exp=%0b", name, got, exp);
+    69              1                    ***0***                     fail_cnt = fail_cnt + 1;
+    70                                                           end
+    71                                                       end
+    72                                                   endtask
+    73                                               
+    74                                                   task init;
+    75                                                       begin
+    76              1                         31                 RegWriteE  = 0; ALUSrcE    = 0;
+    76              2                         31     
+    77              1                         31                 MemWriteE  = 0; BranchE    = 0; JumpE = 0;
+    77              2                         31     
+    77              3                         31     
+    78              1                         31                 ResultSrcE = 0; ALUControlE = 0;
+    78              2                         31     
+    79              1                         31                 RD1_E = 0; RD2_E = 0; Imm_Ext_E = 0;
+    79              2                         31     
+    79              3                         31     
+    80              1                         31                 RD_E  = 0; RS1_E = 0; RS2_E     = 0;
+    80              2                         31     
+    80              3                         31     
+    81              1                         31                 PCE   = 32'h0000_1000;
+    82              1                         31                 PCPlus4E = 32'h0000_1004;
+    83              1                         31                 ResultW    = 0;
+    84              1                         31                 ForwardA_E = 0; ForwardB_E = 0;
+    84              2                         31     
+    85                                                       end
+    86                                                   endtask
+    87                                               
+    88                                                   task latch_and_read;
+    89                                                       begin
+    90              1                         21                 @(posedge clk);
+    91              1                         21                 @(posedge clk);
+    92              1                         21                 #1;
+    93                                                       end
+    94                                                   endtask
+    95                                               
+    96                                                   initial begin
+    97              1                          1             pass_cnt = 0; fail_cnt = 0;
+    97              2                          1     
+    98              1                          1             init;
+    99                                               
+    100             1                          1             reset = 1;
+    101             1                          1             @(posedge clk); @(posedge clk);
+    101             2                          1     
+    102             1                          1             reset = 0;
+    103                                                      
+    104             1                          1             $display("  execute_cycle Testbench");
+    105                                                      
+    106                                              
+    107                                                     
+    108                                                      // NHÓM 1: ALU RV32I
+    109                                                      
+    110             1                          1             $display("\n--- Nhom 1: ALU RV32I ---");
+    111                                              
+    112                                                      // TC1.1  ADD: 10 + 5 = 15
+    113             1                          1             init;
+    114             1                          1             RD1_E = 32'd10; RD2_E = 32'd5;
+    114             2                          1     
+    115             1                          1             ALUControlE = 4'b0000;
+    116             1                          1             latch_and_read;
+    117             1                          1             check32("ADD 10+5", ALU_ResultM, 32'd15);
+    118                                              
+    119                                                      // TC1.2  SUB: 20 - 7 = 13
+    120             1                          1             init;
+    121             1                          1             RD1_E = 32'd20; RD2_E = 32'd7;
+    121             2                          1     
+    122             1                          1             ALUControlE = 4'b0001;
+    123             1                          1             latch_and_read;
+    124             1                          1             check32("SUB 20-7", ALU_ResultM, 32'd13);
+    125                                              
+    126                                                      // TC1.3  AND: 0xFF & 0x0F = 0x0F
+    127             1                          1             init;
+    128             1                          1             RD1_E = 32'h0000_00FF; RD2_E = 32'h0000_000F;
+    128             2                          1     
+    129             1                          1             ALUControlE = 4'b0010;
+    130             1                          1             latch_and_read;
+    131             1                          1             check32("AND FF&0F", ALU_ResultM, 32'h0000_000F);
+    132                                              
+    133                                                      // TC1.4  OR: 0xF0 | 0x0F = 0xFF
+    134             1                          1             init;
+    135             1                          1             RD1_E = 32'h0000_00F0; RD2_E = 32'h0000_000F;
+    135             2                          1     
+    136             1                          1             ALUControlE = 4'b0011;
+    137             1                          1             latch_and_read;
+    138             1                          1             check32("OR F0|0F", ALU_ResultM, 32'h0000_00FF);
+    139                                              
+    140                                                      // TC1.5  XOR: 0xFF ^ 0x0F = 0xF0
+    141             1                          1             init;
+    142             1                          1             RD1_E = 32'h0000_00FF; RD2_E = 32'h0000_000F;
+    142             2                          1     
+    143             1                          1             ALUControlE = 4'b0100;
+    144             1                          1             latch_and_read;
+    145             1                          1             check32("XOR FF^0F", ALU_ResultM, 32'h0000_00F0);
+    146                                              
+    147                                                      // TC1.6  SLT: 3 < 5 => 1
+    148             1                          1             init;
+    149             1                          1             RD1_E = 32'd3; RD2_E = 32'd5;
+    149             2                          1     
+    150             1                          1             ALUControlE = 4'b0101;
+    151             1                          1             latch_and_read;
+    152             1                          1             check32("SLT 3<5", ALU_ResultM, 32'd1);
+    153                                              
+    154                                                      // TC1.7  SLT: 5 < 3 => 0
+    155             1                          1             init;
+    156             1                          1             RD1_E = 32'd5; RD2_E = 32'd3;
+    156             2                          1     
+    157             1                          1             ALUControlE = 4'b0101;
+    158             1                          1             latch_and_read;
+    159             1                          1             check32("SLT 5<3", ALU_ResultM, 32'd0);
+    160                                              
+    161                                                      // TC1.8  SLT signed: -1 < 1 => 1
+    162             1                          1             init;
+    163             1                          1             RD1_E = 32'hFFFF_FFFF; RD2_E = 32'd1;
+    163             2                          1     
+    164             1                          1             ALUControlE = 4'b0101;
+    165             1                          1             latch_and_read;
+    166             1                          1             check32("SLT -1<1", ALU_ResultM, 32'd1);
+    167                                              
+    168                                                      
+    169                                                      // NHÓM 2: ALUSrc = 1
+    170                                                     
+    171             1                          1             $display("\n Nhom 2: ALUSrc=1 (Immediate) ");
+    172                                              
+    173                                                      // TC2.1  ADDI: 100 + 55 = 155
+    174             1                          1             init;
+    175             1                          1             RD1_E = 32'd100; Imm_Ext_E = 32'd55;
+    175             2                          1     
+    176             1                          1             ALUSrcE = 1; ALUControlE = 4'b0000;
+    176             2                          1     
+    177             1                          1             latch_and_read;
+    178             1                          1             check32("ADDI 100+55", ALU_ResultM, 32'd155);
+    179                                              
+    180                                                      // TC2.2  WriteDataM ph?i là RD2, không ph?i Imm
+    181             1                          1             init;
+    182             1                          1             RD1_E = 32'd1; RD2_E = 32'hDEAD_BEEF;
+    182             2                          1     
+    183             1                          1             Imm_Ext_E = 32'hFFFF_0000;
+    184             1                          1             ALUSrcE = 1; ALUControlE = 4'b0000;
+    184             2                          1     
+    185             1                          1             latch_and_read;
+    186             1                          1             check32("WriteDataM=RD2 not Imm", WriteDataM, 32'hDEAD_BEEF);
+    187                                              
+    188                                                   
+    189                                                      // NHÓM 3: Forwarding
+    190                                                     
+    191             1                          1             $display("\n Nhom 3: Forwarding ");
+    192                                              
+    193                                                      // TC3.1  ForwardA=01 (ResultW -> SrcA)
+    194             1                          1             init;
+    195             1                          1             ResultW = 32'd50; RD2_E = 32'd0;
+    195             2                          1     
+    196             1                          1             ForwardA_E = 2'b01; ALUControlE = 4'b0000;
+    196             2                          1     
+    197             1                          1             latch_and_read;
+    198             1                          1             check32("FwdA=01 ADD", ALU_ResultM, 32'd50);
+    199                                              
+    200                                                      // TC3.2  ForwardB=01 (ResultW -> SrcB)
+    201             1                          1             init;
+    202             1                          1             RD1_E = 32'd10; ResultW = 32'd40;
+    202             2                          1     
+    203             1                          1             ForwardB_E = 2'b01; ALUControlE = 4'b0000;
+    203             2                          1     
+    204             1                          1             latch_and_read;
+    205             1                          1             check32("FwdB=01 ADD", ALU_ResultM, 32'd50);
+    206                                              
+    207                                                      // TC3.3  ForwardB=01: WriteDataM = ResultW
+    208             1                          1             init;
+    209             1                          1             RD2_E = 32'hAAAA_AAAA; ResultW = 32'hBBBB_BBBB;
+    209             2                          1     
+    210             1                          1             ForwardB_E = 2'b01; ALUControlE = 4'b0000;
+    210             2                          1     
+    211             1                          1             latch_and_read;
+    212             1                          1             check32("FwdB=01 WriteDataM", WriteDataM, 32'hBBBB_BBBB);
+    213                                              
+    214                                                      // TC3.4  Không forward: RD1=7, RD2=3, SUB=4
+    215             1                          1             init;
+    216             1                          1             RD1_E = 32'd7; RD2_E = 32'd3;
+    216             2                          1     
+    217             1                          1             ForwardA_E = 2'b00; ForwardB_E = 2'b00;
+    217             2                          1     
+    218             1                          1             ALUControlE = 4'b0001;
+    219             1                          1             latch_and_read;
+    220             1                          1             check32("NoFwd SUB", ALU_ResultM, 32'd4);
+    221                                              
+    222                                                     
+    223                                                      // NHÓM 4: Combinatorial - PCSrcE, PCTargetE
+    224                                                   
+    225             1                          1             $display("\nNhom 4: Combinatorial - PCSrcE, PCTargetE ");
+    226                                              
+    227                                                      // TC4.1  BEQ taken
+    228             1                          1             init;
+    229             1                          1             RD1_E = 32'd42; RD2_E = 32'd42;
+    229             2                          1     
+    230             1                          1             ALUControlE = 4'b0001; BranchE = 1;
+    230             2                          1     
+    231             1                          1             #1;
+    232             1                          1             check1("BEQ taken", PCSrcE, 1'b1);
+    233                                              
+    234                                                      // TC4.2  BEQ not taken
+    235             1                          1             init;
+    236             1                          1             RD1_E = 32'd10; RD2_E = 32'd20;
+    236             2                          1     
+    237             1                          1             ALUControlE = 4'b0001; BranchE = 1;
+    237             2                          1     
+    238             1                          1             #1;
+    239             1                          1             check1("BEQ not taken", PCSrcE, 1'b0);
+    240                                              
+    241                                                      // TC4.3  Jump
+    242             1                          1             init;
+    243             1                          1             RD1_E = 0; RD2_E = 0; BranchE = 0; JumpE = 1;
+    243             2                          1     
+    243             3                          1     
+    243             4                          1     
+    244             1                          1             #1;
+    245             1                          1             check1("JumpE=1", PCSrcE, 1'b1);
+    246                                              
+    247                                                      // TC4.4  Không branch, không jump
+    248             1                          1             init;
+    249             1                          1             BranchE = 0; JumpE = 0;
+    249             2                          1     
+    250             1                          1             RD1_E = 32'd5; RD2_E = 32'd5;
+    250             2                          1     
+    251             1                          1             ALUControlE = 4'b0001;
+    252             1                          1             #1;
+    253             1                          1             check1("No branch/jump", PCSrcE, 1'b0);
+    254                                              
+    255                                                      // TC4.5  PCTargetE = PCE + Imm_Ext_E
+    256             1                          1             init;
+    257             1                          1             PCE = 32'h0000_1000; Imm_Ext_E = 32'h0000_0020;
+    257             2                          1     
+    258             1                          1             #1;
+    259             1                          1             check32("PCTargetE", PCTargetE, 32'h0000_1020);
+    260                                              
+    261                                                      // TC4.6  PCTargetE âm offset
+    262             1                          1             init;
+    263             1                          1             PCE = 32'h0000_1000; Imm_Ext_E = 32'hFFFF_FFFC;
+    263             2                          1     
+    264             1                          1             #1;
+    265             1                          1             check32("PCTargetE neg", PCTargetE, 32'h0000_0FFC);
+    266                                              
+    267                                                    
+    268                                                      // NHÓM 5: Pipeline registers
+    269                                                      
+    270             1                          1             $display("\n Nhom 5: Pipeline registers");
+    271                                              
+    272             1                          1             init;
+    273             1                          1             RegWriteE = 1; MemWriteE = 0;
+    273             2                          1     
+    274             1                          1             ResultSrcE = 2'b10; RD_E = 5'd15;
+    274             2                          1     
+    275             1                          1             PCPlus4E = 32'hAAAA_0004;
+    276             1                          1             @(posedge clk); #1;
+    276             2                          1     
+    277             1                          1             check1("RegWriteM", RegWriteM, 1'b1);
+    278             1                          1             check1("MemWriteM", MemWriteM, 1'b0);
+    279             1                          1             check32("RD_M", {27'b0, RD_M}, {27'b0, 5'd15});
+    280             1                          1             check32("PCPlus4M", PCPlus4M, 32'hAAAA_0004);
+    281             1                          1             check32("ResultSrcM", {30'b0, ResultSrcM}, {30'b0, 2'b10});
+    282                                              
+    283             1                          1             init;
+    284             1                          1             RegWriteE = 0; MemWriteE = 1;
+    284             2                          1     
+    285             1                          1             @(posedge clk); #1;
+    285             2                          1     
+    286             1                          1             check1("MemWriteM=1", MemWriteM, 1'b1);
+    287             1                          1             check1("RegWriteM=0", RegWriteM, 1'b0);
+    288                                              
+    289                                                    
+    290                                                      // NHÓM 6: Reset
+    291                                                     
+    292             1                          1             $display("\n Nhom 6: Reset" );
+    293                                              
+    294             1                          1             init;
+    295             1                          1             RegWriteE = 1; MemWriteE = 1;
+    295             2                          1     
+    296             1                          1             RD1_E = 32'hDEAD; RD2_E = 32'hBEEF;
+    296             2                          1     
+    297             1                          1             ALUControlE = 4'b0000; RD_E = 5'd31;
+    297             2                          1     
+    298             1                          1             PCPlus4E = 32'hFFFF_FFFC;
+    299             1                          1             @(posedge clk); #1;
+    299             2                          1     
+    300                                              
+    301             1                          1             reset = 1;
+    302             1                          1             @(posedge clk); #1;
+    302             2                          1     
+    303             1                          1             reset = 0;
+    304                                              
+    305             1                          1             check1("Reset RegWriteM", RegWriteM, 1'b0);
+    306             1                          1             check1("Reset MemWriteM", MemWriteM, 1'b0);
+    307             1                          1             check32("Reset ALU_ResultM", ALU_ResultM, 32'h0);
+    308             1                          1             check32("Reset WriteDataM",  WriteDataM,  32'h0);
+    309             1                          1             check32("Reset PCPlus4M",    PCPlus4M,    32'h0);
+    310             1                          1             check32("Reset RD_M", {27'b0, RD_M}, 32'h0);
+    311             1                          1             check32("Reset ResultSrcM", {30'b0, ResultSrcM}, 32'h0);
+    312                                              
+    313                                                      
+    314                                                      // NHÓM 7: RV32M  -- encoding kh?p ALU g?c
+    315                                                   
+    316                                                      //   ALU case:
+    317                                                      //     4'b1001 = MUL     (mul_ss[31:0])
+    318                                                      //     4'b1010 = MULH    (mul_ss[63:32])
+    319                                                      //     4'b1011 = MULHSU  (mul_su[63:32])
+    320                                                      //     4'b1100 = MULHU   (mul_uu[63:32])
+    321                                                      //     4'b1101 = DIVS    (div_s)
+    322                                                      //     4'b1110 = DIVU    (div_u)
+    323                                                      //     4'b1111 = REMS    (rem_s)
+    324                                                      //     default = REMU không có case riêng trong ALU
+    325                                                     
+    326             1                          1             $display("\n Nhom 7: RV32M");
+    327                                              
+    328                                                      // TC7.1  MUL lower 32-bit: 100 * 200 = 20000 = 0x00004E20
+    329                                                      // ALU: 4'b1001 = MUL
+    330             1                          1             init;
+    331             1                          1             RD1_E = 32'd100; RD2_E = 32'd200;
+    331             2                          1     
+    332             1                          1             ALUControlE = 4'b1001;                         
+    333             1                          1             latch_and_read;
+    334             1                          1             check32("MUL 100*200", ALU_ResultM, 32'h0000_4E20);
+    335                                              
+    336                                                      // TC7.2  DIVS chia cho 0 ? 0xFFFFFFFF
+    337                                                      // ALU: 4'b1101 = DIVS
+    338             1                          1             init;
+    339             1                          1             RD1_E = 32'd7; RD2_E = 32'd0;
+    339             2                          1     
+    340             1                          1             ALUControlE = 4'b1101;                          
+    341             1                          1             latch_and_read;
+    342             1                          1             check32("DIVS /0", ALU_ResultM, 32'hFFFF_FFFF);
+    343                                              
+    344                                                      // TC7.3  REMS signed: 10 % 3 = 1
+    345                                                      // ALU: 4'b1111 = REMS
+    346             1                          1             init;
+    347             1                          1             RD1_E = 32'd10; RD2_E = 32'd3;
+    347             2                          1     
+    348             1                          1             ALUControlE = 4'b1111;                         
+    349             1                          1             latch_and_read;
+    350             1                          1             check32("REMS 10%3", ALU_ResultM, 32'd1);
+    351                                              
+    352                                                      // TC7.4  DIVS overflow: INT_MIN / -1 = INT_MIN (0x80000000)
+    353                                                      // ALU: 4'b1101 = DIVS
+    354             1                          1             init;
+    355             1                          1             RD1_E = 32'h8000_0000; RD2_E = 32'hFFFF_FFFF;
+    355             2                          1     
+    356             1                          1             ALUControlE = 4'b1101;                          
+    357             1                          1             latch_and_read;
+    358             1                          1             check32("DIVS overflow", ALU_ResultM, 32'h8000_0000);
+    359                                              
+    360                                                      // TC7.5  REMS overflow: INT_MIN % -1 = 0
+    361                                                      // ALU: 4'b1111 = REMS
+    362             1                          1             init;
+    363             1                          1             RD1_E = 32'h8000_0000; RD2_E = 32'hFFFF_FFFF;
+    363             2                          1     
+    364             1                          1             ALUControlE = 4'b1111;                         
+    365             1                          1             latch_and_read;
+    366             1                          1             check32("REMS overflow", ALU_ResultM, 32'd0);
+    367                                              
+    368                                                      // TC7.6  DIVU unsigned: 10 / 3 = 3
+    369                                                      // ALU: 4'b1110 = DIVU
+    370             1                          1             init;
+    371             1                          1             RD1_E = 32'd10; RD2_E = 32'd3;
+    371             2                          1     
+    372             1                          1             ALUControlE = 4'b1110;                          
+    373             1                          1             latch_and_read;
+    374             1                          1             check32("DIVU 10/3", ALU_ResultM, 32'd3);
+    375                                              
+    376                                                     
+    377             1                          1             init;
+    378             1                          1             RD1_E = 32'd10; RD2_E = 32'd3;
+    378             2                          1     
+    379             1                          1             ALUControlE = 4'b1111;  
+    380                                                     
+    381             1                          1             latch_and_read;
+    382             1                          1             check32("REMU 10%3", ALU_ResultM, 32'd1);
+    383                                              
+    384                                                    
+    385             1                          1             #10;
+    386                                                     
+    387             1                          1             $display("  TONG KET: %0d PASS  |  %0d FAIL", pass_cnt, fail_cnt);
+    388                                                     
+    389             1                          1             $finish;
+    390                                                  end
+    391                                              
+    392                                                  initial begin
+    393             1                          1             #10000;
+    394             1                    ***0***             $display("TIMEOUT");
+    395             1                    ***0***             $finish;
+    396                                                  end
+    397                                              
+    398                                              endmodule
+
+Branch Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Branches                         4         2         2     50.00
+
+================================Branch Details================================
+
+Branch Coverage for file tb_execute.v --
+
+------------------------------------IF Branch------------------------------------
+    50                                        31     Count coming in to IF
+    50              1                         31                 if (got === exp) begin
+    53              1                    ***0***                 end else begin
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    64                                        10     Count coming in to IF
+    64              1                         10                 if (got === exp) begin
+    67              1                    ***0***                 end else begin
+Branch totals: 1 hit of 2 branches = 50.00%
+
+
+Condition Coverage:
+    Enabled Coverage            Active   Covered    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    FEC Condition Terms              2         0         2      0.00
+
+================================Condition Details================================
+
+Condition Coverage for file tb_execute.v --
+
+----------------Focused Condition View-------------------
+Line       50 Item    1  (got === exp)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (got === exp)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (got === exp)_0       -                             
+  Row   2:          1  (got === exp)_1       -                             
+
+----------------Focused Condition View-------------------
+Line       64 Item    1  (got === exp)
+Condition totals: 0 of 1 input term covered = 0.00%
+
+     Input Term   Covered  Reason for no coverage   Hint
+    -----------  --------  -----------------------  --------------
+  (got === exp)         N  '_0' not hit             Hit '_0'
+
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:    ***0***  (got === exp)_0       -                             
+  Row   2:          1  (got === exp)_1       -                             
+
+
+Toggle Coverage:
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    852       610       242     71.59
+
+================================Toggle Details================================
+
+Toggle Coverage for File tb_execute.v --
+
+       Line                                   Node      1H->0L      0L->1H  "Coverage"
+--------------------------------------------------------------------------------------
+          8                          ResultSrcE[0]           0           0        0.00 
+          9                         ALUControlE[3]           0           1       50.00 
+         11                               RS2_E[4]           0           0        0.00 
+         11                               RS2_E[3]           0           0        0.00 
+         11                               RS2_E[2]           0           0        0.00 
+         11                               RS2_E[1]           0           0        0.00 
+         11                               RS2_E[0]           0           0        0.00 
+         11                               RS1_E[4]           0           0        0.00 
+         11                               RS1_E[3]           0           0        0.00 
+         11                               RS1_E[2]           0           0        0.00 
+         11                               RS1_E[1]           0           0        0.00 
+         11                               RS1_E[0]           0           0        0.00 
+         12                            PCPlus4E[2]           0           0        0.00 
+         12                            PCPlus4E[1]           0           0        0.00 
+         12                            PCPlus4E[0]           0           0        0.00 
+         12                                 PCE[9]           0           0        0.00 
+         12                                 PCE[8]           0           0        0.00 
+         12                                 PCE[7]           0           0        0.00 
+         12                                 PCE[6]           0           0        0.00 
+         12                                 PCE[5]           0           0        0.00 
+         12                                 PCE[4]           0           0        0.00 
+         12                                 PCE[3]           0           0        0.00 
+         12                                PCE[31]           0           0        0.00 
+         12                                PCE[30]           0           0        0.00 
+         12                                 PCE[2]           0           0        0.00 
+         12                                PCE[29]           0           0        0.00 
+         12                                PCE[28]           0           0        0.00 
+         12                                PCE[27]           0           0        0.00 
+         12                                PCE[26]           0           0        0.00 
+         12                                PCE[25]           0           0        0.00 
+         12                                PCE[24]           0           0        0.00 
+         12                                PCE[23]           0           0        0.00 
+         12                                PCE[22]           0           0        0.00 
+         12                                PCE[21]           0           0        0.00 
+         12                                PCE[20]           0           0        0.00 
+         12                                 PCE[1]           0           0        0.00 
+         12                                PCE[19]           0           0        0.00 
+         12                                PCE[18]           0           0        0.00 
+         12                                PCE[17]           0           0        0.00 
+         12                                PCE[16]           0           0        0.00 
+         12                                PCE[15]           0           0        0.00 
+         12                                PCE[14]           0           0        0.00 
+         12                                PCE[13]           0           0        0.00 
+         12                                PCE[12]           0           0        0.00 
+         12                                PCE[11]           0           0        0.00 
+         12                                PCE[10]           0           0        0.00 
+         12                                 PCE[0]           0           0        0.00 
+         13                             ResultW[6]           0           0        0.00 
+         13                            ResultW[30]           0           0        0.00 
+         13                             ResultW[2]           0           0        0.00 
+         13                            ResultW[26]           0           0        0.00 
+         13                            ResultW[22]           0           0        0.00 
+         13                            ResultW[18]           0           0        0.00 
+         13                            ResultW[14]           0           0        0.00 
+         13                            ResultW[10]           0           0        0.00 
+         14                          ForwardB_E[1]           0           0        0.00 
+         14                          ForwardA_E[1]           0           0        0.00 
+         18                          ResultSrcM[0]           0           0        0.00 
+         20                            PCPlus4M[1]           0           0        0.00 
+         20                            PCPlus4M[0]           0           0        0.00 
+         21                          PCTargetE[15]           0           0        0.00 
+         21                          PCTargetE[14]           0           0        0.00 
+         21                          PCTargetE[13]           0           0        0.00 
+         44                            pass_cnt[9]           0           0        0.00 
+         44                            pass_cnt[8]           0           0        0.00 
+         44                            pass_cnt[7]           0           0        0.00 
+         44                            pass_cnt[6]           0           0        0.00 
+         44                            pass_cnt[5]           0           1       50.00 
+         44                           pass_cnt[31]           0           0        0.00 
+         44                           pass_cnt[30]           0           0        0.00 
+         44                           pass_cnt[29]           0           0        0.00 
+         44                           pass_cnt[28]           0           0        0.00 
+         44                           pass_cnt[27]           0           0        0.00 
+         44                           pass_cnt[26]           0           0        0.00 
+         44                           pass_cnt[25]           0           0        0.00 
+         44                           pass_cnt[24]           0           0        0.00 
+         44                           pass_cnt[23]           0           0        0.00 
+         44                           pass_cnt[22]           0           0        0.00 
+         44                           pass_cnt[21]           0           0        0.00 
+         44                           pass_cnt[20]           0           0        0.00 
+         44                           pass_cnt[19]           0           0        0.00 
+         44                           pass_cnt[18]           0           0        0.00 
+         44                           pass_cnt[17]           0           0        0.00 
+         44                           pass_cnt[16]           0           0        0.00 
+         44                           pass_cnt[15]           0           0        0.00 
+         44                           pass_cnt[14]           0           0        0.00 
+         44                           pass_cnt[13]           0           0        0.00 
+         44                           pass_cnt[12]           0           0        0.00 
+         44                           pass_cnt[11]           0           0        0.00 
+         44                           pass_cnt[10]           0           0        0.00 
+         44                            fail_cnt[9]           0           0        0.00 
+         44                            fail_cnt[8]           0           0        0.00 
+         44                            fail_cnt[7]           0           0        0.00 
+         44                            fail_cnt[6]           0           0        0.00 
+         44                            fail_cnt[5]           0           0        0.00 
+         44                            fail_cnt[4]           0           0        0.00 
+         44                            fail_cnt[3]           0           0        0.00 
+         44                           fail_cnt[31]           0           0        0.00 
+         44                           fail_cnt[30]           0           0        0.00 
+         44                            fail_cnt[2]           0           0        0.00 
+         44                           fail_cnt[29]           0           0        0.00 
+         44                           fail_cnt[28]           0           0        0.00 
+         44                           fail_cnt[27]           0           0        0.00 
+         44                           fail_cnt[26]           0           0        0.00 
+         44                           fail_cnt[25]           0           0        0.00 
+         44                           fail_cnt[24]           0           0        0.00 
+         44                           fail_cnt[23]           0           0        0.00 
+         44                           fail_cnt[22]           0           0        0.00 
+         44                           fail_cnt[21]           0           0        0.00 
+         44                           fail_cnt[20]           0           0        0.00 
+         44                            fail_cnt[1]           0           0        0.00 
+         44                           fail_cnt[19]           0           0        0.00 
+         44                           fail_cnt[18]           0           0        0.00 
+         44                           fail_cnt[17]           0           0        0.00 
+         44                           fail_cnt[16]           0           0        0.00 
+         44                           fail_cnt[15]           0           0        0.00 
+         44                           fail_cnt[14]           0           0        0.00 
+         44                           fail_cnt[13]           0           0        0.00 
+         44                           fail_cnt[12]           0           0        0.00 
+         44                           fail_cnt[11]           0           0        0.00 
+         44                           fail_cnt[10]           0           0        0.00 
+         44                            fail_cnt[0]           0           0        0.00 
+
+Total Node Count     =        426 
+Toggled Node Count   =        304 
+Untoggled Node Count =        122 
+
+Toggle Coverage      =      71.59% (610 of 852 bins)
+
+
+Total Coverage By File (code coverage only, filtered view): 83.37%
+
+End time: 12:44:27 on Jun 09,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
